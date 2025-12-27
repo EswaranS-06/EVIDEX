@@ -1,0 +1,26 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "dj-rest-auth>=5.0.2",
+    "django>=5.2.9",
+    "django-allauth>=65.13.1",
+    "django-cors-headers>=4.9.0",
+    "djangorestframework>=3.16.1",
+    "djangorestframework-simplejwt>=5.5.1",
+    "djongo>=1.2.31",
+    "drf-spectacular>=0.29.0",
+    "drf-yasg>=1.21.11",
+    "mongoengine>=0.29.1",
+    "pillow>=12.0.0",
+    "psycopg2-binary>=2.9.11",
+    "pymongo>=4.15.5",
+    "python-docx>=1.2.0",
+    "python-dotenv>=1.2.1",
+    "pyyaml>=6.0.3",
+    "reportlab>=4.4.7",
+    "weasyprint>=67.0",
+]
