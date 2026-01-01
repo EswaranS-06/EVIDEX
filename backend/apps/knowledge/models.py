@@ -90,7 +90,18 @@ class VulnerabilityDefinition(models.Model):
     cvss_score = models.FloatField(null=True, blank=True)
     cvss_vector = models.CharField(max_length=200, null=True, blank=True)
 
-    severity = models.CharField(max_length=20)
+    SEVERITY_CHOICES = [
+    ("CRITICAL", "Critical"),
+    ("HIGH", "High"),
+    ("MEDIUM", "Medium"),
+    ("LOW", "Low"),
+    ]
+
+    severity = models.CharField(
+        max_length=20,
+        choices=SEVERITY_CHOICES
+    )
+
     description = models.TextField()
     impact = models.TextField()
     remediation = models.TextField()

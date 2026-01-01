@@ -54,3 +54,11 @@ class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
             )
 
         return data
+    VALID_SEVERITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+
+    def validate_severity(self, value):
+        if value not in VALID_SEVERITIES:
+            raise serializers.ValidationError(
+                "Severity must be one of: CRITICAL, HIGH, MEDIUM, LOW"
+            )
+        return value

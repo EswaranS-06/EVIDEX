@@ -1,0 +1,40 @@
+{% extends "reports/base.html" %}
+{% block content %}
+
+<h2>Detailed Findings</h2>
+
+{% for finding in findings %}
+<div style="margin-top: 25px;">
+
+  <h3>
+    {{ forloop.counter }}. {{ finding.title }}
+  </h3>
+
+  <span class="
+    severity-badge
+    sev-{{ finding.severity|lower }}
+  ">
+    {{ finding.severity }}
+  </span>
+
+  <h4>Description</h4>
+  <p>{{ finding.description }}</p>
+
+  <h4>Impact</h4>
+  <p>{{ finding.impact }}</p>
+
+  <h4>Recommendation</h4>
+  <p>{{ finding.remediation }}</p>
+
+  {% if finding.evidence %}
+  <h4>Evidence</h4>
+  {% for img in finding.evidence %}
+    <img src="{{ img }}" style="width: 100%; margin-bottom: 10px;">
+  {% endfor %}
+  {% endif %}
+
+</div>
+{% endfor %}
+
+<div class="page-break"></div>
+{% endblock %}

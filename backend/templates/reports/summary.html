@@ -1,0 +1,38 @@
+{% extends "reports/base.html" %}
+{% block content %}
+
+<h2>Executive Summary</h2>
+
+<p>
+The security assessment was conducted for
+<strong>{{ summary.application_url }}</strong>
+covering the scope of {{ summary.testing_scope }}.
+</p>
+
+<h3>Severity Overview</h3>
+
+<table>
+  <tr>
+    <th>Severity</th>
+    <th>Count</th>
+  </tr>
+  <tr>
+    <td>Critical</td>
+    <td>{{ summary.severity.critical }}</td>
+  </tr>
+  <tr>
+    <td>High</td>
+    <td>{{ summary.severity.high }}</td>
+  </tr>
+  <tr>
+    <td>Medium</td>
+    <td>{{ summary.severity.medium }}</td>
+  </tr>
+  <tr>
+    <td>Low</td>
+    <td>{{ summary.severity.low }}</td>
+  </tr>
+</table>
+
+<div class="page-break"></div>
+{% endblock %}

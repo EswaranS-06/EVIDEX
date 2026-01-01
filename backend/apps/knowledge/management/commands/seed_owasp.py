@@ -40,7 +40,7 @@ class Command(BaseCommand):
                 "category": "Injection",
                 "name": "SQL Injection",
                 "description": "Improper input validation leads to SQL Injection",
-                "severity": "Critical",
+                "severity": "CRITICAL",
                 "impact": "Database compromise",
                 "remediation": "Use parameterized queries",
             },

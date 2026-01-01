@@ -16,12 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from apps.knowledge.test_preview import test_report_preview
+from apps.knowledge.report_views import test_pdf
+from apps.knowledge.report_preview_views import report_preview
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/auth/", include("apps.accounts.urls")),
     path("api/", include("apps.knowledge.urls")),
-
+    path("test/report/", test_report_preview),
+    path("test/pdf/", test_pdf),
+    path("api/reports/preview/", report_preview),
 ]
 
 
