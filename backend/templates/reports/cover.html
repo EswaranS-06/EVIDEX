@@ -21,75 +21,43 @@
 
 <div class="page-break"></div>
 
-<!--================= TABLE OF CONTENTS ================-->
+<!--==========TABLE OF CONTENTS ============-->
 
-<h2 style="margin-top: 0;">Table of Contents</h2>
+<h2>Table of Contents</h2>
 
-<table style="
-  width: 80%;
-  border-collapse: collapse;
-  margin-top: 40px;
-  font-size: 15px;
-">
-  <thead>
-    <tr style="background:#0b1f8f; color:white;">
-      <th style="padding:12px 16px; border:1px solid #999; text-align:left;">
-        Section
-      </th>
-      <th style="padding:12px 16px; border:1px solid #999; width:120px; text-align:center;">
-        Page
-      </th>
-    </tr>
-  </thead>
+<div class="toc">
+  <div class="toc-row">
+    <a href="#disclaimer">Disclaimer</a>
+    <span class="toc-page" href="#disclaimer"></span>
+  </div>
 
-  <tbody>
-    <tr>
-      <td style="padding:12px 16px; border:1px solid #999;">Disclaimer</td>
-      <td style="padding:12px 16px; border:1px solid #999; text-align:center;">3</td>
-    </tr>
+  <div class="toc-row">
+    <a href="#executive-summary">Executive Summary</a>
+    <span class="toc-page" href="#executive-summary"></span>
+  </div>
 
-    <tr>
-      <td style="padding:12px 16px; border:1px solid #999;">Executive Summary</td>
-      <td style="padding:12px 16px; border:1px solid #999; text-align:center;">4</td>
-    </tr>
+  <div class="toc-row">
+    <a href="#findings">Detailed Findings</a>
+    <span class="toc-page" href="#findings"></span>
+  </div>
 
-    <!--<tr>
-      <td style="padding:12px 16px; border:1px solid #999;">Vulnerability Summary</td>
-      <td style="padding:12px 16px; border:1px solid #999; text-align:center;">5</td>
-    </tr>-->
+  <div class="toc-row">
+    <a href="#action-plan">Action Plan</a>
+    <span class="toc-page" href="#action-plan"></span>
+  </div>
 
-    <tr>
-      <td style="padding:12px 16px; border:1px solid #999;">Detailed Findings</td>
-      <td style="padding:12px 16px; border:1px solid #999; text-align:center;">5</td>
-    </tr>
-
-    <!--<tr>
-      <td style="padding:12px 16px; border:1px solid #999;">Evidence</td>
-      <td style="padding:12px 16px; border:1px solid #999; text-align:center;">7</td>
-    </tr> -->
-
-    <tr>
-      <td style="padding:12px 16px; border:1px solid #999;">Action Plan</td>
-      <td style="padding:12px 16px; border:1px solid #999; text-align:center;">8</td>
-    </tr>
-
-    <tr>
-      <td style="padding:12px 16px; border:1px solid #999;">Conclusion</td>
-      <td style="padding:12px 16px; border:1px solid #999; text-align:center;">9</td>
-    </tr>
-
-    <tr>
-      <td style="padding:12px 16px; border:1px solid #999;">Appendix</td>
-      <td style="padding:12px 16px; border:1px solid #999; text-align:center;">10</td>
-    </tr>
-  </tbody>
-</table>
+  <div class="toc-row">
+    <a href="#conclusion">Conclusion</a>
+    <span class="toc-page" href="#conclusion"></span>
+  </div>
+</div>
 
 <div class="page-break"></div>
 
+
 <!-- ================= DISCLAIMER PAGE  ================= -->
 
-<h2>Disclaimer</h2>
+<h2 id="disclaimer">Disclaimer</h2>
 
 <p>
 This report has been prepared exclusively for
@@ -121,7 +89,7 @@ from <strong>{{ report.client_name }}</strong>.
 
 
 <!-- ================= EXECUTIVE SUMMARY ================= -->
-<h2>1. Executive Summary</h2>
+<h2 id="executive-summary">1. Executive Summary</h2>
 
 <p>
 Web application vulnerability assessment and penetration testing was conducted
@@ -164,18 +132,13 @@ for <strong>{{ report.client_name }}</strong> on the application
 <div class="page-break"></div>
 
 <!-- ================= DETAILED FINDINGS ================= -->
-<h2>3. Detailed Findings</h2>
+<h2 id="findings">3. Detailed Findings</h2>
 
 {% for f in findings %}
 <table class="finding-table">
-<tr>
-  <tr>
-  <table class="finding-table">
 
   <tr>
-    <td class="label-cell">
-      Vulnerability #{{ forloop.counter }}
-    </td>
+    <td class="label-cell">Vulnerability #{{ forloop.counter }}</td>
     <td class="value-cell">
       <strong>{{ f.title }}</strong>
     </td>
@@ -205,9 +168,9 @@ for <strong>{{ report.client_name }}</strong> on the application
     <td class="value-cell">
       {{ f.impact }}
     </td>
-  </tr> 
+  </tr>
 
-   <!-- ✅ RECOMMENDATION FIRST -->
+  <!-- ✅ Recommendation FIRST -->
   <tr>
     <td class="label-cell">Recommendation</td>
     <td class="value-cell">
@@ -215,48 +178,42 @@ for <strong>{{ report.client_name }}</strong> on the application
     </td>
   </tr>
 
-  <!-- ✅ EVIDENCE LAST -->
+  <!-- ✅ Evidence LAST -->
   <tr>
     <td class="label-cell">Evidence</td>
     <td class="value-cell">
+
       {% if f.evidences.all %}
-      <h4>Evidence</h4>
-        {% for e in f.evidences.all %}
-          <div style="margin-bottom: 20px;">
-            <p><strong>{{ e.title }}</strong></p>
+          {% for e in f.evidences.all %}
+    <p><strong>{{ e.title }}</strong></p>
 
-            <!-- Image -->
-            <img
-              src="{{ e.file }}"
-              style="
-                max-width: 100%;
-                border: 1px solid #ccc;
-                padding: 6px;
-              "
-            >
+    {% if e.file %}
+      <img src="{{ e.file.url }}"
+          style="max-width:100%; margin-bottom:15px; border:1px solid #ccc;">
+    {% endif %}
 
-            {% if e.description %}
-              <p style="margin-top:8px;">
-                {{ e.description }}
-              </p>
-            {% endif %}
-          </div>
-        {% endfor %}
+    {% if e.description %}
+      <p>{{ e.description }}</p>
+    {% endif %}
+  {% endfor %}
+
       {% else %}
         <em>Evidence will be attached during final reporting.</em>
       {% endif %}
+
     </td>
   </tr>
 
 </table>
 
+<div style="height: 40px;"></div>
 {% endfor %}
 
 <div class="page-break"></div>
 
 <!-- ================= ACTION PLAN ================= -->
 
-<h2>4. Action Plan</h2>
+<h2 id="action-plan">4. Action Plan</h2>
 
 <p>
 During the assessment of the <strong>{{ report.application_name }}</strong>
@@ -295,7 +252,7 @@ posture of the application.
 
 <!-- ================= CONCLUSION ================= -->
 
-<h2>Conclusion</h2>
+<h2 id="conclusion">Conclusion</h2>
 
 <p>
 The vulnerability assessment conducted for

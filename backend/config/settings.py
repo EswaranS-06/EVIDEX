@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.knowledge",
     "rest_framework",
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -150,6 +151,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 
@@ -166,5 +168,12 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'My API',
+    'DESCRIPTION': 'API documentation',
+    'VERSION': '1.0.0',
+}

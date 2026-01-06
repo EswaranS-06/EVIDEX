@@ -6,7 +6,7 @@
   <style>
     /* =============================
        GLOBAL RESET
-       ============================= */
+       ============================== */
     html, body {
       margin: 0;
       padding: 0;
@@ -22,14 +22,14 @@
 
     /* =============================
        PAGE CONTAINER
-       ============================= */
+       ============================== */
     .page {
       padding: 40px 50px;
     }
 
     /* =============================
        HEADINGS
-       ============================= */
+       ============================== */
     h1, h2, h3 {
       color: #1e4f91;
       margin-top: 30px;
@@ -45,14 +45,14 @@
 
     /* =============================
        PAGE BREAKS
-       ============================= */
+       ============================== */
     .page-break {
       page-break-before: always;
     }
 
     /* =============================
        EXECUTIVE SUMMARY TABLE
-       ============================= */
+       ============================== */
     table.summary-table {
       width: 100%;
       border-collapse: collapse;
@@ -76,7 +76,7 @@
 
     /* =============================
        DETAILED FINDINGS TABLE
-       ============================= */
+       ============================== */
     table.finding-table {
       width: 100%;
       border-collapse: collapse;
@@ -104,7 +104,7 @@
 
     /* =============================
        SEVERITY COLORS
-       ============================= */
+       ============================== */
     .severity-critical {
       background: #d32f2f;
       color: #ffffff;
@@ -134,13 +134,38 @@
     }
 
     /* =============================
-       PAGE NUMBER (PDF ONLY)
-       ============================= */
+       TABLE OF CONTENTS (PROPER)
+       ============================== */
+    .toc {
+      margin-top: 40px;
+      width: 100%;
+      font-size: 15px;
+    }
+
+    .toc-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dotted #999;
+      padding: 8px 0;
+    }
+
+    .toc-row a {
+      text-decoration: none;
+      color: #000;
+    }
+
+    .toc-page::after {
+      content: target-counter(attr(href), page);
+    }
+
+    /* =============================
+       PDF PAGE NUMBERS
+       ============================== */
     @page {
       margin: 20mm 15mm 25mm 15mm;
 
       @bottom-center {
-        content: "Page " counter(page) " of " counter(pages);
+        content: "Page " counter(page);
         font-size: 11px;
         color: #666;
       }
@@ -150,7 +175,7 @@
 
 <body>
 
-  <!-- SINGLE CONTENT BLOCK (IMPORTANT) -->
+  <!-- SINGLE CONTENT BLOCK -->
   <div class="page">
     {% block content %}{% endblock %}
   </div>
