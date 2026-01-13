@@ -1,9 +1,15 @@
 from rest_framework import serializers
+from apps.knowledge.models import Report
+from .models import FindingEvidence
+
+
 from .models import (
     OWASPCategory,
     OWASPVulnerability,
     VulnerabilityVariant,
     VulnerabilityDefinition,
+    Report,
+    ReportFinding,
 )
 
 class OWASPCategorySerializer(serializers.ModelSerializer):
@@ -62,3 +68,57 @@ class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
                 "Severity must be one of: CRITICAL, HIGH, MEDIUM, LOW"
             )
         return value
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = [
+            "id",
+            "client_name",
+            "application_name",
+            "report_type",
+            "start_date",
+            "end_date",
+            "prepared_by",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
+        
+    def validate(self, data):
+        start = data.get("start_date")
+        end = data.get("end_date")
+
+        if start and end and start > end:
+            raise serializers.ValidationError(
+                "Start date cannot be after end date."
+            )
+
+        return data
+
+class ReportFindingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReportFinding
+        fields = [
+            "id",
+            "report",
+            "title",
+            "severity",
+            "description",
+            "impact",
+            "remediation",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "report"]
+        
+
+class FindingEvidenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FindingEvidence
+        fields = [
+            "id",
+            "finding",
+            "title",
+            "file",
+            "description",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "finding"]
