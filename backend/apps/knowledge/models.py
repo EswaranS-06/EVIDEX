@@ -150,6 +150,8 @@ class Report(models.Model):
     def __str__(self):
         return f"{self.client_name} - {self.application_name}"
 
+from apps.knowledge.models import VulnerabilityDefinition  
+
 class ReportFinding(models.Model):
     report = models.ForeignKey(
         Report,
@@ -157,31 +159,24 @@ class ReportFinding(models.Model):
         related_name="findings"
     )
 
+    # ✅ NEW: link to default vulnerability
     vulnerability = models.ForeignKey(
         VulnerabilityDefinition,
         on_delete=models.SET_NULL,
-        null=True
+        null=True,
+        blank=True,
+        related_name="report_findings"
     )
 
     title = models.CharField(max_length=200)
+    severity = models.CharField(max_length=20)
 
-    SEVERITY_CHOICES = [
-        ("CRITICAL", "Critical"),
-        ("HIGH", "High"),
-        ("MEDIUM", "Medium"),
-        ("LOW", "Low"),
-    ]
-
-    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES)
-
-    description = models.TextField()
-    impact = models.TextField()
-    remediation = models.TextField()
+    # ⚠️ keep existing fields for now (we will refactor later)
+    description = models.TextField(blank=True)
+    impact = models.TextField(blank=True)
+    remediation = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
 class FindingEvidence(models.Model):
     finding = models.ForeignKey(
         ReportFinding,
@@ -194,4 +189,4 @@ class FindingEvidence(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title or f"Evidence for {self.finding.title}"
+        return self.title or f"Evidence for {self.finding.title}" 
