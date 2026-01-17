@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "apps.accounts",
     "apps.knowledge",
+    "rest_framework",
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -56,7 +58,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -116,7 +118,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    ]
 
 import os
 from pathlib import Path
@@ -137,8 +142,8 @@ DATABASES = {
         "PORT": os.getenv("POSTGRES_PORT"),
     }
 }
-
-#REST Framework and JWT Configuration
+# DISABLE_AUTH = DEBUG
+# REST Framework and JWT Configuration
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -146,13 +151,30 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+# REST_FRAMEWORK = {
+#     "DEFAULT_AUTHENTICATION_CLASSES": [] if DISABLE_AUTH else (
+#         "rest_framework_simplejwt.authentication.JWTAuthentication",
+#     ),
+
+#     "DEFAULT_PERMISSION_CLASSES": [
+#         "rest_framework.permissions.AllowAny"
+#     ] if DISABLE_AUTH else [
+#         "rest_framework.permissions.IsAuthenticated"
+#     ],
+#     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+# }
+# if DISABLE_AUTH:
+#     print("⚠️ AUTHENTICATION DISABLED (DEV MODE)")
+
 
 
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=30),  #needs to change....
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
@@ -161,4 +183,13 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'My API',
+    'DESCRIPTION': 'API documentation',
+    'VERSION': '1.0.0',
 }

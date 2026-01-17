@@ -1,0 +1,16 @@
+{% extends "reports/base.html" %}
+{% block content %}
+
+<h2>Action Plan</h2>
+
+{% for level, items in action_plan.items %}
+<h3>{{ level }} Severity Findings</h3>
+<ul>
+  {% for item in items %}
+    <li>{{ item }}</li>
+  {% endfor %}
+</ul>
+{% endfor %}
+
+<div class="page-break"></div>
+{% endblock %}

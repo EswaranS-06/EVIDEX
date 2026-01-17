@@ -1,9 +1,16 @@
 from rest_framework import serializers
+from apps.knowledge.models import Report
+from .models import FindingEvidence
+from .models import ReportFinding
+
+
 from .models import (
     OWASPCategory,
     OWASPVulnerability,
     VulnerabilityVariant,
     VulnerabilityDefinition,
+    Report,
+    ReportFinding,
 )
 
 class OWASPCategorySerializer(serializers.ModelSerializer):
@@ -54,3 +61,97 @@ class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
             )
 
         return data
+    VALID_SEVERITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+
+    def validate_severity(self, value):
+        if value not in VALID_SEVERITIES:
+            raise serializers.ValidationError(
+                "Severity must be one of: CRITICAL, HIGH, MEDIUM, LOW"
+            )
+        return value
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = [
+            "id",
+            "client_name",
+            "application_name",
+            "report_type",
+            "start_date",
+            "end_date",
+            "prepared_by",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
+        
+    def validate(self, data):
+        start = data.get("start_date")
+        end = data.get("end_date")
+
+        if start and end and start > end:
+            raise serializers.ValidationError(
+                "Start date cannot be after end date."
+            )
+
+        return data
+
+
+class ReportFindingSerializer(serializers.ModelSerializer):
+    # -----------------------
+    # FINAL (READ-ONLY)
+    # -----------------------
+    final_description = serializers.ReadOnlyField()
+    final_impact = serializers.ReadOnlyField()
+    final_remediation = serializers.ReadOnlyField()
+
+    class Meta:
+        model = ReportFinding
+        fields = [
+            "id",
+            "report",
+            "vulnerability",
+           
+
+            # -----------------------
+            # TESTER-EDITABLE FIELDS
+            # -----------------------
+            "tester_title",
+            "tester_severity",
+            "tester_description",
+            "tester_impact",
+            "tester_remediation",
+            
+
+            # -----------------------
+            # COMPUTED FINAL OUTPUT
+            # -----------------------
+            "final_title",
+            "final_severity",
+            "final_description",
+            "final_impact",
+            "final_remediation",
+
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+            "final_description",
+            "final_impact",
+            "final_remediation",
+        ]
+
+
+class FindingEvidenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FindingEvidence
+        fields = [
+            "id",
+            "finding",
+            "title",
+            "file",
+            "description",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "finding"]

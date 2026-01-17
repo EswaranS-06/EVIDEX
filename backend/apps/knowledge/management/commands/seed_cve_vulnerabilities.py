@@ -11,7 +11,7 @@ class Command(BaseCommand):
                 "cve_id": "CVE-2024-12345",
                 "cvss_score": 9.8,
                 "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-                "severity": "Critical",
+                "severity": "CRITICAL",
                 "description": "Remote SQL injection in XYZ product",
                 "impact": "Remote code execution",
                 "remediation": "Upgrade to fixed version",
