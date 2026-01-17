@@ -123,7 +123,6 @@ class VulnerabilityDefinition(models.Model):
 # REPORT & FINDINGS MODELS
 # =========================
 
-# apps/knowledge/models.py
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -156,10 +155,10 @@ class ReportFinding(models.Model):
     report = models.ForeignKey(
         Report,
         on_delete=models.CASCADE,
-        related_name="findings"
+        related_name="findings",
+        null=True
     )
 
-    # ✅ NEW: link to default vulnerability
     vulnerability = models.ForeignKey(
         VulnerabilityDefinition,
         on_delete=models.SET_NULL,
@@ -168,15 +167,95 @@ class ReportFinding(models.Model):
         related_name="report_findings"
     )
 
-    title = models.CharField(max_length=200)
-    severity = models.CharField(max_length=20)
+    
 
-    # ⚠️ keep existing fields for now (we will refactor later)
+    # -----------------------
+    # OLD FIELDS (KEEP FOR NOW)
+    # -----------------------
+    title = models.CharField(max_length=200,blank=True)
+    severity = models.CharField(max_length=20,blank=True)
+    
     description = models.TextField(blank=True)
     impact = models.TextField(blank=True)
     remediation = models.TextField(blank=True)
 
+    # -----------------------
+    # ✅ NEW DUAL-LAYER FIELDS
+    # -----------------------
+    tester_title = models.CharField(max_length=200,blank=True)
+    tester_severity = models.CharField(max_length=20,blank=True)
+    
+    tester_description = models.TextField(blank=True)
+    tester_impact = models.TextField(blank=True)
+    tester_remediation = models.TextField(blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
+
+# -----------------------
+# FINAL (COMPUTED) VALUES
+# -----------------------
+    @property
+    def final_title(self):
+        default = ""
+        if self.vulnerability:
+            default = self.vulnerability.title or ""
+
+        if self.tester_title:
+            return self.tester_title
+
+        return default
+    
+    @property
+    def final_severity(self):
+        default = ""
+        if self.vulnerability:
+            default = self.vulnerability.severity or ""
+
+        if self.tester_severity:
+            return self.tester_severity
+
+        return default
+    
+    
+    @property
+    def final_description(self):
+        default = ""
+        if self.vulnerability:
+            default = self.vulnerability.description or ""
+
+        if self.tester_description:
+            if default:
+                return f"{default}\n\n{self.tester_description}"
+            return self.tester_description
+
+        return default
+
+    @property
+    def final_impact(self):
+        default = ""
+        if self.vulnerability:
+            default = self.vulnerability.impact or ""
+
+        if self.tester_impact:
+            if default:
+                return f"{default}\n\n{self.tester_impact}"
+            return self.tester_impact
+
+        return default
+
+    @property
+    def final_remediation(self):
+        default = ""
+        if self.vulnerability:
+            default = self.vulnerability.remediation or ""
+
+        if self.tester_remediation:
+            if default:
+                return f"{default}\n\n{self.tester_remediation}"
+            return self.tester_remediation
+
+        return default
+
 class FindingEvidence(models.Model):
     finding = models.ForeignKey(
         ReportFinding,

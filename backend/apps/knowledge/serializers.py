@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.knowledge.models import Report
 from .models import FindingEvidence
+from .models import ReportFinding
 
 
 from .models import (
@@ -94,21 +95,53 @@ class ReportSerializer(serializers.ModelSerializer):
 
         return data
 
+
 class ReportFindingSerializer(serializers.ModelSerializer):
+    # -----------------------
+    # FINAL (READ-ONLY)
+    # -----------------------
+    final_description = serializers.ReadOnlyField()
+    final_impact = serializers.ReadOnlyField()
+    final_remediation = serializers.ReadOnlyField()
+
     class Meta:
         model = ReportFinding
         fields = [
             "id",
             "report",
-            "title",
-            "severity",
-            "description",
-            "impact",
-            "remediation",
+            "vulnerability",
+           
+
+            # -----------------------
+            # TESTER-EDITABLE FIELDS
+            # -----------------------
+            "tester_title",
+            "tester_severity",
+            "tester_description",
+            "tester_impact",
+            "tester_remediation",
+            
+
+            # -----------------------
+            # COMPUTED FINAL OUTPUT
+            # -----------------------
+            "final_title",
+            "final_severity",
+            "final_description",
+            "final_impact",
+            "final_remediation",
+
             "created_at",
         ]
-        read_only_fields = ["id", "created_at", "report"]
-        
+
+        read_only_fields = [
+            "id",
+            "created_at",
+            "final_description",
+            "final_impact",
+            "final_remediation",
+        ]
+
 
 class FindingEvidenceSerializer(serializers.ModelSerializer):
     class Meta:

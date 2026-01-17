@@ -156,27 +156,27 @@ for <strong>{{ report.client_name }}</strong> on the application
     </td>
   </tr>
 
-  <tr>
-    <td class="label-cell">Description</td>
-    <td class="value-cell">
-      {{ f.description }}
-    </td>
-  </tr>
+<tr>
+  <td class="label-cell">Description</td>
+  <td class="value-cell">
+    {{ f.final_description|linebreaks }}
+  </td>
+</tr>
 
-  <tr>
-    <td class="label-cell">Implication</td>
-    <td class="value-cell">
-      {{ f.impact }}
-    </td>
-  </tr>
+<tr>
+  <td class="label-cell">Implication</td>
+  <td class="value-cell">
+    {{ f.final_impact|linebreaks }}
+  </td>
+</tr>
 
-  <!-- ✅ Recommendation FIRST -->
-  <tr>
-    <td class="label-cell">Recommendation</td>
-    <td class="value-cell">
-      {{ f.remediation }}
-    </td>
-  </tr>
+<tr>
+  <td class="label-cell">Recommendation</td>
+  <td class="value-cell">
+    {{ f.final_remediation|linebreaks }}
+  </td>
+</tr>
+
 
   <!-- ✅ Evidence LAST -->
   <tr>
