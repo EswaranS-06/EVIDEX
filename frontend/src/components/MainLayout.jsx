@@ -59,7 +59,7 @@ const Sidebar = () => {
 
 const MainLayout = ({ children }) => {
     return (
-        <div className="layout-container" style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg-dark)' }}>
+        <div className="layout-container" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--color-bg-dark)' }}>
             <Sidebar />
             <main style={{ flex: 1, padding: '20px 20px 20px 0', overflowY: 'auto' }}>
                 {children}
