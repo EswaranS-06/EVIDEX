@@ -14,6 +14,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         {/* Default redirect */}
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/reports" element={<Dashboard />} />
         <Route path="/report/:id" element={<ReportDetails />} />
         <Route path="/finding/:id" element={<FindingDetail />} />
         {/* Default redirect - Bypassing login for now */}

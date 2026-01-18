@@ -1,8 +1,9 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, Settings, LogOut, Shield } from 'lucide-react';
 
 const Sidebar = () => {
+    const location = useLocation();
     return (
         <div className="sidebar glass-panel" style={{
             width: '280px',
@@ -33,7 +34,7 @@ const Sidebar = () => {
                     <span>Dashboard</span>
                 </NavLink>
 
-                <NavLink to="/reports" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/reports" className={`nav-item ${location.pathname.startsWith('/report') ? 'active' : ''}`}>
                     <FileText size={20} />
                     <span>Reports</span>
                 </NavLink>

@@ -41,10 +41,6 @@ const Dashboard = () => {
 
                 {/* Stats Row */}
                 <div style={{ marginBottom: '24px', display: 'flex', gap: '20px' }}>
-                    <div className="glass-panel" style={{ padding: '20px', flex: 1, background: 'linear-gradient(135deg, rgba(30,36,51,0.8), rgba(112,0,255,0.1))' }}>
-                        <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '5px' }}>Total Reports</h3>
-                        <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{reports.length}</div>
-                    </div>
                     <div className="glass-panel" style={{ padding: '20px', flex: 1 }}>
                         <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '5px' }}>In Progress</h3>
                         <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>1</div>
@@ -52,6 +48,10 @@ const Dashboard = () => {
                     <div className="glass-panel" style={{ padding: '20px', flex: 1 }}>
                         <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '5px' }}>Completed</h3>
                         <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-success)' }}>2</div>
+                    </div>
+                    <div className="glass-panel" style={{ padding: '20px', flex: 1, background: 'linear-gradient(135deg, rgba(30,36,51,0.8), rgba(112,0,255,0.1))' }}>
+                        <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '5px' }}>Total Reports</h3>
+                        <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{reports.length}</div>
                     </div>
                 </div>
 
@@ -61,13 +61,21 @@ const Dashboard = () => {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {reports.map(report => (
-                            <div key={report.id} className="glass-panel" style={{
-                                padding: '24px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                transition: 'transform 0.2s'
-                            }}>
+                            <div
+                                key={report.id}
+                                className="glass-panel"
+                                onClick={() => navigate(`/report/${report.id}`)}
+                                style={{
+                                    padding: '24px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    transition: 'transform 0.2s',
+                                    cursor: 'pointer'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                     <div style={{
                                         width: '48px',
@@ -102,13 +110,13 @@ const Dashboard = () => {
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button className="btn btn-ghost" title="Edit" onClick={() => navigate(`/report/${report.id}`)}>
+                                    <button className="btn btn-ghost" title="Edit" onClick={(e) => { e.stopPropagation(); navigate(`/report/${report.id}`); }}>
                                         <Edit2 size={18} />
                                     </button>
-                                    <button className="btn btn-ghost" title="Actions">
+                                    <button className="btn btn-ghost" title="Actions" onClick={(e) => e.stopPropagation()}>
                                         {report.locked ? <Lock size={18} /> : <Trash2 size={18} style={{ color: 'var(--color-error)' }} />}
                                     </button>
-                                    <button className="btn btn-ghost" title="Verify">
+                                    <button className="btn btn-ghost" title="Verify" onClick={(e) => e.stopPropagation()}>
                                         <CheckCircle size={18} style={{ color: 'var(--color-success)' }} />
                                     </button>
                                 </div>
