@@ -1,27 +1,27 @@
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+from django.shortcuts import get_object_or_404
 
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
 
-from apps.knowledge.models import Report, ReportFinding
-from apps.knowledge.serializers import ReportFindingSerializer
+from apps.knowledge.models import (
+    Report,
+    ReportFinding,
+    FindingEvidence,
+)
 
-from apps.knowledge.models import Report
-from apps.knowledge.serializers import ReportSerializer
-
-from apps.knowledge.models import FindingEvidence
-from apps.knowledge.serializers import FindingEvidenceSerializer
-
-
+from apps.knowledge.serializers import (
+    ReportSerializer,
+    ReportFindingSerializer,
+    FindingEvidenceSerializer,
+)
 
 # -------------------------
-# EXISTING TEST PDF VIEW
+# TEST PDF VIEW (unchanged)
 # -------------------------
 def test_pdf(request):
     from weasyprint import HTML
@@ -45,7 +45,7 @@ def test_pdf(request):
 
 
 # -------------------------
-# NEW: REPORT CRUD API
+# REPORT CRUD
 # -------------------------
 class ReportViewSet(ModelViewSet):
     queryset = Report.objects.all().order_by("-created_at")
@@ -55,32 +55,47 @@ class ReportViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
+
+# -------------------------
+# REPORT FINDINGS
+# -------------------------
 class ReportFindingListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, report_id):
         report = get_object_or_404(Report, id=report_id)
-        findings = ReportFinding.objects.filter(report=report)
+
+        findings = (
+            ReportFinding.objects
+            .filter(report=report)
+            .select_related("vulnerability")  # ✅ important for final_* logic
+            .prefetch_related("evidences")
+        )
+
         serializer = ReportFindingSerializer(findings, many=True)
         return Response(serializer.data)
 
     def post(self, request, report_id):
         report = get_object_or_404(Report, id=report_id)
-        serializer = ReportFindingSerializer(data=request.data)
 
+        serializer = ReportFindingSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(report=report)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class ReportFindingDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, pk):
         finding = get_object_or_404(ReportFinding, id=pk)
+
         serializer = ReportFindingSerializer(
-            finding, data=request.data, partial=True
+            finding,
+            data=request.data,
+            partial=True,
         )
 
         if serializer.is_valid():
@@ -94,6 +109,10 @@ class ReportFindingDetailView(APIView):
         finding.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+# -------------------------
+# EVIDENCE APIs
+# -------------------------
 class EvidenceListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -104,10 +123,13 @@ class EvidenceListCreateView(APIView):
 
     def post(self, request, finding_id):
         serializer = FindingEvidenceSerializer(data=request.data)
+
         if serializer.is_valid():
             serializer.save(finding_id=finding_id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class EvidenceDeleteView(APIView):
     permission_classes = [IsAuthenticated]
