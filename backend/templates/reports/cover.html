@@ -1,6 +1,8 @@
 {% extends "reports/base.html" %}
 
 {% block content %}
+{% load media_path %}
+
 
 <!-- COVER PAGE (simple for now) -->
 <div style="
@@ -140,19 +142,19 @@ for <strong>{{ report.client_name }}</strong> on the application
   <tr>
     <td class="label-cell">Vulnerability #{{ forloop.counter }}</td>
     <td class="value-cell">
-      <strong>{{ f.title }}</strong>
+      <strong>{{ f.final_title }}</strong>
     </td>
   </tr>
 
   <tr>
     <td class="label-cell">Severity</td>
     <td class="
-      {% if f.severity == 'CRITICAL' %}severity-critical
-      {% elif f.severity == 'HIGH' %}severity-high
-      {% elif f.severity == 'MEDIUM' %}severity-medium
+      {% if f.final_severity == 'CRITICAL' %}severity-critical
+      {% elif f.final_severity == 'HIGH' %}severity-high
+      {% elif f.final_severity == 'MEDIUM' %}severity-medium
       {% else %}severity-low{% endif %}
     ">
-      {{ f.severity }}
+      {{ f.final_severity}}
     </td>
   </tr>
 
@@ -179,37 +181,47 @@ for <strong>{{ report.client_name }}</strong> on the application
 
 
   <!-- ✅ Evidence LAST -->
-  <tr>
+<tr>
     <td class="label-cell">Evidence</td>
     <td class="value-cell">
 
-      {% if f.evidences.all %}
-          {% for e in f.evidences.all %}
-    <p><strong>{{ e.title }}</strong></p>
+        {% if f.evidences.all %}
+            {% for e in f.evidences.all %}
 
-    {% if e.file %}
-      <img src="{{ e.file.url }}"
-          style="max-width:100%; margin-bottom:15px; border:1px solid #ccc;">
-    {% endif %}
+                <div style="margin-bottom:20px;">
+                    <p><strong>{{ e.title }}</strong></p>
 
-    {% if e.description %}
-      <p>{{ e.description }}</p>
-    {% endif %}
-  {% endfor %}
+                    {% if e.file %}
+        {% if is_pdf %}
+  <img src="{{ e.file.path|file_uri }}" style="max-width:100%; margin-bottom:15px;">
+{% else %}
+  <img src="{{ MEDIA_URL }}{{ e.file.name }}" style="max-width:100%; margin-bottom:15px;">
+{% endif %}
 
-      {% else %}
-        <em>Evidence will be attached during final reporting.</em>
-      {% endif %}
+
+
+                    {% endif %}
+
+                    {% if e.description %}
+                        <p style="margin-top:8px;">{{ e.description }}</p>
+                    {% endif %}
+                </div>
+
+            {% endfor %}
+        {% else %}
+            <em>No evidence provided.</em>
+        {% endif %}
 
     </td>
-  </tr>
+</tr>
+
 
 </table>
 
 <div style="height: 40px;"></div>
 {% endfor %}
 
-<div class="page-break"></div>
+<div class="page-break"></div> 
 
 <!-- ================= ACTION PLAN ================= -->
 

@@ -1,8 +1,8 @@
 from collections import defaultdict
-
 from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 from apps.knowledge.models import Report, ReportFinding
 
@@ -14,28 +14,39 @@ def report_preview(request, report_id):
     except Report.DoesNotExist:
         raise Http404("Report not found")
 
-    findings_qs = ReportFinding.objects.filter(report=report)
+    # Load findings with all needed relations
+    findings_qs = (
+        ReportFinding.objects
+        .filter(report=report)
+        .select_related("vulnerability")
+        .prefetch_related("evidences")
+    )
 
     # ----------------------------
-    # Severity aggregation
+    # Severity aggregation (FINAL)
     # ----------------------------
     severity_counts = {
-        "CRITICAL": findings_qs.filter(severity="CRITICAL").count(),
-        "HIGH": findings_qs.filter(severity="HIGH").count(),
-        "MEDIUM": findings_qs.filter(severity="MEDIUM").count(),
-        "LOW": findings_qs.filter(severity="LOW").count(),
+        "CRITICAL": 0,
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0,
     }
 
+    for f in findings_qs:
+        if f.final_severity in severity_counts:
+            severity_counts[f.final_severity] += 1
+
     # ----------------------------
-    # Build dynamic Action Plan
+    # Action Plan (FINAL)
     # ----------------------------
     severity_counter = defaultdict(int)
     remediation_set = set()
 
     for f in findings_qs:
-        severity_counter[f.severity] += 1
-        if f.remediation:
-            remediation_set.add(f.remediation.strip())
+        if f.final_severity:
+            severity_counter[f.final_severity] += 1
+        if f.final_remediation:
+            remediation_set.add(f.final_remediation.strip())
 
     action_plan = {
         "severity_count": dict(severity_counter),
@@ -43,39 +54,15 @@ def report_preview(request, report_id):
     }
 
     # ----------------------------
-    # Prepare findings for template
-    # ----------------------------
-    findings = []
-
-    for f in findings_qs:
-        findings.append({
-            "title": f.title,
-            "severity": f.severity,
-            "description": f.description,
-            "impact": f.impact,
-            "remediation": f.remediation,
-            "evidences": [
-                {
-                    "title": e.title,
-                    "file": e.file.url,
-                    "description": e.description,
-                }
-                for e in f.evidences.all()
-            ],
-        })
-
-
-    # ----------------------------
-    # Context for template
+    # Context
+    # We pass MODEL OBJECTS so:
+    #   f.final_title
+    #   f.final_severity
+    #   f.evidences.all
+    # all work in the template
     # ----------------------------
     context = {
-        "report": {
-            "client_name": report.client_name,
-            "application_name": report.application_name,
-            "report_type": report.report_type,
-            "report_date": f"{report.start_date} to {report.end_date}",
-            "prepared_by": report.prepared_by,
-        },
+        "report": report,
         "summary": {
             "severity": {
                 "critical": severity_counts["CRITICAL"],
@@ -84,9 +71,12 @@ def report_preview(request, report_id):
                 "low": severity_counts["LOW"],
             }
         },
-        "findings": findings,
+        "findings": findings_qs,
         "action_plan": action_plan,
+        "MEDIA_URL":request.build_absolute_uri(settings.MEDIA_URL),
+        "is_pdf": False,
     }
 
-    html = render_to_string("reports/cover.html", context)
+    # IMPORTANT: pass request so MEDIA_URL works in browser
+    html = render_to_string("reports/cover.html", context, request=request)
     return HttpResponse(html)

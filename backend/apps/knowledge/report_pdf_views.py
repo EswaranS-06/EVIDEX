@@ -2,61 +2,79 @@ from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-
+import os
 from apps.knowledge.models import Report, ReportFinding
-
 
 @login_required
 def report_pdf(request, report_id):
-    # Lazy import (VERY IMPORTANT for Windows + GTK)
     from weasyprint import HTML
-    
 
     try:
         report = Report.objects.get(id=report_id)
     except Report.DoesNotExist:
         raise Http404("Report not found")
 
-    findings = ReportFinding.objects.filter(report=report).prefetch_related(
-        "evidences"  # IMPORTANT for evidence images
+    findings = (
+        ReportFinding.objects
+        .filter(report=report)
+        .select_related("vulnerability")
+        .prefetch_related("evidences")
     )
 
+    # ----------------------------
     # Severity aggregation
+    # ----------------------------
     severity_counts = {
-        "critical": findings.filter(severity="CRITICAL").count(),
-        "high": findings.filter(severity="HIGH").count(),
-        "medium": findings.filter(severity="MEDIUM").count(),
-        "low": findings.filter(severity="LOW").count(),
+        "CRITICAL": 0,
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0,
     }
 
-    # Context passed DIRECTLY (no nested dicts for report)
+    for f in findings:
+        if f.final_severity in severity_counts:
+            severity_counts[f.final_severity] += 1
+
+    # ----------------------------
+    # Context
+    # ----------------------------
     context = {
         "report": report,
         "summary": {
-            "severity": severity_counts
+            "severity": {
+                "critical": severity_counts["CRITICAL"],
+                "high": severity_counts["HIGH"],
+                "medium": severity_counts["MEDIUM"],
+                "low": severity_counts["LOW"],
+            }
         },
         "findings": findings,
+        "is_pdf": True,
     }
 
-    # Render HTML
     html_string = render_to_string(
         "reports/cover.html",
         context,
-        request=request  # IMPORTANT for static/media resolution
+        request=request
     )
 
-    # Generate PDF
+    # ----------------------------
+    # 🔑 THIS IS THE REAL FIX
+    # ----------------------------
+    # base_url MUST be MEDIA_ROOT parent
+    base_url = settings.MEDIA_ROOT
+
     pdf = HTML(
         string=html_string,
-        base_url=request.build_absolute_uri("/")  # 🔑 CRITICAL FOR IMAGES
-    ).write_pdf()
+        base_url=base_url
+    ).write_pdf(
+        presentational_hints=True,
+    enable_local_file_access=True
+    )
 
-    # Return response
     response = HttpResponse(pdf, content_type="application/pdf")
     response["Content-Disposition"] = (
         f'inline; filename="VAPT_Report_{report.client_name}.pdf"'
     )
-
-
 
     return response

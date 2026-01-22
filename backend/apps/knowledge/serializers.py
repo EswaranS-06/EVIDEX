@@ -1,9 +1,4 @@
 from rest_framework import serializers
-from apps.knowledge.models import Report
-from .models import FindingEvidence
-from .models import ReportFinding
-
-
 from .models import (
     OWASPCategory,
     OWASPVulnerability,
@@ -11,18 +6,27 @@ from .models import (
     VulnerabilityDefinition,
     Report,
     ReportFinding,
+    FindingEvidence,
 )
+
+# -------------------------
+# OWASP / Vulnerability
+# -------------------------
 
 class OWASPCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = OWASPCategory
         fields = "__all__"
+
+
 class OWASPVulnerabilitySerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField(source="category.name")
 
     class Meta:
         model = OWASPVulnerability
         fields = "__all__"
+
+
 class VulnerabilityVariantSerializer(serializers.ModelSerializer):
     owasp_vulnerability_name = serializers.ReadOnlyField(
         source="owasp_vulnerability.name"
@@ -31,44 +35,49 @@ class VulnerabilityVariantSerializer(serializers.ModelSerializer):
     class Meta:
         model = VulnerabilityVariant
         fields = "__all__"
-class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
 
+
+class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
     class Meta:
         model = VulnerabilityDefinition
         fields = "__all__"
+
+    VALID_SEVERITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
 
     def validate(self, data):
         source_type = data.get("source_type")
         owasp_vuln = data.get("owasp_vulnerability")
         variant = data.get("variant")
 
-        # Rule 1: Variant requires OWASP vulnerability
         if variant and not owasp_vuln:
             raise serializers.ValidationError(
                 "Variant cannot be set without OWASP Vulnerability"
             )
 
-        # Rule 2: Variant must belong to OWASP vulnerability
         if variant and variant.owasp_vulnerability != owasp_vuln:
             raise serializers.ValidationError(
                 "Variant does not belong to the selected OWASP Vulnerability"
             )
 
-        # Rule 3: CVE-only validation
         if source_type == "CVE" and not data.get("cve_id"):
             raise serializers.ValidationError(
                 "CVE source requires cve_id"
             )
 
         return data
-    VALID_SEVERITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
 
     def validate_severity(self, value):
-        if value not in VALID_SEVERITIES:
+        if value not in self.VALID_SEVERITIES:
             raise serializers.ValidationError(
                 "Severity must be one of: CRITICAL, HIGH, MEDIUM, LOW"
             )
         return value
+
+
+# -------------------------
+# REPORT
+# -------------------------
+
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
@@ -83,7 +92,7 @@ class ReportSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
-        
+
     def validate(self, data):
         start = data.get("start_date")
         end = data.get("end_date")
@@ -92,56 +101,12 @@ class ReportSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Start date cannot be after end date."
             )
-
         return data
 
 
-class ReportFindingSerializer(serializers.ModelSerializer):
-    # -----------------------
-    # FINAL (READ-ONLY)
-    # -----------------------
-    final_description = serializers.ReadOnlyField()
-    final_impact = serializers.ReadOnlyField()
-    final_remediation = serializers.ReadOnlyField()
-
-    class Meta:
-        model = ReportFinding
-        fields = [
-            "id",
-            "report",
-            "vulnerability",
-           
-
-            # -----------------------
-            # TESTER-EDITABLE FIELDS
-            # -----------------------
-            "tester_title",
-            "tester_severity",
-            "tester_description",
-            "tester_impact",
-            "tester_remediation",
-            
-
-            # -----------------------
-            # COMPUTED FINAL OUTPUT
-            # -----------------------
-            "final_title",
-            "final_severity",
-            "final_description",
-            "final_impact",
-            "final_remediation",
-
-            "created_at",
-        ]
-
-        read_only_fields = [
-            "id",
-            "created_at",
-            "final_description",
-            "final_impact",
-            "final_remediation",
-        ]
-
+# -------------------------
+# EVIDENCE
+# -------------------------
 
 class FindingEvidenceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -155,3 +120,64 @@ class FindingEvidenceSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at", "finding"]
+
+
+# -------------------------
+# REPORT FINDINGS (THE IMPORTANT ONE)
+# -------------------------
+
+class ReportFindingSerializer(serializers.ModelSerializer):
+    # Final computed fields
+    final_title = serializers.ReadOnlyField()
+    final_severity = serializers.ReadOnlyField()
+    final_description = serializers.ReadOnlyField()
+    final_impact = serializers.ReadOnlyField()
+    final_remediation = serializers.ReadOnlyField()
+
+    # Nested evidences (needed for API + PDF)
+    evidences = FindingEvidenceSerializer(many=True, read_only=True)
+
+    VALID_SEVERITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+
+    class Meta:
+        model = ReportFinding
+        fields = [
+            "id",
+            "report",
+            "vulnerability",
+
+            # Tester‑editable
+            "tester_title",
+            "tester_severity",
+            "tester_description",
+            "tester_impact",
+            "tester_remediation",
+
+            # Final computed
+            "final_title",
+            "final_severity",
+            "final_description",
+            "final_impact",
+            "final_remediation",
+
+            # Evidence
+            "evidences",
+
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "final_title",
+            "final_severity",
+            "final_description",
+            "final_impact",
+            "final_remediation",
+        ]
+
+    def validate_tester_severity(self, value):
+        if value and value not in self.VALID_SEVERITIES:
+            raise serializers.ValidationError(
+                "tester_severity must be CRITICAL, HIGH, MEDIUM, or LOW"
+            )
+        return value
