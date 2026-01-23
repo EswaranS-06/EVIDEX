@@ -11,7 +11,7 @@ class Command(BaseCommand):
                 "owasp_vuln": "SQL Injection",
                 "cve_id": "CVE-2024-9999",
                 "cvss_score": 9.1,
-                "severity": "Critical",
+                "severity": "CRITICAL",
                 "description": "SQL injection vulnerability mapped to OWASP",
                 "impact": "Database compromise",
                 "remediation": "Patch and use prepared statements",

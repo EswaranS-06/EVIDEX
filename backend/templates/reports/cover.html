@@ -1,0 +1,295 @@
+{% extends "reports/base.html" %}
+
+{% block content %}
+{% load media_path %}
+
+
+<!-- COVER PAGE (simple for now) -->
+<div style="
+  height: 100vh;
+  background: #1e4f91;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+">
+  <h1>{{ report.client_name }}</h1>
+  <h2>{{ report.application_name }}</h2>
+  <p>{{ report.report_type }}</p>
+  <p>{{ report.report_date }}</p>
+</div>
+
+<div class="page-break"></div>
+
+<!--==========TABLE OF CONTENTS ============-->
+
+<h2>Table of Contents</h2>
+
+<div class="toc">
+  <div class="toc-row">
+    <a href="#disclaimer">Disclaimer</a>
+    <span class="toc-page" href="#disclaimer"></span>
+  </div>
+
+  <div class="toc-row">
+    <a href="#executive-summary">Executive Summary</a>
+    <span class="toc-page" href="#executive-summary"></span>
+  </div>
+
+  <div class="toc-row">
+    <a href="#findings">Detailed Findings</a>
+    <span class="toc-page" href="#findings"></span>
+  </div>
+
+  <div class="toc-row">
+    <a href="#action-plan">Action Plan</a>
+    <span class="toc-page" href="#action-plan"></span>
+  </div>
+
+  <div class="toc-row">
+    <a href="#conclusion">Conclusion</a>
+    <span class="toc-page" href="#conclusion"></span>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+
+<!-- ================= DISCLAIMER PAGE  ================= -->
+
+<h2 id="disclaimer">Disclaimer</h2>
+
+<p>
+This report has been prepared exclusively for
+<strong>{{ report.client_name }}</strong> and is intended solely for the purpose
+of documenting the findings of the security assessment conducted on
+<strong>{{ report.application_name }}</strong>.
+</p>
+
+<p>
+The assessment was performed based on information and access provided at the
+time of testing. The findings documented in this report represent a snapshot
+of the application’s security posture during the assessment period.
+</p>
+
+<p>
+No guarantee is provided that all security vulnerabilities have been identified.
+The presence of vulnerabilities depends on many factors, including system
+configuration changes, third‑party integrations, and updates performed after
+the assessment.
+</p>
+
+<p>
+This report contains confidential information and must not be disclosed,
+reproduced, or distributed to any third party without prior written consent
+from <strong>{{ report.client_name }}</strong>.
+</p>
+
+<div class="page-break"></div>
+
+
+<!-- ================= EXECUTIVE SUMMARY ================= -->
+<h2 id="executive-summary">1. Executive Summary</h2>
+
+<p>
+Web application vulnerability assessment and penetration testing was conducted
+for <strong>{{ report.client_name }}</strong> on the application
+<strong>{{ report.application_name }}</strong>.
+</p>
+
+<table class="summary-table">
+  <thead>
+    <tr>
+      <th>Severity</th>
+      <th>Count</th>
+      <th>Risk Level</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="color:#d32f2f;font-weight:bold;">Critical</td>
+      <td>{{ summary.severity.critical }}</td>
+      <td>Immediate remediation required</td>
+    </tr>
+    <tr>
+      <td style="color:#f57c00;font-weight:bold;">High</td>
+      <td>{{ summary.severity.high }}</td>
+      <td>High risk to application security</td>
+    </tr>
+    <tr>
+      <td style="color:#fbc02d;font-weight:bold;">Medium</td>
+      <td>{{ summary.severity.medium }}</td>
+      <td>Moderate security concern</td>
+    </tr>
+    <tr>
+      <td style="color:#388e3c;font-weight:bold;">Low</td>
+      <td>{{ summary.severity.low }}</td>
+      <td>Low impact, best‑practice fixes</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ================= DETAILED FINDINGS ================= -->
+<h2 id="findings">3. Detailed Findings</h2>
+
+{% for f in findings %}
+<table class="finding-table">
+
+  <tr>
+    <td class="label-cell">Vulnerability #{{ forloop.counter }}</td>
+    <td class="value-cell">
+      <strong>{{ f.final_title }}</strong>
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label-cell">Severity</td>
+    <td class="
+      {% if f.final_severity == 'CRITICAL' %}severity-critical
+      {% elif f.final_severity == 'HIGH' %}severity-high
+      {% elif f.final_severity == 'MEDIUM' %}severity-medium
+      {% else %}severity-low{% endif %}
+    ">
+      {{ f.final_severity}}
+    </td>
+  </tr>
+
+<tr>
+  <td class="label-cell">Description</td>
+  <td class="value-cell">
+    {{ f.final_description|linebreaks }}
+  </td>
+</tr>
+
+<tr>
+  <td class="label-cell">Implication</td>
+  <td class="value-cell">
+    {{ f.final_impact|linebreaks }}
+  </td>
+</tr>
+
+<tr>
+  <td class="label-cell">Recommendation</td>
+  <td class="value-cell">
+    {{ f.final_remediation|linebreaks }}
+  </td>
+</tr>
+
+
+  <!-- ✅ Evidence LAST -->
+<tr>
+    <td class="label-cell">Evidence</td>
+    <td class="value-cell">
+
+        {% if f.evidences.all %}
+            {% for e in f.evidences.all %}
+
+                <div style="margin-bottom:20px;">
+                    <p><strong>{{ e.title }}</strong></p>
+
+                    {% if e.file %}
+        {% if is_pdf %}
+  <img src="{{ e.file.path|file_uri }}" style="max-width:100%; margin-bottom:15px;">
+{% else %}
+  <img src="{{ MEDIA_URL }}{{ e.file.name }}" style="max-width:100%; margin-bottom:15px;">
+{% endif %}
+
+
+
+                    {% endif %}
+
+                    {% if e.description %}
+                        <p style="margin-top:8px;">{{ e.description }}</p>
+                    {% endif %}
+                </div>
+
+            {% endfor %}
+        {% else %}
+            <em>No evidence provided.</em>
+        {% endif %}
+
+    </td>
+</tr>
+
+
+</table>
+
+<div style="height: 40px;"></div>
+{% endfor %}
+
+<div class="page-break"></div> 
+
+<!-- ================= ACTION PLAN ================= -->
+
+<h2 id="action-plan">4. Action Plan</h2>
+
+<p>
+During the assessment of the <strong>{{ report.application_name }}</strong>
+application, the following security issues were identified:
+{% if action_plan.severity_count.CRITICAL %}
+<strong>{{ action_plan.severity_count.CRITICAL }} Critical</strong>,
+{% endif %}
+{% if action_plan.severity_count.HIGH %}
+<strong>{{ action_plan.severity_count.HIGH }} High</strong>,
+{% endif %}
+{% if action_plan.severity_count.MEDIUM %}
+<strong>{{ action_plan.severity_count.MEDIUM }} Medium</strong>
+{% endif %}
+severity vulnerabilities.
+</p>
+
+<p>
+It is recommended that these issues be addressed on a priority basis to
+reduce the risk of potential exploitation and improve the overall security
+posture of the application.
+</p>
+
+<p><strong>Recommended remediation actions include:</strong></p>
+
+<ul style="margin-left: 25px; line-height: 1.8;">
+  {% for action in action_plan.actions %}
+    <li>{{ action }}</li>
+  {% endfor %}
+</ul>
+
+{% if action_plan.severity_count.LOW %}
+{% endif %}
+
+
+<div class="page-break"></div>
+
+<!-- ================= CONCLUSION ================= -->
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>
+The vulnerability assessment conducted for
+<strong>{{ report.client_name }}</strong> on the application
+<strong>{{ report.application_name }}</strong> identified multiple security
+weaknesses of varying severity levels.
+</p>
+
+<p>
+Critical and high‑severity vulnerabilities pose a significant risk and should be
+addressed on a priority basis to reduce the likelihood of exploitation.
+Medium and low‑severity issues, while less critical, should also be remediated
+to strengthen the overall security posture of the application.
+</p>
+
+<p>
+Implementing the recommended remediation measures outlined in this report will
+help improve the application’s resilience against common attack vectors and
+reduce exposure to potential threats.
+</p>
+
+<p>
+Regular security assessments, secure coding practices, and continuous monitoring
+are strongly recommended to maintain an acceptable security baseline and ensure
+ongoing protection.
+</p>
+
+{% endblock %}
