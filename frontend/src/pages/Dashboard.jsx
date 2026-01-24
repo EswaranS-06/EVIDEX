@@ -1,66 +1,219 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import MainLayout from '../components/MainLayout';
-import { Search, Plus, Edit2, Trash2, CheckCircle, Lock, Calendar, FileText } from 'lucide-react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { Search, Plus, Edit2, Trash2, CheckCircle, Lock, Calendar, FileText, User as UserIcon } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
     const navigate = useNavigate();
-    // Mock Data
-    const [reports] = useState([
-        { id: 1, name: 'Web Application Penetration Test - Client A', date: 'Oct 10, 2025', status: 'Completed', locked: false },
-        { id: 2, name: 'API Security Assessment - Client B', date: 'Jan 05, 2026', status: 'In Progress', locked: false },
-        { id: 3, name: 'Internal Network Audit - Client C', date: 'Dec 12, 2025', status: 'Verified', locked: false },
-    ]);
+    const { setIsCollapsed } = useOutletContext();
+
+    const [statusFilter, setStatusFilter] = useState('All');
+
+    // Real Data State
+    const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [stats, setStats] = useState({
+        'Draft': 0,
+        'In Progress': 0,
+        'Completed': 0,
+        'Verified': 0,
+        'Total': 0
+    });
+
+    useEffect(() => {
+        fetchReports();
+    }, []);
+
+    const fetchReports = async () => {
+        try {
+            const response = await api.get('/api/reports/');
+            const data = response.data;
+            setReports(data);
+
+            // Calculate Stats
+            const newStats = {
+                'Draft': data.filter(r => r.status === 'Draft').length,
+                'In Progress': data.filter(r => r.status === 'In Progress').length,
+                'Completed': data.filter(r => r.status === 'Completed').length,
+                'Verified': data.filter(r => r.status === 'Verified').length,
+                'Total': data.length
+            };
+            setStats(newStats);
+        } catch (err) {
+            console.error("Failed to fetch reports:", err);
+            setError("Failed to load reports.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredReports = reports.filter(r => statusFilter === 'All' || r.status === statusFilter);
+
+    const getSeverityBg = (sev) => {
+        switch (sev) {
+            case 'Critical': return 'rgba(142, 45, 226, 0.1)';
+            case 'High': return 'rgba(255, 77, 109, 0.1)';
+            case 'Medium': return 'rgba(254, 228, 64, 0.1)';
+            case 'Low': return 'rgba(0, 240, 255, 0.1)';
+            default: return 'var(--glass-bg)';
+        }
+    };
+
+    const getSeverityColor = (sev) => {
+        switch (sev) {
+            case 'Critical': return 'var(--color-secondary)';
+            case 'High': return 'var(--color-error)';
+            case 'Medium': return 'var(--color-warning)';
+            case 'Low': return 'var(--color-primary)';
+            default: return 'var(--color-border)';
+        }
+    };
 
     return (
-        <MainLayout>
-            <div className="dashboard-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                {/* Top Bar: Search and Actions */}
-                <div className="top-bar glass-panel" style={{
-                    padding: '16px 24px',
-                    marginBottom: '24px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
+        <div className="dashboard-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{ marginBottom: '32px' }}>
+                {/* Header content removed per user request */}
+            </div>
+
+            {/* Top Bar: Search and Actions */}
+            <div className="top-bar glass-panel" style={{
+                padding: '16px 24px',
+                marginBottom: '24px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+            }}>
+                <div className="search-bar" style={{ position: 'relative', width: '400px' }}>
+                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                    <input
+                        type="text"
+                        className="input-field"
+                        placeholder="Search reports..."
+                        style={{ width: '100%', paddingLeft: '40px', background: 'rgba(0,0,0,0.2)' }}
+                    />
+                </div>
+
+                <button className="btn btn-primary" onClick={() => {
+                    setIsCollapsed(true);
+                    navigate('/report/new');
                 }}>
-                    <div className="search-bar" style={{ position: 'relative', width: '400px' }}>
-                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                        <input
-                            type="text"
-                            className="input-field"
-                            placeholder="Search reports..."
-                            style={{ width: '100%', paddingLeft: '40px', background: 'rgba(0,0,0,0.2)' }}
-                        />
-                    </div>
+                    <Plus size={18} style={{ marginRight: '8px' }} />
+                    NEW REPORT
+                </button>
+            </div>
 
-                    <button className="btn btn-primary" onClick={() => navigate('/report/new')}>
-                        <Plus size={18} style={{ marginRight: '8px' }} />
-                        NEW REPORT
-                    </button>
+            {/* Stats Row */}
+            <div style={{ marginBottom: '32px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <div
+                    className="glass-panel"
+                    onClick={() => setStatusFilter(statusFilter === 'Draft' ? 'All' : 'Draft')}
+                    style={{
+                        padding: '16px 20px',
+                        flex: '1 1 150px',
+                        borderLeft: '4px solid var(--color-text-muted)',
+                        cursor: 'pointer',
+                        transform: statusFilter === 'Draft' ? 'translateY(-4px)' : 'none',
+                        borderColor: statusFilter === 'Draft' ? 'var(--color-primary)' : 'var(--color-border)',
+                        boxShadow: statusFilter === 'Draft' ? 'var(--shadow-glow)' : 'var(--shadow-card)',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
+                    <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>Draft</h3>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '800' }}>{stats.Draft}</div>
                 </div>
 
-                {/* Stats Row */}
-                <div style={{ marginBottom: '24px', display: 'flex', gap: '20px' }}>
-                    <div className="glass-panel" style={{ padding: '20px', flex: 1 }}>
-                        <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '5px' }}>In Progress</h3>
-                        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>1</div>
-                    </div>
-                    <div className="glass-panel" style={{ padding: '20px', flex: 1 }}>
-                        <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '5px' }}>Completed</h3>
-                        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-success)' }}>2</div>
-                    </div>
-                    <div className="glass-panel" style={{ padding: '20px', flex: 1, background: 'linear-gradient(135deg, rgba(30,36,51,0.8), rgba(112,0,255,0.1))' }}>
-                        <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '5px' }}>Total Reports</h3>
-                        <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{reports.length}</div>
-                    </div>
+                <div
+                    className="glass-panel"
+                    onClick={() => setStatusFilter(statusFilter === 'In Progress' ? 'All' : 'In Progress')}
+                    style={{
+                        padding: '16px 20px',
+                        flex: '1 1 150px',
+                        borderLeft: '4px solid var(--color-primary)',
+                        cursor: 'pointer',
+                        transform: statusFilter === 'In Progress' ? 'translateY(-4px)' : 'none',
+                        borderColor: statusFilter === 'In Progress' ? 'var(--color-primary)' : 'var(--color-border)',
+                        boxShadow: statusFilter === 'In Progress' ? 'var(--shadow-glow)' : 'var(--shadow-card)',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
+                    <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>In Progress</h3>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--color-primary)' }}>{stats['In Progress']}</div>
                 </div>
 
-                {/* Reports List */}
-                <div className="reports-list">
-                    <h2 style={{ marginBottom: '20px', fontSize: '1.25rem' }}>Recent Reports</h2>
+                <div
+                    className="glass-panel"
+                    onClick={() => setStatusFilter(statusFilter === 'Completed' ? 'All' : 'Completed')}
+                    style={{
+                        padding: '16px 20px',
+                        flex: '1 1 150px',
+                        borderLeft: '4px solid var(--color-success)',
+                        cursor: 'pointer',
+                        transform: statusFilter === 'Completed' ? 'translateY(-4px)' : 'none',
+                        borderColor: statusFilter === 'Completed' ? 'var(--color-success)' : 'var(--color-border)',
+                        boxShadow: statusFilter === 'Completed' ? '0 0 15px rgba(0, 245, 212, 0.2)' : 'var(--shadow-card)',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
+                    <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>Completed</h3>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--color-success)' }}>{stats.Completed}</div>
+                </div>
+
+                <div
+                    className="glass-panel"
+                    onClick={() => setStatusFilter(statusFilter === 'Verified' ? 'All' : 'Verified')}
+                    style={{
+                        padding: '16px 20px',
+                        flex: '1 1 150px',
+                        borderLeft: '4px solid #00d2ff',
+                        cursor: 'pointer',
+                        transform: statusFilter === 'Verified' ? 'translateY(-4px)' : 'none',
+                        borderColor: statusFilter === 'Verified' ? '#00d2ff' : 'var(--color-border)',
+                        boxShadow: statusFilter === 'Verified' ? '0 0 15px rgba(0, 210, 255, 0.2)' : 'var(--shadow-card)',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
+                    <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>Verified</h3>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#00d2ff' }}>{stats.Verified}</div>
+                </div>
+
+                <div
+                    className="glass-panel"
+                    onClick={() => setStatusFilter('All')}
+                    style={{
+                        padding: '16px 20px',
+                        flex: '1 1 150px',
+                        borderLeft: '4px solid var(--color-secondary)',
+                        background: 'linear-gradient(135deg, rgba(142,45,226,0.1), rgba(0,240,255,0.05))',
+                        cursor: 'pointer',
+                        transform: statusFilter === 'All' ? 'translateY(-4px)' : 'none',
+                        boxShadow: statusFilter === 'All' ? '0 0 15px rgba(142, 45, 226, 0.2)' : 'var(--shadow-card)',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
+                    <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>Total Reports</h3>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '800' }}>{stats.Total}</div>
+                </div>
+            </div>
+
+            {/* Dashboard Bottom Row: Reports and OWASP Chart */}
+            <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start' }}>
+
+                {/* Reports List - LEFT SIDE */}
+                <div className="reports-list" style={{ flex: '1.8' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h2 style={{ fontSize: '1.25rem' }}>
+                            {statusFilter === 'All' ? 'Recent Reports' : `${statusFilter} Reports`}
+                        </h2>
+                        {statusFilter !== 'All' && (
+                            <button className="btn btn-ghost" onClick={() => setStatusFilter('All')} style={{ fontSize: '0.75rem' }}>
+                                Clear Filter ×
+                            </button>
+                        )}
+                    </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {reports.map(report => (
+                        {filteredReports.map(report => (
                             <div
                                 key={report.id}
                                 className="glass-panel"
@@ -70,11 +223,22 @@ const Dashboard = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
-                                    transition: 'transform 0.2s',
-                                    cursor: 'pointer'
+                                    transition: 'all 0.2s ease',
+                                    cursor: 'pointer',
+                                    background: report.status === 'Completed' ? getSeverityBg(report.severity) : 'var(--glass-bg)',
+                                    borderLeft: report.status === 'Completed' ? `6px solid ${getSeverityColor(report.severity)}` : '1px solid var(--color-border)',
+                                    borderColor: report.status === 'Completed' ? getSeverityColor(report.severity) : 'var(--glass-border)'
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    if (report.status === 'Completed') {
+                                        e.currentTarget.style.boxShadow = `0 10px 30px ${getSeverityBg(report.severity)}`;
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'var(--shadow-card)';
+                                }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                     <div style={{
@@ -91,10 +255,10 @@ const Dashboard = () => {
                                     </div>
 
                                     <div>
-                                        <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{report.name}</h3>
+                                        <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{report.client_name} - {report.application_name}</h3>
                                         <div style={{ display: 'flex', gap: '15px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <Calendar size={14} /> {report.date}
+                                                <Calendar size={14} /> {new Date(report.create_at || report.start_date || Date.now()).toLocaleDateString()}
                                             </span>
                                             <span style={{
                                                 color: report.status === 'Completed' ? 'var(--color-success)' : 'var(--color-primary)',
@@ -104,6 +268,9 @@ const Dashboard = () => {
                                                 fontSize: '0.75rem'
                                             }}>
                                                 {report.status}
+                                            </span>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                📝 {report.findings_count || 0} Findings
                                             </span>
                                         </div>
                                     </div>
@@ -124,13 +291,21 @@ const Dashboard = () => {
                         ))}
                     </div>
 
-                    {/* Sketch "NUM OF REPORT" implementation */}
-                    <div style={{ marginTop: '20px', textAlign: 'right', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                        Num of Reports: {reports.length}
+                    <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'center' }}>
+                        <button
+                            className="btn btn-neon"
+                            onClick={() => navigate('/reports')}
+                            style={{ padding: '12px 40px', fontSize: '1rem' }}
+                        >
+                            View All Reports
+                        </button>
                     </div>
                 </div>
+
+                {/* OWASP Chart removed per user request */}
+
             </div>
-        </MainLayout>
+        </div>
     );
 };
 

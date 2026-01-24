@@ -79,6 +79,9 @@ class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
 # -------------------------
 
 class ReportSerializer(serializers.ModelSerializer):
+    findings_count = serializers.SerializerMethodField()
+    severity_counts = serializers.SerializerMethodField()
+
     class Meta:
         model = Report
         fields = [
@@ -89,6 +92,9 @@ class ReportSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "prepared_by",
+            "findings_count",
+            "severity_counts",
+            "status", # Added status field
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
@@ -102,6 +108,22 @@ class ReportSerializer(serializers.ModelSerializer):
                 "Start date cannot be after end date."
             )
         return data
+
+    def get_findings_count(self, obj):
+        return obj.findings.count()
+
+    def get_severity_counts(self, obj):
+        counts = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0}
+        # Efficiently iterate without N+1 (prefetched in view)
+        for finding in obj.findings.all():
+            sev = finding.final_severity
+            if sev in counts:
+                counts[sev] += 1
+            elif sev: # Handle case-sensitivity or other values if needed
+                capitalized = sev.capitalize()
+                if capitalized in counts:
+                    counts[capitalized] += 1
+        return counts
 
 
 # -------------------------

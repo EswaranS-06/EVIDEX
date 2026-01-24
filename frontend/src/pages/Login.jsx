@@ -3,16 +3,22 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Shield, Lock, User } from 'lucide-react';
 import '../styles/Auth.css';
 
+import { useAuth } from '../context/AuthContext';
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [localError, setLocalError] = useState('');
+    const { login, error: authError } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Login attempt:', { email, password });
-        // Navigate to dashboard mock
-        navigate('/dashboard');
+        setLocalError('');
+        const success = await login(email, password);
+        if (success) {
+            navigate('/dashboard');
+        }
     };
 
     return (
@@ -28,6 +34,21 @@ const Login = () => {
                     </div>
                     <h2 className="auth-title">Welcome Back</h2>
                     <p className="auth-subtitle">Sign in to access your pentest reports</p>
+
+                    {(authError || localError) && (
+                        <div style={{
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            color: '#ef4444',
+                            padding: '10px',
+                            borderRadius: '8px',
+                            fontSize: '0.875rem',
+                            marginTop: '1rem',
+                            textAlign: 'center',
+                            border: '1px solid rgba(239, 68, 68, 0.2)'
+                        }}>
+                            {authError || localError}
+                        </div>
+                    )}
                 </div>
 
                 <form onSubmit={handleSubmit}>

@@ -3,25 +3,41 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Shield, Lock, User, Mail, Briefcase } from 'lucide-react';
 import '../styles/Auth.css';
 
+import { useAuth } from '../context/AuthContext';
+
 const Signup = () => {
     const [formData, setFormData] = useState({
-        fullName: '',
+        username: '', // Changed from fullName/email to match backend if needed
         email: '',
-        role: 'pentester',
         password: '',
         confirmPassword: ''
     });
-
+    const [localError, setLocalError] = useState('');
+    const { register, error: authError } = useAuth();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Signup attempt:', formData);
-        navigate('/dashboard');
+        setLocalError('');
+
+        if (formData.password !== formData.confirmPassword) {
+            setLocalError('Passwords do not match');
+            return;
+        }
+
+        const success = await register({
+            username: formData.username,
+            email: formData.email,
+            password: formData.password
+        });
+
+        if (success) {
+            navigate('/login');
+        }
     };
 
     return (
@@ -37,20 +53,35 @@ const Signup = () => {
                     </div>
                     <h2 className="auth-title">Create Account</h2>
                     <p className="auth-subtitle">Join the professional pentesting platform</p>
+
+                    {(authError || localError) && (
+                        <div style={{
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            color: '#ef4444',
+                            padding: '10px',
+                            borderRadius: '8px',
+                            fontSize: '0.875rem',
+                            marginTop: '1rem',
+                            textAlign: 'center',
+                            border: '1px solid rgba(239, 68, 68, 0.2)'
+                        }}>
+                            {authError || localError}
+                        </div>
+                    )}
                 </div>
 
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">
-                        <label className="input-label">Full Name</label>
+                        <label className="input-label">Username</label>
                         <div style={{ position: 'relative' }}>
                             <User size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
                             <input
                                 type="text"
-                                name="fullName"
+                                name="username"
                                 className="input-field"
-                                placeholder="John Doe"
+                                placeholder="johndoe"
                                 style={{ paddingLeft: '40px', width: '100%' }}
-                                value={formData.fullName}
+                                value={formData.username}
                                 onChange={handleChange}
                                 required
                             />
@@ -85,6 +116,23 @@ const Signup = () => {
                                 placeholder="••••••••"
                                 style={{ paddingLeft: '40px', width: '100%' }}
                                 value={formData.password}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="input-group">
+                        <label className="input-label">Confirm Password</label>
+                        <div style={{ position: 'relative' }}>
+                            <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
+                            <input
+                                type="password"
+                                name="confirmPassword"
+                                className="input-field"
+                                placeholder="••••••••"
+                                style={{ paddingLeft: '40px', width: '100%' }}
+                                value={formData.confirmPassword}
                                 onChange={handleChange}
                                 required
                             />
