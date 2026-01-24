@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getEvidence, uploadEvidence, deleteEvidence } from '../api/evidence';
 
 import { ChevronLeft, RefreshCw, Plus, Upload, File, Trash2, Save } from 'lucide-react';
 
@@ -34,7 +35,13 @@ const FindingDetail = () => {
             setDescription(data.description);
             setImpact(data.impact);
             setRemediation(data.remediation);
-            if (data.evidence) setEvidenceList(data.evidence);
+            if (data.evidence) {
+                // If evidence matches local format (with file objects), it might break. 
+                // But since we are moving to backend, we ignore local evidence for display if possible,
+                // or we rely on the separate evidence fetch.
+                // Let's not load evidence from local storage if we are fetching from API
+                // setEvidenceList(data.evidence); 
+            }
         } else if (!isNew) {
             // Use defaults if editing existing but no local changes yet
             setTitle(defaults.title);
@@ -96,19 +103,41 @@ const FindingDetail = () => {
         }
     };
 
-    const handleAddEvidence = () => {
-        if (!newEvidence.title) return; // Simple validation
+    const fetchEvidence = async () => {
+        try {
+            const data = await getEvidence(id);
+            setEvidenceList(data);
+        } catch (error) {
+            console.error('Failed to fetch evidence', error);
+        }
+    };
 
-        setEvidenceList([
-            ...evidenceList,
-            {
-                id: Date.now(),
-                step: evidenceList.length + 1,
-                ...newEvidence
-            }
-        ]);
-        setNewEvidence({ title: '', file: null, notes: '' });
-        setShowUploadForm(false);
+    useEffect(() => {
+        if (!isNew) {
+            fetchEvidence();
+        }
+    }, [id, isNew]);
+
+    const handleAddEvidence = async () => {
+        if (!newEvidence.title || !newEvidence.file) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('title', newEvidence.title);
+            formData.append('file', newEvidence.file);
+            formData.append('description', newEvidence.notes); // backend expects 'description'
+
+            await uploadEvidence(id, formData);
+
+            // Refresh list
+            await fetchEvidence();
+
+            setNewEvidence({ title: '', file: null, notes: '' });
+            setShowUploadForm(false);
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert("Failed to upload evidence");
+        }
     };
 
     const handleSave = () => {
@@ -298,25 +327,37 @@ const FindingDetail = () => {
             <div style={{ marginBottom: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                     <h2 style={{ fontSize: '1.25rem' }}>Evidence</h2>
-                    {!showUploadForm && (
+                    {!showUploadForm && !isNew && (
                         <button className="btn btn-primary" onClick={() => setShowUploadForm(true)}>
                             <Plus size={18} style={{ marginRight: '5px' }} /> Add Evidence
                         </button>
                     )}
+                    {isNew && <span style={{ color: 'var(--color-text-muted)' }}>Save finding to add evidence</span>}
                 </div>
 
                 {/* Evidence List */}
                 {evidenceList.map((item, index) => (
                     <div key={item.id} className="glass-panel" style={{ padding: '20px', marginBottom: '16px', position: 'relative' }}>
                         <div style={{ position: 'absolute', top: '20px', right: '20px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-                            Evidence {index + 1}
+                            {/* Evidence Index */}
                         </div>
                         <h3 style={{ marginBottom: '10px', fontSize: '1.1rem' }}>{item.title}</h3>
-                        {item.notes && <p style={{ color: 'var(--color-text-muted)', marginBottom: '15px', fontSize: '0.9rem' }}>{item.notes}</p>}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px' }}>
-                            <File size={20} className="text-secondary" style={{ color: 'var(--color-primary)' }} />
-                            <span style={{ fontSize: '0.9rem' }}>{item.file ? item.file.name : 'screenshot_mock.png'}</span>
-                        </div>
+                        {item.description && <p style={{ color: 'var(--color-text-muted)', marginBottom: '15px', fontSize: '0.9rem' }}>{item.description}</p>}
+
+                        {/* Display Image */}
+                        {item.file && (typeof item.file === 'string' ? (
+                            <div style={{ marginTop: '10px' }}>
+                                <img src={item.file} alt={item.title} style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '8px' }} />
+                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '5px' }}>
+                                    <a href={item.file} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)' }}>View Full Size</a>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px' }}>
+                                <File size={20} className="text-secondary" style={{ color: 'var(--color-primary)' }} />
+                                <span style={{ fontSize: '0.9rem' }}>{item.file.name}</span>
+                            </div>
+                        ))}
                     </div>
                 ))}
 
