@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { Search, Plus, Edit2, Trash2, CheckCircle, Lock, Calendar, FileText, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -225,15 +226,12 @@ const Dashboard = () => {
                                     justifyContent: 'space-between',
                                     transition: 'all 0.2s ease',
                                     cursor: 'pointer',
-                                    background: report.status === 'Completed' ? getSeverityBg(report.severity) : 'var(--glass-bg)',
-                                    borderLeft: report.status === 'Completed' ? `6px solid ${getSeverityColor(report.severity)}` : '1px solid var(--color-border)',
-                                    borderColor: report.status === 'Completed' ? getSeverityColor(report.severity) : 'var(--glass-border)'
+                                    background: 'var(--glass-bg)',
+                                    borderLeft: '4px solid var(--color-primary)', // Default accent
+                                    borderColor: 'var(--glass-border)'
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-2px)';
-                                    if (report.status === 'Completed') {
-                                        e.currentTarget.style.boxShadow = `0 10px 30px ${getSeverityBg(report.severity)}`;
-                                    }
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.transform = 'translateY(0)';
@@ -258,7 +256,7 @@ const Dashboard = () => {
                                         <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{report.client_name} - {report.application_name}</h3>
                                         <div style={{ display: 'flex', gap: '15px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <Calendar size={14} /> {new Date(report.create_at || report.start_date || Date.now()).toLocaleDateString()}
+                                                <Calendar size={14} /> {new Date(report.created_at || report.start_date || Date.now()).toLocaleDateString()}
                                             </span>
                                             <span style={{
                                                 color: report.status === 'Completed' ? 'var(--color-success)' : 'var(--color-primary)',

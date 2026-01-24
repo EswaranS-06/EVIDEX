@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../api/axios';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { Calendar, Globe, CheckCircle, Edit2, Eye, Plus, ChevronLeft, Save } from 'lucide-react';
@@ -8,83 +9,168 @@ const ReportDetails = () => {
     const navigate = useNavigate();
     const isNew = id === 'new';
 
-    // Mock Data State
+    // Data State
     const [report, setReport] = useState({
-        clientName: '',
-        targetUrl: '',
-        startDate: '',
-        endDate: '',
-        scope: '',
+        client_name: '',
+        application_name: '', // Added application_name
+        target: '', // changed from targetUrl
+        start_date: '',
+        end_date: '',
+        report_type: 'Web Application', // default
+        scope: '', // Note: Backend has report_type, frontend has scope. Might map scope to report_type or ignore for now.
         status: 'Draft'
     });
 
-    // Reset state when ID changes
-    React.useEffect(() => {
-        if (isNew) {
-            setReport({
-                clientName: '',
-                targetUrl: '',
-                startDate: '',
-                endDate: '',
-                scope: '',
-                status: 'Draft'
-            });
-        } else {
-            // Mock fetching data based on ID
-            const mockReports = {
-                '1': {
-                    clientName: 'Client A',
-                    targetUrl: 'https://example.com',
-                    startDate: '2025-10-10',
-                    endDate: '2025-10-15',
-                    scope: 'Web Application, API',
-                    status: 'Completed'
-                },
-                '2': {
-                    clientName: 'Client B',
-                    targetUrl: 'https://api.client-b.com',
-                    startDate: '2026-01-05',
-                    endDate: '',
-                    scope: 'API Security',
-                    status: 'In Progress'
-                },
-                '3': {
-                    clientName: 'Client C',
-                    targetUrl: '192.168.1.0/24',
-                    startDate: '2025-12-12',
-                    endDate: '2025-12-20',
-                    scope: 'Internal Network',
-                    status: 'Verified'
+    // Findings State
+    const [findings, setFindings] = useState([]);
+
+    // Fetch Report Data
+    useEffect(() => {
+        if (!isNew) {
+            const fetchReport = async () => {
+                try {
+                    const response = await api.get(`/api/reports/${id}/`);
+                    setReport(response.data);
+
+                    // Fetch findings
+                    const findingsRes = await api.get(`/api/reports/${id}/findings/`);
+                    setFindings(findingsRes.data);
+                } catch (err) {
+                    console.error("Failed to fetch report:", err);
+                    alert("Failed to load report data.");
                 }
             };
-
-            const data = mockReports[id] || mockReports['1']; // Fallback to 1
-            setReport(data);
+            fetchReport();
+        } else {
+            // Reset for new report
+            setReport({
+                client_name: '',
+                application_name: '',
+                target: '',
+                start_date: '',
+                end_date: '',
+                report_type: 'Web Application',
+                status: 'Draft'
+            });
+            setFindings([]);
         }
     }, [id, isNew]);
 
-    const handleSave = () => {
-        alert('Changes saved successfully!');
+    const getSeverityBg = (sev) => {
+        switch (sev) {
+            case 'Critical': return 'rgba(142, 45, 226, 0.1)';
+            case 'High': return 'rgba(255, 77, 109, 0.1)';
+            case 'Medium': return 'rgba(254, 228, 64, 0.1)';
+            case 'Low': return 'rgba(0, 240, 255, 0.1)';
+            default: return 'var(--glass-bg)';
+        }
     };
 
-    const [vulnerabilities, setVulnerabilities] = useState([
-        { id: 1, title: 'SQL Injection', selected: true },
-        { id: 2, title: 'Broken Access Control', selected: true },
-        { id: 3, title: 'XSS Reflected', selected: false },
-    ]);
+    const getSeverityColor = (sev) => {
+        switch (sev) {
+            case 'Critical': return 'var(--color-secondary)';
+            case 'High': return 'var(--color-error)';
+            case 'Medium': return 'var(--color-warning)';
+            case 'Low': return 'var(--color-primary)';
+            default: return 'var(--color-border)';
+        }
+    };
 
-    const [showSidebar, setShowSidebar] = useState(true); // Default open for visibility
+    const handleSave = async () => {
+        try {
+            // Frontend keys might match backend keys now
+            const payload = {
+                client_name: report.client_name,
+                application_name: report.application_name || 'My App', // fallback
+                target: report.target || report.targetUrl, // handle migration
+                start_date: report.start_date || report.startDate,
+                end_date: report.end_date || report.endDate,
+                report_type: report.report_type || 'Web Application',
+                status: report.status || 'Draft',
+                prepared_by: 'Pentester' // Hardcode or get from user context
+            };
+
+            let response;
+            if (isNew) {
+                response = await api.post('/api/reports/', payload);
+                alert('Report created successfully!');
+                navigate(`/report/${response.data.id}`); // Redirect to edit mode
+            } else {
+                response = await api.patch(`/api/reports/${id}/`, payload);
+                alert('Report updated successfully!');
+            }
+        } catch (err) {
+            console.error("Failed to save report:", err);
+            alert("Failed to save report. Check console for details.");
+        }
+    };
+
+    const [showSidebar, setShowSidebar] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredVulnerabilities = vulnerabilities.filter(v =>
-        v.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // OWASP Data State
+    const [owaspCategories, setOwaspCategories] = useState([]);
+    const [selectedVulns, setSelectedVulns] = useState(new Set());
+    const [expandedCategories, setExpandedCategories] = useState(new Set());
+
+    useEffect(() => {
+        const fetchOWASP = async () => {
+            try {
+                const response = await api.get('/api/owasp/categories/');
+                setOwaspCategories(response.data);
+            } catch (err) {
+                console.error("Failed to fetch OWASP categories:", err);
+            }
+        };
+        fetchOWASP();
+    }, []);
+
+    const toggleCategory = (catId) => {
+        const newExpanded = new Set(expandedCategories);
+        if (newExpanded.has(catId)) {
+            newExpanded.delete(catId);
+        } else {
+            newExpanded.add(catId);
+        }
+        setExpandedCategories(newExpanded);
+    };
+
+    const addFinding = async (vulnId) => {
+        if (isNew) {
+            alert("Please save the report first before adding findings.");
+            return;
+        }
+
+        try {
+            await api.post(`/api/reports/${id}/findings/`, {
+                vulnerability_definition_id: vulnId,
+                affected_url: report.target || '/'
+            });
+            // Refresh findings
+            const findingsRes = await api.get(`/api/reports/${id}/findings/`);
+            setFindings(findingsRes.data);
+            alert("Finding added to report!");
+        } catch (err) {
+            console.error("Failed to add finding:", err);
+            alert("Failed to add finding.");
+        }
+    };
+
+    // Filter Logic
+    const filteredCategories = owaspCategories.map(cat => {
+        const matchingVulns = cat.vulnerabilities.filter(v =>
+            v.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        // Include category if it matches name OR has matching vulns
+        if (cat.name.toLowerCase().includes(searchTerm.toLowerCase()) || matchingVulns.length > 0) {
+            return { ...cat, vulnerabilities: matchingVulns }; // Return filtered vulns if searching
+        }
+        return null;
+    }).filter(Boolean);
 
     return (
-
         <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-
             {/* Center Content Area - Resizes based on sidebar */}
             <div style={{
                 flex: 1,
@@ -106,9 +192,12 @@ const ReportDetails = () => {
                         )}
                     </div>
 
-                    {/* Header Section (Metadata) */}
+                    {/* Header Section (Metadata) - SAME AS BEFORE */}
+                    {/* ... (Keep existing Metadata section logic same as previous step, just collapsed here for brevity if replace tool allows partial context match, otherwise I need to include it all. Since I'm replacing the whole center div, I must include it) */}
+
                     <div className="glass-panel" style={{ padding: '30px', marginBottom: '30px', position: 'relative' }}>
                         <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '10px' }}>
+                            {/* ... buttons ... */}
                             <button className="btn btn-ghost" title="Preview">
                                 <Eye size={18} style={{ marginRight: '5px' }} /> PREVIEW
                             </button>
@@ -128,32 +217,43 @@ const ReportDetails = () => {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
-
                             {/* Client Name */}
                             <div className="input-group">
                                 <label className="input-label">Client Name</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    value={report.clientName}
-                                    onChange={(e) => setReport({ ...report, clientName: e.target.value })}
+                                    value={report.client_name || ''}
+                                    onChange={(e) => setReport({ ...report, client_name: e.target.value })}
                                     style={{ fontSize: '1.25rem', fontWeight: 'bold' }}
-                                    disabled={!isEditing}
+                                    disabled={!isEditing && !isNew}
                                 />
                             </div>
 
-                            {/* Target URL */}
+                            {/* Application Name */}
                             <div className="input-group">
-                                <label className="input-label">Target URL</label>
+                                <label className="input-label">Application Name</label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    value={report.application_name || ''}
+                                    onChange={(e) => setReport({ ...report, application_name: e.target.value })}
+                                    disabled={!isEditing && !isNew}
+                                />
+                            </div>
+
+                            {/* Target */}
+                            <div className="input-group">
+                                <label className="input-label">Target URL / IP</label>
                                 <div style={{ position: 'relative' }}>
                                     <Globe size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
                                     <input
                                         type="text"
                                         className="input-field"
-                                        value={report.targetUrl}
-                                        onChange={(e) => setReport({ ...report, targetUrl: e.target.value })}
+                                        value={report.target || ''}
+                                        onChange={(e) => setReport({ ...report, target: e.target.value })}
                                         style={{ paddingLeft: '40px' }}
-                                        disabled={!isEditing}
+                                        disabled={!isEditing && !isNew}
                                     />
                                 </div>
                             </div>
@@ -166,10 +266,10 @@ const ReportDetails = () => {
                                     <input
                                         type="date"
                                         className="input-field"
-                                        value={report.startDate}
-                                        onChange={(e) => setReport({ ...report, startDate: e.target.value })}
+                                        value={report.start_date || ''}
+                                        onChange={(e) => setReport({ ...report, start_date: e.target.value })}
                                         style={{ paddingLeft: '40px' }}
-                                        disabled={!isEditing}
+                                        disabled={!isEditing && !isNew}
                                     />
                                 </div>
                             </div>
@@ -180,23 +280,23 @@ const ReportDetails = () => {
                                     <input
                                         type="date"
                                         className="input-field"
-                                        value={report.endDate}
-                                        onChange={(e) => setReport({ ...report, endDate: e.target.value })}
+                                        value={report.end_date || ''}
+                                        onChange={(e) => setReport({ ...report, end_date: e.target.value })}
                                         style={{ paddingLeft: '40px' }}
-                                        disabled={!isEditing}
+                                        disabled={!isEditing && !isNew}
                                     />
                                 </div>
                             </div>
 
-                            {/* Scope */}
+                            {/* Report Type */}
                             <div className="input-group">
-                                <label className="input-label">Scope</label>
+                                <label className="input-label">Report Type</label>
                                 <input
                                     type="text"
                                     className="input-field"
-                                    value={report.scope}
-                                    onChange={(e) => setReport({ ...report, scope: e.target.value })}
-                                    disabled={!isEditing}
+                                    value={report.report_type || ''}
+                                    onChange={(e) => setReport({ ...report, report_type: e.target.value })}
+                                    disabled={!isEditing && !isNew}
                                 />
                             </div>
 
@@ -205,17 +305,61 @@ const ReportDetails = () => {
                                 <label className="input-label">Status</label>
                                 <select
                                     className="input-field"
-                                    value={report.status}
+                                    value={report.status || 'Draft'}
                                     onChange={(e) => setReport({ ...report, status: e.target.value })}
-                                    disabled={!isEditing}
+                                    disabled={!isEditing && !isNew}
                                 >
-                                    <option>Draft</option>
-                                    <option>In Progress</option>
-                                    <option>Completed</option>
+                                    <option value="Draft">Draft</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Verified">Verified</option>
                                 </select>
                             </div>
                         </div>
                     </div>
+
+
+                    {/* Findings Section */}
+                    {!isNew && (
+                        <div style={{ marginTop: '30px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Findings</h2>
+                                <button className="btn btn-primary" onClick={() => navigate(`/report/${id}/finding/new`)}>
+                                    <Plus size={18} style={{ marginRight: '8px' }} /> Add Custom Finding
+                                </button>
+                            </div>
+
+                            {findings.length === 0 ? (
+                                <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                    <CheckCircle size={48} style={{ marginBottom: '15px', opacity: 0.2 }} />
+                                    <p>No findings added yet.</p>
+                                    <p style={{ fontSize: '0.9rem' }}>Select vulnerabilities from the sidebar or add a custom one.</p>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {findings.map((finding) => (
+                                        <div key={finding.id} className="glass-panel" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: `4px solid ${getSeverityColor(finding.final_severity)}` }}>
+                                            <div>
+                                                <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{finding.final_title}</h3>
+                                                <span style={{
+                                                    fontSize: '0.8rem',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '4px',
+                                                    background: getSeverityBg(finding.final_severity),
+                                                    color: getSeverityColor(finding.final_severity)
+                                                }}>
+                                                    {finding.final_severity}
+                                                </span>
+                                            </div>
+                                            <button className="btn btn-ghost" onClick={() => navigate(`/report/${id}/finding/${finding.id}`)}>
+                                                <Edit2 size={18} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                 </div>
             </div>
@@ -261,36 +405,57 @@ const ReportDetails = () => {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {filteredVulnerabilities.map((vuln, index) => (
-                            <div key={vuln.id} style={{
-                                padding: '16px',
-                                background: vuln.selected ? 'rgba(0, 240, 255, 0.05)' : 'rgba(255,255,255,0.02)',
-                                border: '1px solid var(--color-border)',
-                                borderRadius: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between'
-                            }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={vuln.selected}
-                                        onChange={() => {
-                                            const newVulns = [...vulnerabilities];
-                                            newVulns[index].selected = !newVulns[index].selected;
-                                            setVulnerabilities(newVulns);
-                                        }}
-                                        style={{ width: '18px', height: '18px', accentColor: 'var(--color-primary)' }}
-                                    />
-                                    <div>
-                                        <div style={{ fontWeight: 500, fontSize: '0.9rem', color: vuln.selected ? 'white' : 'var(--color-text-muted)' }}>
-                                            {vuln.title}
-                                        </div>
-                                    </div>
+                        {filteredCategories.map((cat) => (
+                            <div key={cat.id} style={{ border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden' }}>
+                                <div
+                                    onClick={() => toggleCategory(cat.id)}
+                                    style={{
+                                        padding: '12px',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        fontWeight: '600',
+                                        fontSize: '0.9rem'
+                                    }}
+                                >
+                                    <span>{cat.code ? `${cat.code} - ` : ''}{cat.name}</span>
+                                    <ChevronLeft size={16} style={{ transform: expandedCategories.has(cat.id) ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                                 </div>
-                                <button className="btn btn-ghost" style={{ padding: '4px', color: 'var(--color-text-muted)' }} onClick={() => navigate(`/finding/${vuln.id}`)}>
-                                    <Edit2 size={16} />
-                                </button>
+
+                                {expandedCategories.has(cat.id) && (
+                                    <div style={{ padding: '10px', background: 'rgba(0,0,0,0.2)' }}>
+                                        {cat.vulnerabilities.length === 0 ? (
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', padding: '8px' }}>No vulnerabilities found.</div>
+                                        ) : (
+                                            cat.vulnerabilities.map(vuln => (
+                                                <div key={vuln.id} style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    padding: '8px',
+                                                    gap: '10px',
+                                                    borderRadius: '4px',
+                                                    background: selectedVulns.has(vuln.id) ? 'rgba(0, 240, 255, 0.1)' : 'transparent',
+                                                    marginBottom: '4px'
+                                                }}>
+                                                    <button
+                                                        className="btn btn-ghost"
+                                                        style={{ color: 'var(--color-primary)' }}
+                                                        title="Add to Report"
+                                                        onClick={(e) => { e.stopPropagation(); addFinding(vuln.id); }}
+                                                    >
+                                                        <Plus size={16} />
+                                                    </button>
+                                                    <span style={{ fontSize: '0.85rem', flex: 1, color: 'var(--color-text-main)' }}>{vuln.name}</span>
+                                                    <button className="btn btn-ghost" style={{ padding: '4px', color: 'var(--color-text-muted)' }} onClick={() => navigate(`/finding/${vuln.id}`)}>
+                                                        <Edit2 size={14} />
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

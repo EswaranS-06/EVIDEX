@@ -13,18 +13,20 @@ from .models import (
 # OWASP / Vulnerability
 # -------------------------
 
-class OWASPCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OWASPCategory
-        fields = "__all__"
-
-
 class OWASPVulnerabilitySerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField(source="category.name")
 
     class Meta:
         model = OWASPVulnerability
         fields = "__all__"
+
+
+class OWASPCategorySerializer(serializers.ModelSerializer):
+    vulnerabilities = OWASPVulnerabilitySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = OWASPCategory
+        fields = ["id", "name", "description", "vulnerabilities"]
 
 
 class VulnerabilityVariantSerializer(serializers.ModelSerializer):

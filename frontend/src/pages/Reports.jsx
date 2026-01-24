@@ -1,18 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Edit2, Trash2, CheckCircle, Lock, Calendar, FileText } from 'lucide-react';
 
 const Reports = () => {
     const navigate = useNavigate();
+    const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Mock Data
-    const [reports] = useState([
-        { id: 1, name: 'Web Application Penetration Test - Client A', date: 'Oct 10, 2025', status: 'Completed', severity: 'High', locked: false },
-        { id: 2, name: 'API Security Assessment - Client B', date: 'Jan 05, 2026', status: 'In Progress', severity: 'Medium', locked: false },
-        { id: 3, name: 'Internal Network Audit - Client C', date: 'Dec 12, 2025', status: 'Verified', severity: 'Low', locked: false },
-        { id: 4, name: 'Mobile App Pentest - Client D', date: 'Feb 15, 2026', status: 'Draft', severity: 'Low', locked: false },
-        { id: 5, name: 'Cloud Configuration Audit - Client E', date: 'Mar 01, 2026', status: 'In Progress', severity: 'Critical', locked: false },
-    ]);
+    useEffect(() => {
+        fetchReports();
+    }, []);
+
+    const fetchReports = async () => {
+        try {
+            const response = await api.get('/api/reports/');
+            setReports(response.data);
+        } catch (err) {
+            console.error("Failed to fetch reports:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const getSeverityBg = (sev) => {
         switch (sev) {
@@ -37,7 +46,8 @@ const Reports = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredReports = reports.filter(report =>
-        report.name.toLowerCase().includes(searchTerm.toLowerCase())
+        report.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        report.application_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -88,19 +98,21 @@ const Reports = () => {
                                 justifyContent: 'space-between',
                                 transition: 'all 0.2s ease',
                                 cursor: 'pointer',
-                                background: report.status === 'Completed' ? getSeverityBg(report.severity) : 'var(--glass-bg)',
-                                borderLeft: report.status === 'Completed' ? `6px solid ${getSeverityColor(report.severity)}` : '1px solid var(--color-border)',
-                                borderColor: report.status === 'Completed' ? getSeverityColor(report.severity) : 'var(--glass-border)'
+                                padding: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                transition: 'all 0.2s ease',
+                                cursor: 'pointer',
+                                background: 'var(--glass-bg)',
+                                borderLeft: '4px solid var(--color-primary)',
+                                borderColor: 'var(--glass-border)'
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-2px)';
-                                if (report.status === 'Completed') {
-                                    e.currentTarget.style.boxShadow = `0 10px 30px ${getSeverityBg(report.severity)}`;
-                                }
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = 'var(--shadow-card)';
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -118,10 +130,10 @@ const Reports = () => {
                                 </div>
 
                                 <div>
-                                    <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{report.name}</h3>
+                                    <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{report.client_name} - {report.application_name}</h3>
                                     <div style={{ display: 'flex', gap: '15px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <Calendar size={14} /> {report.date}
+                                            <Calendar size={14} /> {new Date(report.created_at || Date.now()).toLocaleDateString()}
                                         </span>
                                         <span style={{
                                             color: report.status === 'Completed' ? 'var(--color-success)' : 'var(--color-primary)',
@@ -132,6 +144,9 @@ const Reports = () => {
                                         }}>
                                             {report.status}
                                         </span>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            📝 {report.findings_count || 0} Findings
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -141,7 +156,7 @@ const Reports = () => {
                                     <Edit2 size={18} />
                                 </button>
                                 <button className="btn btn-ghost" title="Actions" onClick={(e) => e.stopPropagation()}>
-                                    {report.locked ? <Lock size={18} /> : <Trash2 size={18} style={{ color: 'var(--color-error)' }} />}
+                                    <Trash2 size={18} style={{ color: 'var(--color-error)' }} />
                                 </button>
                                 <button className="btn btn-ghost" title="Verify" onClick={(e) => e.stopPropagation()}>
                                     <CheckCircle size={18} style={{ color: 'var(--color-success)' }} />
