@@ -91,6 +91,7 @@ class ReportSerializer(serializers.ModelSerializer):
             "client_name",
             "application_name",
             "report_type",
+            "target",
             "start_date",
             "end_date",
             "prepared_by",
@@ -99,7 +100,7 @@ class ReportSerializer(serializers.ModelSerializer):
             "status", # Added status field
             "created_at",
         ]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "created_by", "created_at"]
 
     def validate(self, data):
         start = data.get("start_date")
