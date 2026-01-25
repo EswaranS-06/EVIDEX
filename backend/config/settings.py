@@ -179,7 +179,7 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=30),  #needs to change....
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),  #needs to change....
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
@@ -208,6 +208,7 @@ MIDDLEWARE = [
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
+    "https://evidex.netlify.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
@@ -219,6 +220,7 @@ CORS_ALLOWED_ORIGINS = [url.strip() for url in CORS_ALLOWED_ORIGINS if url.strip
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://evidex.netlify.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
