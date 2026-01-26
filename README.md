@@ -41,11 +41,10 @@
 uv run python manage.py makemigrations
 uv run python manage.py migrate
 uv run python manage.py seed_roles
-uv run python manage.py seed_owasp
+uv run python manage.py seed_owasp_category
+uv run python manage.py seed_owasp_sub
 uv run python manage.py seed_owasp_variants
-uv run python manage.py seed_owasp_vulnerabilities
-uv run python manage.py seed_owasp_cve_vulnerabilities
-uv run python manage.py seed_cve_vulnerabilities
+uv run python manage.py seed_testcases
 uv run python manage.py runserver
 ```
 

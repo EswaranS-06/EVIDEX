@@ -1,0 +1,2106 @@
+{
+  "testcases": [
+    {
+      "testcase_id": "A01-TC-01",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Broken Access Control",
+      "variant": "Missing Authorization Checks",
+      "title": "Access admin panel without authorization",
+      "severity": "HIGH",
+      "cvss_score": 8.1,
+      "description": "The application allows access to administrative endpoints without validating the user’s authorization level. Requests made by low-privileged users are processed successfully without server-side permission checks.",
+      "impact": [
+        "Unauthorized access to administrative functionality",
+        "Modification or exposure of sensitive system data",
+        "Complete compromise of application security"
+      ],
+      "remediation": [
+        "Implement strict server-side authorization checks",
+        "Validate user roles before granting access to admin endpoints",
+        "Restrict administrative functionality to privileged users only"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A01-TC-02",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Broken Access Control",
+      "variant": "Force Browsing",
+      "title": "Force browsing to restricted URLs",
+      "severity": "HIGH",
+      "cvss_score": 7.9,
+      "description": "Restricted URLs can be accessed directly by entering them in the browser without proper authorization checks. The application does not enforce access control on these endpoints.",
+      "impact": [
+        "Exposure of restricted application functionality",
+        "Unauthorized access to sensitive resources",
+        "Bypass of intended access restrictions"
+      ],
+      "remediation": [
+        "Apply authorization checks to all restricted URLs",
+        "Deny direct access to sensitive endpoints",
+        "Implement centralized access control rules"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A01-TC-03",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Insecure Direct Object Reference (IDOR)",
+      "variant": "IDOR",
+      "title": "Access another user’s data via IDOR",
+      "severity": "HIGH",
+      "cvss_score": 8.6,
+      "description": "By modifying object identifiers in requests, users can access data belonging to other users. The application does not validate ownership of the requested objects.",
+      "impact": [
+        "Exposure of sensitive user data",
+        "Violation of user privacy",
+        "Potential regulatory and compliance issues"
+      ],
+      "remediation": [
+        "Validate object ownership on the server",
+        "Avoid exposing direct object identifiers",
+        "Enforce authorization checks for each request"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A01-TC-04",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Insecure Direct Object Reference (IDOR)",
+      "variant": "IDOR",
+      "title": "Download another user’s document via ID manipulation",
+      "severity": "HIGH",
+      "cvss_score": 8.2,
+      "description": "File identifiers can be altered in download requests to retrieve documents belonging to other users. No ownership validation is performed before serving the file.",
+      "impact": [
+        "Unauthorized access to confidential documents",
+        "Data leakage",
+        "Loss of data confidentiality"
+      ],
+      "remediation": [
+        "Enforce ownership checks on file access",
+        "Restrict access to files based on user context",
+        "Log and monitor unauthorized download attempts"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A01-TC-05",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Privilege Escalation",
+      "variant": "Privilege Escalation",
+      "title": "Privilege escalation via role tampering",
+      "severity": "CRITICAL",
+      "cvss_score": 9.1,
+      "description": "Users can manipulate role-related attributes in requests to elevate their privileges. The server accepts these changes without proper validation.",
+      "impact": [
+        "Unauthorized elevation of user privileges",
+        "Full system compromise",
+        "Loss of access control integrity"
+      ],
+      "remediation": [
+        "Protect role attributes from client-side modification",
+        "Enforce role validation strictly on the server",
+        "Audit and monitor privilege changes"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A01-TC-06",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Privilege Escalation",
+      "variant": "Privilege Escalation",
+      "title": "Reuse admin session token as normal user",
+      "severity": "CRITICAL",
+      "cvss_score": 9.0,
+      "description": "Session tokens associated with administrative users can be reused by normal users. The application does not properly bind session tokens to user roles.",
+      "impact": [
+        "Unauthorized administrative access",
+        "Session hijacking risks",
+        "Compromise of authentication controls"
+      ],
+      "remediation": [
+        "Bind session tokens to specific user roles",
+        "Invalidate sessions on role changes",
+        "Implement secure session management practices"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A01-TC-07",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Missing Function-Level Access Control",
+      "variant": "Missing Authorization Checks",
+      "title": "Invoke restricted backend function directly",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "Backend functions can be invoked directly without authorization checks. The application does not enforce access control at the function level.",
+      "impact": [
+        "Unauthorized execution of sensitive operations",
+        "Business logic abuse",
+        "Security control bypass"
+      ],
+      "remediation": [
+        "Apply authorization checks at function level",
+        "Restrict backend functionality based on roles",
+        "Use centralized authorization mechanisms"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A01-TC-08",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Missing Function-Level Access Control",
+      "variant": "Missing Authorization Checks",
+      "title": "Access internal API endpoint without permission",
+      "severity": "HIGH",
+      "cvss_score": 7.8,
+      "description": "Internal API endpoints are accessible without proper authentication or authorization. Requests are processed without validating user permissions.",
+      "impact": [
+        "Unauthorized access to internal services",
+        "Exposure of internal application logic",
+        "Increased attack surface"
+      ],
+      "remediation": [
+        "Secure internal APIs with authentication",
+        "Enforce authorization checks for internal endpoints",
+        "Limit access to trusted services only"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A01-TC-09",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Broken Access Control",
+      "variant": "Missing Authorization Checks",
+      "title": "Bypass workflow restrictions",
+      "severity": "MEDIUM",
+      "cvss_score": 6.9,
+      "description": "Users can bypass intended business workflows by directly invoking backend endpoints. Workflow state validation is not enforced on the server.",
+      "impact": [
+        "Violation of business rules",
+        "Unauthorized process execution",
+        "Integrity of business logic compromised"
+      ],
+      "remediation": [
+        "Validate workflow states on the server",
+        "Restrict endpoint access based on workflow context",
+        "Implement business logic enforcement controls"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A01-TC-10",
+      "owasp_category": "A01:2025 - Broken Access Control",
+      "owasp_vulnerability": "Broken Access Control",
+      "variant": "Force Browsing",
+      "title": "Access deactivated account resources",
+      "severity": "MEDIUM",
+      "cvss_score": 6.7,
+      "description": "Resources belonging to deactivated accounts remain accessible through direct requests. Access is not properly revoked when accounts are disabled.",
+      "impact": [
+        "Unauthorized access to inactive account resources",
+        "Exposure of sensitive historical data",
+        "Failure to enforce account lifecycle controls"
+      ],
+      "remediation": [
+        "Revoke access immediately upon account deactivation",
+        "Validate account status on every request",
+        "Prevent caching of sensitive resources"
+      ],
+      "references": "OWASP Top 10 A01:2025"
+    },
+    {
+      "testcase_id": "A02-TC-01",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Missing Security Headers",
+      "variant": "Missing Security Headers",
+      "title": "Missing Content-Security-Policy header",
+      "severity": "MEDIUM",
+      "cvss_score": 6.5,
+      "description": "The application does not implement a Content-Security-Policy HTTP header. This allows the browser to load and execute untrusted scripts, increasing the risk of client-side attacks.",
+      "impact": [
+        "Increased risk of cross-site scripting attacks",
+        "Execution of untrusted scripts in user browsers",
+        "Compromise of client-side security controls"
+      ],
+      "remediation": [
+        "Define and enforce a strict Content-Security-Policy",
+        "Restrict script sources to trusted domains",
+        "Regularly review and update security headers"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A02-TC-02",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Missing Security Headers",
+      "variant": "Missing Security Headers",
+      "title": "Missing X-Frame-Options header",
+      "severity": "MEDIUM",
+      "cvss_score": 6.1,
+      "description": "The application does not include the X-Frame-Options HTTP header, allowing it to be embedded within iframes on external websites.",
+      "impact": [
+        "Exposure to clickjacking attacks",
+        "Unauthorized user interaction through UI redressing",
+        "Potential abuse of user actions"
+      ],
+      "remediation": [
+        "Set X-Frame-Options to DENY or SAMEORIGIN",
+        "Prevent framing by untrusted domains",
+        "Validate security headers in production"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A02-TC-03",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Improper CORS Configuration",
+      "variant": "Improper CORS Configuration",
+      "title": "Overly permissive CORS policy allows any origin",
+      "severity": "HIGH",
+      "cvss_score": 7.8,
+      "description": "The server allows cross-origin requests from any domain without restriction. This misconfiguration enables untrusted websites to interact with sensitive APIs.",
+      "impact": [
+        "Unauthorized access to sensitive API data",
+        "Cross-origin data theft",
+        "Bypass of same-origin policy"
+      ],
+      "remediation": [
+        "Restrict allowed origins in CORS configuration",
+        "Allow only trusted domains",
+        "Review CORS policies regularly"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A02-TC-04",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Improper CORS Configuration",
+      "variant": "Improper CORS Configuration",
+      "title": "CORS allows credentials with wildcard origin",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "The CORS configuration allows credentials to be sent while using a wildcard origin. This combination violates security best practices and enables credential abuse.",
+      "impact": [
+        "Session hijacking risks",
+        "Exposure of authenticated user data",
+        "Unauthorized cross-origin access"
+      ],
+      "remediation": [
+        "Disable wildcard origins when allowing credentials",
+        "Explicitly define trusted origins",
+        "Validate CORS settings across environments"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A02-TC-05",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Default Credentials",
+      "variant": "Default Credentials",
+      "title": "Login using default administrator credentials",
+      "severity": "CRITICAL",
+      "cvss_score": 9.0,
+      "description": "The application allows login using default administrator credentials that were never changed after deployment.",
+      "impact": [
+        "Immediate administrative access",
+        "Complete compromise of application security",
+        "Unauthorized configuration changes"
+      ],
+      "remediation": [
+        "Force password changes on first login",
+        "Disable all default credentials",
+        "Enforce strong credential policies"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A02-TC-06",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Default Credentials",
+      "variant": "Default Credentials",
+      "title": "Default database credentials exposed",
+      "severity": "CRITICAL",
+      "cvss_score": 9.2,
+      "description": "Backend services use default database credentials, allowing attackers to authenticate directly to the database.",
+      "impact": [
+        "Complete database compromise",
+        "Unauthorized access to sensitive data",
+        "Potential data destruction or exfiltration"
+      ],
+      "remediation": [
+        "Rotate all default credentials",
+        "Use unique strong passwords for services",
+        "Store credentials securely using secrets management"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A02-TC-07",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Debug Mode Enabled",
+      "variant": "Debug Mode Enabled",
+      "title": "Application running in debug mode in production",
+      "severity": "MEDIUM",
+      "cvss_score": 6.8,
+      "description": "The application is deployed with debug mode enabled in a production environment, exposing internal application details.",
+      "impact": [
+        "Disclosure of sensitive application internals",
+        "Assistance to attackers during exploitation",
+        "Increased attack surface"
+      ],
+      "remediation": [
+        "Disable debug mode in production",
+        "Separate development and production configurations",
+        "Perform configuration reviews before deployment"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A02-TC-08",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Debug Mode Enabled",
+      "variant": "Debug Mode Enabled",
+      "title": "Verbose error messages exposed to users",
+      "severity": "MEDIUM",
+      "cvss_score": 6.6,
+      "description": "The application displays detailed error messages to end users, revealing internal logic and configuration details.",
+      "impact": [
+        "Information disclosure",
+        "Facilitation of targeted attacks",
+        "Exposure of sensitive implementation details"
+      ],
+      "remediation": [
+        "Configure generic error pages",
+        "Log detailed errors securely on the server",
+        "Prevent debug information from reaching users"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A02-TC-09",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Unnecessary Services Enabled",
+      "variant": "Unnecessary Services Enabled",
+      "title": "Unused administrative service exposed",
+      "severity": "HIGH",
+      "cvss_score": 7.5,
+      "description": "Unused administrative services are exposed and accessible from the network without proper restrictions.",
+      "impact": [
+        "Expanded attack surface",
+        "Increased likelihood of exploitation",
+        "Unauthorized system access"
+      ],
+      "remediation": [
+        "Disable unused services",
+        "Restrict access using network controls",
+        "Regularly audit exposed services"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A02-TC-10",
+      "owasp_category": "A02:2025 - Security Misconfiguration",
+      "owasp_vulnerability": "Unnecessary Services Enabled",
+      "variant": "Unnecessary Services Enabled",
+      "title": "Exposed management endpoints",
+      "severity": "HIGH",
+      "cvss_score": 7.7,
+      "description": "Management or monitoring endpoints are exposed without adequate authentication or network restrictions.",
+      "impact": [
+        "Unauthorized system control",
+        "Exposure of operational data",
+        "Potential service disruption"
+      ],
+      "remediation": [
+        "Restrict access to management endpoints",
+        "Apply authentication and network-level controls",
+        "Limit exposure to trusted administrators only"
+      ],
+      "references": "OWASP Top 10 A02:2025"
+    },
+    {
+      "testcase_id": "A03-TC-01",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Vulnerable Third-Party Libraries",
+      "variant": "Outdated Dependency",
+      "title": "Application uses outdated third-party JavaScript library",
+      "severity": "HIGH",
+      "cvss_score": 7.8,
+      "description": "The application relies on an outdated third-party JavaScript library with publicly known security vulnerabilities. These vulnerabilities are exploitable due to lack of timely updates.",
+      "impact": [
+        "Exploitation of known vulnerabilities",
+        "Client-side or server-side compromise",
+        "Increased attack surface"
+      ],
+      "remediation": [
+        "Regularly update third-party libraries",
+        "Monitor vulnerability databases for affected components",
+        "Remove unused or unnecessary dependencies"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A03-TC-02",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Vulnerable Third-Party Libraries",
+      "variant": "Outdated Dependency",
+      "title": "Backend framework version contains known security flaws",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "The backend framework version used by the application contains publicly disclosed vulnerabilities. Attackers can exploit these flaws due to delayed patching.",
+      "impact": [
+        "Remote code execution or privilege escalation",
+        "Unauthorized access to backend systems",
+        "Application instability"
+      ],
+      "remediation": [
+        "Upgrade backend frameworks to secure versions",
+        "Track framework security advisories",
+        "Apply patches promptly"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A03-TC-03",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Outdated Dependencies",
+      "variant": "Outdated Dependency",
+      "title": "Critical dependency has not been patched",
+      "severity": "HIGH",
+      "cvss_score": 7.6,
+      "description": "A critical application dependency remains unpatched despite the availability of security updates. This exposes the application to known attack vectors.",
+      "impact": [
+        "Exploitation through known vulnerabilities",
+        "Loss of application integrity",
+        "Potential data compromise"
+      ],
+      "remediation": [
+        "Apply security patches immediately",
+        "Automate dependency vulnerability scanning",
+        "Establish patch management processes"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A03-TC-04",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Outdated Dependencies",
+      "variant": "Outdated Dependency",
+      "title": "Use of deprecated cryptographic dependency",
+      "severity": "MEDIUM",
+      "cvss_score": 6.9,
+      "description": "The application uses deprecated cryptographic dependencies that are no longer maintained or supported. These components may contain unresolved security weaknesses.",
+      "impact": [
+        "Weak cryptographic protections",
+        "Increased risk of data exposure",
+        "Non-compliance with security standards"
+      ],
+      "remediation": [
+        "Replace deprecated dependencies with secure alternatives",
+        "Review cryptographic components regularly",
+        "Follow modern cryptographic best practices"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A03-TC-05",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Dependency Confusion",
+      "variant": "Dependency Confusion",
+      "title": "Malicious package installed via dependency confusion",
+      "severity": "CRITICAL",
+      "cvss_score": 9.1,
+      "description": "The application resolves dependencies from public repositories before private ones, allowing attackers to introduce malicious packages through dependency confusion.",
+      "impact": [
+        "Execution of attacker-controlled code",
+        "Full compromise of application environment",
+        "Supply chain takeover"
+      ],
+      "remediation": [
+        "Configure package managers to prioritize private repositories",
+        "Use scoped or namespaced packages",
+        "Restrict external dependency resolution"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A03-TC-06",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Dependency Confusion",
+      "variant": "Dependency Confusion",
+      "title": "Private package name collision with public repository",
+      "severity": "CRITICAL",
+      "cvss_score": 9.0,
+      "description": "Private package names collide with packages hosted on public repositories. This allows attackers to publish malicious packages with identical names.",
+      "impact": [
+        "Unauthorized execution of malicious code",
+        "Data compromise",
+        "Loss of trust in build pipeline"
+      ],
+      "remediation": [
+        "Use unique, scoped package names",
+        "Restrict package sources",
+        "Audit dependency resolution paths"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A03-TC-07",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Unverified Package Sources",
+      "variant": "Untrusted Package Source",
+      "title": "Dependencies installed from untrusted third-party repository",
+      "severity": "HIGH",
+      "cvss_score": 8.2,
+      "description": "The application installs dependencies from unverified third-party repositories. These repositories may host compromised or malicious packages.",
+      "impact": [
+        "Malicious code injection",
+        "Compromise of application integrity",
+        "Increased risk of supply chain attacks"
+      ],
+      "remediation": [
+        "Restrict dependency sources to trusted repositories",
+        "Verify repository authenticity",
+        "Monitor third-party supply chain risks"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A03-TC-08",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Unverified Package Sources",
+      "variant": "Untrusted Package Source",
+      "title": "Unsigned dependency packages used in production",
+      "severity": "HIGH",
+      "cvss_score": 7.9,
+      "description": "Dependencies are used without validating their digital signatures. This increases the risk of using tampered or malicious packages.",
+      "impact": [
+        "Execution of modified or malicious code",
+        "Loss of application trustworthiness",
+        "Supply chain compromise"
+      ],
+      "remediation": [
+        "Verify digital signatures of packages",
+        "Use package integrity verification mechanisms",
+        "Reject unsigned or tampered dependencies"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A03-TC-09",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Vulnerable Third-Party Libraries",
+      "variant": "Outdated Dependency",
+      "title": "Third-party API SDK contains known vulnerabilities",
+      "severity": "HIGH",
+      "cvss_score": 7.7,
+      "description": "The third-party API SDK integrated into the application contains publicly disclosed vulnerabilities. These flaws can be exploited by attackers.",
+      "impact": [
+        "Data leakage through vulnerable SDK functions",
+        "Unauthorized API interactions",
+        "Application compromise"
+      ],
+      "remediation": [
+        "Upgrade SDKs to secure versions",
+        "Monitor vendor security advisories",
+        "Remove unused SDK components"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A03-TC-10",
+      "owasp_category": "A03:2025 - Software Supply Chain Failures",
+      "owasp_vulnerability": "Outdated Dependencies",
+      "variant": "Outdated Dependency",
+      "title": "Build pipeline uses outdated build tools",
+      "severity": "MEDIUM",
+      "cvss_score": 6.8,
+      "description": "Build tools used in the CI/CD pipeline are outdated and contain known vulnerabilities. Attackers may target the build process to inject malicious artifacts.",
+      "impact": [
+        "Compromise of build artifacts",
+        "Injection of malicious code into releases",
+        "Loss of supply chain integrity"
+      ],
+      "remediation": [
+        "Update build tools regularly",
+        "Secure and monitor CI/CD pipelines",
+        "Restrict access to build environments"
+      ],
+      "references": "OWASP Top 10 A03:2025"
+    },
+    {
+      "testcase_id": "A04-TC-01",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Weak Encryption Algorithms",
+      "variant": "Weak Encryption",
+      "title": "Use of deprecated encryption algorithm (MD5)",
+      "severity": "HIGH",
+      "cvss_score": 7.8,
+      "description": "The application uses the deprecated MD5 hashing algorithm to protect sensitive data. MD5 is cryptographically broken and vulnerable to collision and brute-force attacks.",
+      "impact": [
+        "Sensitive data can be recovered from cracked hashes",
+        "Compromise of authentication or stored credentials",
+        "Loss of data confidentiality"
+      ],
+      "remediation": [
+        "Replace MD5 with secure hashing algorithms such as SHA-256 or bcrypt",
+        "Apply strong salting mechanisms",
+        "Review all cryptographic implementations regularly"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+    {
+      "testcase_id": "A04-TC-02",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Weak Encryption Algorithms",
+      "variant": "Weak Encryption",
+      "title": "Use of weak symmetric encryption (DES)",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "Sensitive data is encrypted using the DES algorithm, which is considered insecure due to its short key length and known cryptographic weaknesses.",
+      "impact": [
+        "Encrypted data can be decrypted by attackers",
+        "Exposure of confidential information",
+        "Weak protection of sensitive assets"
+      ],
+      "remediation": [
+        "Replace DES with strong encryption algorithms such as AES-256",
+        "Use industry-approved cryptographic standards",
+        "Ensure encryption configurations follow best practices"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+    {
+      "testcase_id": "A04-TC-03",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Hardcoded Cryptographic Keys",
+      "variant": "Hardcoded Secrets",
+      "title": "Hardcoded encryption key found in source code",
+      "severity": "CRITICAL",
+      "cvss_score": 9.1,
+      "description": "Encryption keys are hardcoded directly in the application source code. Anyone with access to the codebase can retrieve and misuse these keys.",
+      "impact": [
+        "Decryption of sensitive encrypted data",
+        "Unauthorized access to protected information",
+        "Complete compromise of cryptographic security"
+      ],
+      "remediation": [
+        "Remove hardcoded keys from source code",
+        "Store keys securely using environment variables or a KMS",
+        "Rotate all exposed or compromised keys"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+    {
+      "testcase_id": "A04-TC-04",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Hardcoded Cryptographic Keys",
+      "variant": "Hardcoded Secrets",
+      "title": "API secret key hardcoded in configuration file",
+      "severity": "CRITICAL",
+      "cvss_score": 9.0,
+      "description": "API secret keys are embedded in configuration files stored in the repository. These files may be accessible to unauthorized users.",
+      "impact": [
+        "Unauthorized access to protected APIs",
+        "Abuse of API functionality",
+        "Exposure of sensitive system operations"
+      ],
+      "remediation": [
+        "Remove secrets from configuration files",
+        "Use secure secrets management solutions",
+        "Rotate and revoke exposed API keys immediately"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+    {
+      "testcase_id": "A04-TC-05",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Insecure Key Management",
+      "variant": "Improper Key Management",
+      "title": "Cryptographic keys are not rotated periodically",
+      "severity": "HIGH",
+      "cvss_score": 7.6,
+      "description": "Cryptographic keys are used for long periods without rotation. Compromised keys remain valid and usable indefinitely.",
+      "impact": [
+        "Extended exposure after key compromise",
+        "Increased risk of data decryption",
+        "Weak cryptographic hygiene"
+      ],
+      "remediation": [
+        "Implement periodic key rotation policies",
+        "Define key lifecycles and expiration periods",
+        "Monitor and audit key usage"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+    {
+      "testcase_id": "A04-TC-06",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Insecure Key Management",
+      "variant": "Improper Key Management",
+      "title": "Improper storage of encryption keys",
+      "severity": "HIGH",
+      "cvss_score": 7.9,
+      "description": "Encryption keys are stored in plaintext on the server or within application files. This allows attackers to retrieve keys after gaining access.",
+      "impact": [
+        "Decryption of sensitive data",
+        "Loss of confidentiality",
+        "Total breakdown of cryptographic controls"
+      ],
+      "remediation": [
+        "Store keys using HSMs or cloud-based KMS solutions",
+        "Encrypt keys at rest",
+        "Restrict access to cryptographic material"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+    {
+      "testcase_id": "A04-TC-07",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Missing Encryption of Sensitive Data",
+      "variant": "Weak Encryption",
+      "title": "Sensitive data transmitted without encryption",
+      "severity": "HIGH",
+      "cvss_score": 8.2,
+      "description": "Sensitive data is transmitted over the network without using TLS encryption. Attackers can intercept traffic through man-in-the-middle attacks.",
+      "impact": [
+        "Interception of sensitive data",
+        "Credential theft",
+        "Loss of data confidentiality"
+      ],
+      "remediation": [
+        "Enforce HTTPS across all endpoints",
+        "Use TLS with secure cipher suites",
+        "Redirect all HTTP traffic to HTTPS"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+    {
+      "testcase_id": "A04-TC-08",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Missing Encryption of Sensitive Data",
+      "variant": "Weak Encryption",
+      "title": "Sensitive data stored without encryption at rest",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "Sensitive user data is stored in plaintext within the database. If the database is compromised, all stored data is exposed.",
+      "impact": [
+        "Full disclosure of sensitive data",
+        "Regulatory and compliance violations",
+        "Severe privacy impact"
+      ],
+      "remediation": [
+        "Encrypt sensitive data at rest",
+        "Use strong encryption algorithms for storage",
+        "Limit database access to authorized components"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+    {
+      "testcase_id": "A04-TC-09",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Weak Encryption Algorithms",
+      "variant": "Weak Encryption",
+      "title": "Use of insecure random number generator for cryptography",
+      "severity": "MEDIUM",
+      "cvss_score": 6.7,
+      "description": "Cryptographic operations rely on predictable or insecure random number generators. This weakens the strength of cryptographic keys and tokens.",
+      "impact": [
+        "Predictable cryptographic outputs",
+        "Weakened encryption strength",
+        "Increased likelihood of cryptographic attacks"
+      ],
+      "remediation": [
+        "Use cryptographically secure random number generators",
+        "Follow platform-recommended cryptographic APIs",
+        "Review randomness sources used in security functions"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+    {
+      "testcase_id": "A04-TC-10",
+      "owasp_category": "A04:2025 - Cryptographic Failures",
+      "owasp_vulnerability": "Insecure Key Management",
+      "variant": "Improper Key Management",
+      "title": "Shared encryption keys used across environments",
+      "severity": "MEDIUM",
+      "cvss_score": 6.9,
+      "description": "The same encryption keys are reused across development, staging, and production environments. A compromise in one environment affects all others.",
+      "impact": [
+        "Cross-environment key compromise",
+        "Increased blast radius of security incidents",
+        "Weakened separation of environments"
+      ],
+      "remediation": [
+        "Use separate keys for each environment",
+        "Restrict key access based on environment",
+        "Implement environment-specific key management policies"
+      ],
+      "references": "OWASP Top 10 A04:2025"
+    },
+     {
+      "testcase_id": "A05-TC-01",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "SQL Injection",
+      "variant": "SQL Injection",
+      "title": "SQL injection via login form",
+      "severity": "CRITICAL",
+      "cvss_score": 9.8,
+      "description": "User input submitted through the login form is concatenated directly into SQL queries. The application fails to validate or parameterize input, allowing attackers to manipulate query logic.",
+      "impact": [
+        "Authentication bypass",
+        "Unauthorized access to sensitive database records",
+        "Complete compromise of backend data"
+      ],
+      "remediation": [
+        "Use parameterized queries or prepared statements",
+        "Validate and sanitize all user inputs",
+        "Implement least-privilege database access"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A05-TC-02",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "SQL Injection",
+      "variant": "SQL Injection",
+      "title": "Blind SQL injection in search functionality",
+      "severity": "HIGH",
+      "cvss_score": 8.6,
+      "description": "The search endpoint is vulnerable to blind SQL injection, where attackers infer database behavior through response timing or error patterns.",
+      "impact": [
+        "Extraction of sensitive database information",
+        "Enumeration of database structure",
+        "Potential data corruption"
+      ],
+      "remediation": [
+        "Use prepared statements for database queries",
+        "Apply strict input validation",
+        "Suppress detailed database error messages"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A05-TC-03",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "Cross-Site Scripting (XSS)",
+      "variant": "XSS",
+      "title": "Stored XSS via user profile field",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "User-supplied input is stored in the application and rendered to other users without proper output encoding, allowing persistent script execution.",
+      "impact": [
+        "Execution of malicious scripts in user browsers",
+        "Session hijacking",
+        "Theft of sensitive user data"
+      ],
+      "remediation": [
+        "Apply proper output encoding",
+        "Validate and sanitize user input",
+        "Use Content Security Policy (CSP)"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A05-TC-04",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "Cross-Site Scripting (XSS)",
+      "variant": "XSS",
+      "title": "Reflected XSS in error message",
+      "severity": "MEDIUM",
+      "cvss_score": 6.5,
+      "description": "The application reflects user-controlled input in error messages without sanitization, enabling script execution via crafted URLs.",
+      "impact": [
+        "Execution of malicious scripts",
+        "Phishing and social engineering attacks",
+        "User session compromise"
+      ],
+      "remediation": [
+        "Escape user input before rendering responses",
+        "Avoid reflecting raw user input in errors",
+        "Implement secure output encoding"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A05-TC-05",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "Command Injection",
+      "variant": "Command Injection",
+      "title": "OS command injection via file name parameter",
+      "severity": "CRITICAL",
+      "cvss_score": 9.4,
+      "description": "User input provided as a file name is passed directly to system-level commands. The application does not restrict or validate command execution.",
+      "impact": [
+        "Remote code execution on the server",
+        "Full system compromise",
+        "Data destruction or exfiltration"
+      ],
+      "remediation": [
+        "Avoid invoking system commands",
+        "Use safe APIs instead of shell execution",
+        "Strictly validate and whitelist input"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A05-TC-06",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "Command Injection",
+      "variant": "Command Injection",
+      "title": "Ping command injection through diagnostic feature",
+      "severity": "CRITICAL",
+      "cvss_score": 9.0,
+      "description": "Diagnostic functionality allows users to execute system commands. Attackers can inject arbitrary OS commands through crafted input.",
+      "impact": [
+        "Complete server compromise",
+        "Execution of malicious payloads",
+        "Loss of system integrity"
+      ],
+      "remediation": [
+        "Disable command execution features",
+        "Use input validation and allowlists",
+        "Run services with minimal privileges"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A05-TC-07",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "LDAP Injection",
+      "variant": "LDAP Injection",
+      "title": "LDAP injection in authentication query",
+      "severity": "HIGH",
+      "cvss_score": 8.2,
+      "description": "User input is directly embedded into LDAP authentication queries without sanitization, allowing attackers to alter query logic.",
+      "impact": [
+        "Authentication bypass",
+        "Unauthorized directory access",
+        "Exposure of sensitive directory data"
+      ],
+      "remediation": [
+        "Use parameterized LDAP queries",
+        "Escape special LDAP characters",
+        "Apply strict input validation"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A05-TC-08",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "LDAP Injection",
+      "variant": "LDAP Injection",
+      "title": "LDAP filter manipulation via search field",
+      "severity": "MEDIUM",
+      "cvss_score": 6.9,
+      "description": "Attackers can manipulate LDAP search filters by injecting special characters into user input.",
+      "impact": [
+        "Unauthorized access to directory information",
+        "Enumeration of directory structure",
+        "Data exposure"
+      ],
+      "remediation": [
+        "Escape LDAP metacharacters",
+        "Validate search input strictly",
+        "Restrict LDAP query permissions"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A05-TC-09",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "NoSQL Injection",
+      "variant": "NoSQL Injection",
+      "title": "NoSQL injection in MongoDB query",
+      "severity": "HIGH",
+      "cvss_score": 8.4,
+      "description": "User input is directly embedded into NoSQL database queries, allowing attackers to manipulate query operators.",
+      "impact": [
+        "Authentication bypass",
+        "Unauthorized access to data",
+        "Database manipulation"
+      ],
+      "remediation": [
+        "Use parameterized NoSQL queries",
+        "Apply schema validation",
+        "Disable dangerous query operators"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A05-TC-10",
+      "owasp_category": "A05:2025 - Injection",
+      "owasp_vulnerability": "NoSQL Injection",
+      "variant": "NoSQL Injection",
+      "title": "JSON-based NoSQL injection in API request",
+      "severity": "HIGH",
+      "cvss_score": 8.1,
+      "description": "The API accepts JSON input that allows injection of NoSQL query operators, leading to unauthorized data access.",
+      "impact": [
+        "Unauthorized access to application data",
+        "Bypass of access controls",
+        "Data exposure"
+      ],
+      "remediation": [
+        "Validate and sanitize JSON input",
+        "Disable operator-based queries from user input",
+        "Enforce strict schema validation"
+      ],
+      "references": "OWASP Top 10 A05:2025"
+    },
+    {
+      "testcase_id": "A06-TC-01",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Missing Threat Modeling",
+      "variant": "Missing Threat Modeling",
+      "title": "No threat modeling performed during application design",
+      "severity": "MEDIUM",
+      "cvss_score": 6.5,
+      "description": "The application was designed without performing formal threat modeling exercises. As a result, potential attack vectors and abuse scenarios were not identified early.",
+      "impact": [
+        "Critical attack paths remain undiscovered",
+        "Higher likelihood of exploitable design flaws",
+        "Increased long-term security risk"
+      ],
+      "remediation": [
+        "Perform threat modeling during the design phase",
+        "Identify assets, threats, and trust boundaries",
+        "Update threat models as the application evolves"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A06-TC-02",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Missing Threat Modeling",
+      "variant": "Missing Threat Modeling",
+      "title": "Abuse cases not identified during design phase",
+      "severity": "MEDIUM",
+      "cvss_score": 6.7,
+      "description": "Potential abuse scenarios were not identified or documented during the design phase. This allows attackers to exploit overlooked functionality.",
+      "impact": [
+        "Exploitation of unanticipated abuse paths",
+        "Bypass of intended security controls",
+        "Weaknesses in business logic protection"
+      ],
+      "remediation": [
+        "Identify abuse and misuse cases during design",
+        "Incorporate security requirements early",
+        "Review designs with security stakeholders"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A06-TC-03",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Business Logic Flaws",
+      "variant": "Business Logic Abuse",
+      "title": "Bypass of payment workflow steps",
+      "severity": "HIGH",
+      "cvss_score": 7.8,
+      "description": "Attackers can manipulate application logic to skip mandatory payment steps. The workflow does not enforce proper state validation.",
+      "impact": [
+        "Financial loss due to unpaid transactions",
+        "Fraudulent abuse of business processes",
+        "Loss of trust in application integrity"
+      ],
+      "remediation": [
+        "Enforce workflow integrity on the server",
+        "Validate workflow state before processing actions",
+        "Implement transaction consistency checks"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A06-TC-04",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Business Logic Flaws",
+      "variant": "Business Logic Abuse",
+      "title": "Unlimited coupon reuse due to flawed business logic",
+      "severity": "HIGH",
+      "cvss_score": 7.6,
+      "description": "Coupons can be reused multiple times due to missing usage validation logic. The system does not enforce redemption limits.",
+      "impact": [
+        "Revenue loss",
+        "Abuse of promotional campaigns",
+        "Breakdown of pricing controls"
+      ],
+      "remediation": [
+        "Implement strict coupon usage validation",
+        "Enforce redemption limits",
+        "Track coupon usage per user or transaction"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A06-TC-05",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Insecure Workflow Design",
+      "variant": "Business Logic Abuse",
+      "title": "Workflow bypass using direct API calls",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "Users can directly invoke API endpoints to bypass intended application workflows. No server-side validation of workflow state is performed.",
+      "impact": [
+        "Unauthorized execution of sensitive actions",
+        "Bypass of business process controls",
+        "Integrity of application logic compromised"
+      ],
+      "remediation": [
+        "Validate workflow state on every API call",
+        "Restrict endpoint access based on workflow context",
+        "Implement centralized workflow enforcement"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A06-TC-06",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Insecure Workflow Design",
+      "variant": "Business Logic Abuse",
+      "title": "Order cancellation allowed after shipment",
+      "severity": "MEDIUM",
+      "cvss_score": 6.8,
+      "description": "The system allows order cancellation even after shipment due to flawed workflow design and missing state checks.",
+      "impact": [
+        "Operational disruptions",
+        "Financial losses",
+        "Customer trust issues"
+      ],
+      "remediation": [
+        "Restrict actions based on workflow state",
+        "Implement strict state transition rules",
+        "Validate order status before processing changes"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A06-TC-07",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Lack of Rate Limiting",
+      "variant": "Lack of Rate Limiting",
+      "title": "Unlimited requests allowed on authentication endpoint",
+      "severity": "HIGH",
+      "cvss_score": 7.9,
+      "description": "Authentication endpoints do not enforce rate limiting. Attackers can send unlimited requests to brute-force credentials.",
+      "impact": [
+        "Brute force and credential stuffing attacks",
+        "Account compromise",
+        "Service degradation"
+      ],
+      "remediation": [
+        "Apply rate limiting on authentication endpoints",
+        "Implement account lockout mechanisms",
+        "Monitor and alert on abnormal request rates"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A06-TC-08",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Lack of Rate Limiting",
+      "variant": "Lack of Rate Limiting",
+      "title": "API allows unlimited requests per client",
+      "severity": "HIGH",
+      "cvss_score": 7.5,
+      "description": "APIs do not enforce request rate limits per user or IP address, allowing excessive and abusive usage.",
+      "impact": [
+        "Denial of service conditions",
+        "Resource exhaustion",
+        "Abuse of application functionality"
+      ],
+      "remediation": [
+        "Implement rate limiting and throttling",
+        "Apply per-user and per-IP limits",
+        "Protect APIs with abuse detection mechanisms"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A06-TC-09",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Business Logic Flaws",
+      "variant": "Business Logic Abuse",
+      "title": "Negative quantity allowed during checkout",
+      "severity": "MEDIUM",
+      "cvss_score": 6.6,
+      "description": "Users can submit negative values for item quantity during checkout. The application does not enforce logical input constraints.",
+      "impact": [
+        "Incorrect order processing",
+        "Financial inconsistencies",
+        "Potential fraud scenarios"
+      ],
+      "remediation": [
+        "Validate numeric input values",
+        "Enforce logical business constraints",
+        "Implement server-side input validation"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A06-TC-10",
+      "owasp_category": "A06:2025 - Insecure Design",
+      "owasp_vulnerability": "Missing Threat Modeling",
+      "variant": "Missing Threat Modeling",
+      "title": "No security review of new feature design",
+      "severity": "MEDIUM",
+      "cvss_score": 6.4,
+      "description": "New features are introduced without conducting security design reviews. This results in preventable security weaknesses being deployed.",
+      "impact": [
+        "Introduction of avoidable security flaws",
+        "Increased remediation costs",
+        "Higher long-term security risk"
+      ],
+      "remediation": [
+        "Integrate security reviews into design processes",
+        "Perform threat modeling for new features",
+        "Involve security teams early in development"
+      ],
+      "references": "OWASP Top 10 A06:2025"
+    },
+    {
+      "testcase_id": "A07-TC-01",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Weak Password Policy",
+      "variant": "Weak Password Policy",
+      "title": "Weak password policy allows short passwords",
+      "severity": "HIGH",
+      "cvss_score": 7.8,
+      "description": "The application allows users to set passwords shorter than recommended security standards. Short and simple passwords significantly reduce resistance to brute force and guessing attacks.",
+      "impact": [
+        "Increased risk of account compromise",
+        "Successful brute force or password guessing attacks",
+        "Unauthorized access to user accounts"
+      ],
+      "remediation": [
+        "Enforce minimum password length requirements",
+        "Require complexity including numbers and symbols",
+        "Regularly review password policy effectiveness"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A07-TC-02",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Weak Password Policy",
+      "variant": "Weak Password Policy",
+      "title": "Password reuse allowed across multiple accounts",
+      "severity": "MEDIUM",
+      "cvss_score": 6.9,
+      "description": "The application allows users to reuse previously used passwords. This weakens security when passwords are exposed through breaches.",
+      "impact": [
+        "Reuse of compromised passwords",
+        "Increased likelihood of account takeover",
+        "Reduced effectiveness of password rotation"
+      ],
+      "remediation": [
+        "Enforce password history checks",
+        "Prevent reuse of recent passwords",
+        "Encourage unique passwords per account"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A07-TC-03",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Credential Stuffing",
+      "variant": "Credential Stuffing",
+      "title": "Credential stuffing attack not detected",
+      "severity": "CRITICAL",
+      "cvss_score": 9.0,
+      "description": "The application does not detect or block credential stuffing attempts. Attackers can use leaked username-password combinations at scale.",
+      "impact": [
+        "Mass account compromise",
+        "Unauthorized access to user data",
+        "Loss of user trust"
+      ],
+      "remediation": [
+        "Implement anomaly detection for login attempts",
+        "Apply rate limiting and IP throttling",
+        "Monitor for credential stuffing patterns"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A07-TC-04",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Credential Stuffing",
+      "variant": "Credential Stuffing",
+      "title": "No protection against automated login attempts",
+      "severity": "HIGH",
+      "cvss_score": 8.4,
+      "description": "Automated login attempts are not challenged or blocked. Attackers can rapidly test large credential lists.",
+      "impact": [
+        "Large-scale automated account compromise",
+        "Service abuse",
+        "Increased authentication system load"
+      ],
+      "remediation": [
+        "Introduce CAPTCHA challenges",
+        "Apply login throttling mechanisms",
+        "Detect automation behavior patterns"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A07-TC-05",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Brute Force Attacks",
+      "variant": "Brute Force",
+      "title": "Unlimited login attempts allowed",
+      "severity": "HIGH",
+      "cvss_score": 8.1,
+      "description": "The login endpoint allows unlimited authentication attempts without restriction. Attackers can repeatedly guess credentials.",
+      "impact": [
+        "Successful brute force attacks",
+        "Unauthorized account access",
+        "Credential exposure"
+      ],
+      "remediation": [
+        "Implement account lockout mechanisms",
+        "Apply rate limiting to login endpoints",
+        "Monitor excessive failed login attempts"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A07-TC-06",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Brute Force Attacks",
+      "variant": "Brute Force",
+      "title": "No delay between failed authentication attempts",
+      "severity": "MEDIUM",
+      "cvss_score": 7.0,
+      "description": "The application does not introduce delays after failed login attempts, allowing attackers to rapidly test passwords.",
+      "impact": [
+        "Accelerated brute force attacks",
+        "Increased likelihood of account compromise",
+        "Authentication system abuse"
+      ],
+      "remediation": [
+        "Introduce progressive delays after failures",
+        "Implement temporary account lockouts",
+        "Detect repeated failed authentication patterns"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A07-TC-07",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Improper Session Management",
+      "variant": "Brute Force",
+      "title": "Session remains valid after logout",
+      "severity": "HIGH",
+      "cvss_score": 7.7,
+      "description": "User sessions remain active even after logout due to improper session invalidation. Attackers can reuse existing session tokens.",
+      "impact": [
+        "Session hijacking",
+        "Unauthorized access after logout",
+        "Account takeover risk"
+      ],
+      "remediation": [
+        "Invalidate sessions immediately on logout",
+        "Rotate session identifiers",
+        "Enforce session expiration"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A07-TC-08",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Improper Session Management",
+      "variant": "Brute Force",
+      "title": "Predictable session identifiers used",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "Session identifiers are predictable and insufficiently random, allowing attackers to guess valid session tokens.",
+      "impact": [
+        "Session hijacking",
+        "Unauthorized account access",
+        "Bypass of authentication controls"
+      ],
+      "remediation": [
+        "Use cryptographically secure random session IDs",
+        "Rotate session identifiers periodically",
+        "Protect session cookies with secure flags"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A07-TC-09",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Missing MFA",
+      "variant": "Missing MFA",
+      "title": "Multi-factor authentication not enforced",
+      "severity": "CRITICAL",
+      "cvss_score": 9.2,
+      "description": "The application does not enforce multi-factor authentication for sensitive actions or privileged access.",
+      "impact": [
+        "Single-factor compromise leads to account takeover",
+        "Increased risk of credential-based attacks",
+        "Loss of account security assurance"
+      ],
+      "remediation": [
+        "Implement multi-factor authentication",
+        "Require MFA for sensitive actions",
+        "Use strong second-factor mechanisms"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A07-TC-10",
+      "owasp_category": "A07:2025 - Authentication Failures",
+      "owasp_vulnerability": "Missing MFA",
+      "variant": "Missing MFA",
+      "title": "MFA optional for administrative users",
+      "severity": "CRITICAL",
+      "cvss_score": 9.0,
+      "description": "Administrative users are not required to use multi-factor authentication, leaving privileged accounts protected by single-factor authentication.",
+      "impact": [
+        "High risk of administrative account takeover",
+        "Complete compromise of application controls",
+        "Privilege escalation attacks"
+      ],
+      "remediation": [
+        "Enforce mandatory MFA for all administrators",
+        "Apply MFA to privileged roles by default",
+        "Audit MFA enforcement regularly"
+      ],
+      "references": "OWASP Top 10 A07:2025"
+    },
+    {
+      "testcase_id": "A08-TC-01",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Insecure Deserialization",
+      "title": "Unsafe deserialization of untrusted data",
+      "severity": "CRITICAL",
+      "cvss_score": 9.8,
+      "description": "The application deserializes untrusted data without validating its structure or origin. This allows attackers to manipulate serialized objects to execute arbitrary code.",
+      "impact": [
+        "Remote code execution on the server",
+        "Complete compromise of application environment",
+        "Loss of data integrity and confidentiality"
+      ],
+      "remediation": [
+        "Avoid unsafe deserialization mechanisms",
+        "Use safe data formats such as JSON",
+        "Validate and whitelist allowed object types"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A08-TC-02",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Insecure Deserialization",
+      "title": "Object injection via serialized payload",
+      "severity": "CRITICAL",
+      "cvss_score": 9.4,
+      "description": "Serialized objects are accepted from untrusted sources without integrity or authenticity validation. Attackers can inject malicious payloads.",
+      "impact": [
+        "Full system compromise",
+        "Unauthorized code execution",
+        "Persistence of malicious components"
+      ],
+      "remediation": [
+        "Reject serialized input from untrusted sources",
+        "Implement integrity and signature checks",
+        "Use strict object deserialization controls"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A08-TC-03",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Untrusted Updates",
+      "title": "Updates applied without integrity verification",
+      "severity": "HIGH",
+      "cvss_score": 8.2,
+      "description": "Software updates are applied without verifying cryptographic integrity or authenticity. Malicious updates can be injected into the update process.",
+      "impact": [
+        "Execution of malicious updates",
+        "Persistent compromise of application",
+        "Supply chain attack exposure"
+      ],
+      "remediation": [
+        "Verify cryptographic signatures of updates",
+        "Use secure update channels",
+        "Reject unsigned or modified updates"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A08-TC-04",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Untrusted Updates",
+      "title": "Unsigned update packages accepted",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "The update mechanism does not enforce digital signature validation on update packages.",
+      "impact": [
+        "Execution of unauthorized code",
+        "Compromise of update mechanism",
+        "Loss of trust in update process"
+      ],
+      "remediation": [
+        "Enforce signed update packages",
+        "Use trusted certificate authorities",
+        "Validate update source authenticity"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A08-TC-05",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Integrity Check Bypass",
+      "title": "Tampered update package not detected",
+      "severity": "HIGH",
+      "cvss_score": 7.9,
+      "description": "Modified update packages bypass integrity checks due to weak or missing validation mechanisms.",
+      "impact": [
+        "Application compromise",
+        "Execution of tampered code",
+        "Integrity violations"
+      ],
+      "remediation": [
+        "Validate cryptographic hashes of updates",
+        "Implement strict integrity enforcement",
+        "Monitor update integrity failures"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A08-TC-06",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Integrity Check Bypass",
+      "title": "Integrity verification skipped during deployment",
+      "severity": "HIGH",
+      "cvss_score": 8.1,
+      "description": "Deployment pipelines skip integrity verification steps for application artifacts, allowing compromised builds to be deployed.",
+      "impact": [
+        "Deployment of malicious artifacts",
+        "Supply chain compromise",
+        "Loss of deployment integrity"
+      ],
+      "remediation": [
+        "Enforce integrity verification in CI/CD pipelines",
+        "Validate artifacts before deployment",
+        "Restrict manual overrides in deployment"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A08-TC-07",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Untrusted Updates",
+      "title": "Third-party updates pulled from untrusted source",
+      "severity": "HIGH",
+      "cvss_score": 8.5,
+      "description": "Updates are fetched from unverified third-party repositories without trust validation.",
+      "impact": [
+        "Malicious code execution",
+        "Third-party supply chain attacks",
+        "Loss of application integrity"
+      ],
+      "remediation": [
+        "Restrict updates to trusted repositories",
+        "Verify update source authenticity",
+        "Continuously monitor update integrity"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A08-TC-08",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Insecure Deserialization",
+      "title": "Deserialization of untrusted session objects",
+      "severity": "CRITICAL",
+      "cvss_score": 9.1,
+      "description": "Session data is deserialized without integrity validation, allowing attackers to manipulate session objects.",
+      "impact": [
+        "Session hijacking",
+        "Remote code execution",
+        "Unauthorized access to user accounts"
+      ],
+      "remediation": [
+        "Use signed and encrypted session data",
+        "Validate session object integrity",
+        "Avoid deserializing untrusted session data"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A08-TC-09",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Untrusted Updates",
+      "title": "Update mechanism lacks rollback protection",
+      "severity": "MEDIUM",
+      "cvss_score": 6.8,
+      "description": "The update mechanism does not provide rollback protection for failed or malicious updates.",
+      "impact": [
+        "System instability",
+        "Persistent compromise after failed updates",
+        "Operational downtime"
+      ],
+      "remediation": [
+        "Implement secure rollback mechanisms",
+        "Maintain versioned backups",
+        "Test updates before production rollout"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A08-TC-10",
+      "owasp_category": "A08:2025 - Software and Data Integrity Failures",
+      "owasp_vulnerability": "Integrity Check Bypass",
+      "variant": "Integrity Check Bypass",
+      "title": "Integrity validation disabled in production",
+      "severity": "HIGH",
+      "cvss_score": 7.7,
+      "description": "Integrity validation mechanisms are disabled in production environments for performance reasons.",
+      "impact": [
+        "Malicious changes go undetected",
+        "Compromise of application integrity",
+        "Increased attack surface"
+      ],
+      "remediation": [
+        "Enable integrity validation in all environments",
+        "Optimize integrity checks rather than disabling them",
+        "Continuously monitor integrity violations"
+      ],
+      "references": "OWASP Top 10 A08:2025"
+    },
+    {
+      "testcase_id": "A09-TC-01",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Insufficient Logging",
+      "variant": "Insufficient Logging",
+      "title": "Authentication failures are not logged",
+      "severity": "HIGH",
+      "cvss_score": 7.5,
+      "description": "Failed authentication attempts are not recorded in application logs. This prevents detection of brute force and credential stuffing attacks.",
+      "impact": [
+        "Brute-force attacks go undetected",
+        "Delayed identification of compromised accounts",
+        "Reduced visibility into attack attempts"
+      ],
+      "remediation": [
+        "Log all authentication failures",
+        "Include user, IP address, and timestamp",
+        "Monitor authentication logs regularly"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A09-TC-02",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Insufficient Logging",
+      "variant": "Insufficient Logging",
+      "title": "Privilege escalation events not logged",
+      "severity": "HIGH",
+      "cvss_score": 7.8,
+      "description": "Changes to user roles and privileges are not logged. Unauthorized privilege escalation can occur without detection.",
+      "impact": [
+        "Unauthorized privilege escalation unnoticed",
+        "Loss of accountability",
+        "Inability to trace malicious actions"
+      ],
+      "remediation": [
+        "Log all role and permission changes",
+        "Capture before and after privilege states",
+        "Review privilege change logs regularly"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A09-TC-03",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Log Injection",
+      "variant": "Log Injection",
+      "title": "Log injection via user input",
+      "severity": "MEDIUM",
+      "cvss_score": 6.6,
+      "description": "Unsanitized user input is written directly to log files. Attackers can inject misleading or malicious log entries.",
+      "impact": [
+        "Log tampering and evasion",
+        "Misleading security investigations",
+        "Corruption of audit trails"
+      ],
+      "remediation": [
+        "Sanitize user input before logging",
+        "Escape special characters in logs",
+        "Apply structured logging formats"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A09-TC-04",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Log Injection",
+      "variant": "Log Injection",
+      "title": "Forged log entries using newline injection",
+      "severity": "MEDIUM",
+      "cvss_score": 6.4,
+      "description": "Attackers inject newline characters to forge fake log entries, hiding malicious actions.",
+      "impact": [
+        "Security events hidden in logs",
+        "False log records created",
+        "Incident response misled"
+      ],
+      "remediation": [
+        "Escape newline and control characters",
+        "Normalize log input",
+        "Validate log message structure"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A09-TC-05",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Missing Alerting",
+      "variant": "Missing Alerting",
+      "title": "No alerts for repeated failed logins",
+      "severity": "HIGH",
+      "cvss_score": 7.7,
+      "description": "Repeated authentication failures do not trigger alerts. Ongoing attacks remain unnoticed by security teams.",
+      "impact": [
+        "Prolonged brute force attacks",
+        "Delayed detection of account compromise",
+        "Increased attack success rate"
+      ],
+      "remediation": [
+        "Enable alerts for repeated login failures",
+        "Set thresholds for alert generation",
+        "Integrate alerts with SOC tools"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A09-TC-06",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Missing Alerting",
+      "variant": "Missing Alerting",
+      "title": "Critical security events do not generate alerts",
+      "severity": "HIGH",
+      "cvss_score": 8.0,
+      "description": "High-risk security events such as privilege escalation or configuration changes do not trigger alerts.",
+      "impact": [
+        "Delayed incident response",
+        "Extended attacker dwell time",
+        "Increased damage from attacks"
+      ],
+      "remediation": [
+        "Configure alerts for critical security events",
+        "Define severity-based alert thresholds",
+        "Ensure alerts reach security teams promptly"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A09-TC-07",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Missing Alerting",
+      "variant": "Missing Alerting",
+      "title": "Security incidents do not trigger response workflows",
+      "severity": "HIGH",
+      "cvss_score": 8.1,
+      "description": "Security alerts are not integrated with incident response workflows. Manual intervention is required to respond.",
+      "impact": [
+        "Attackers remain active longer",
+        "Delayed containment and remediation",
+        "Inconsistent incident handling"
+      ],
+      "remediation": [
+        "Integrate alerting with incident response systems",
+        "Automate response workflows where possible",
+        "Test incident response integrations regularly"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A09-TC-08",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Missing Alerting",
+      "variant": "Missing Alerting",
+      "title": "Security team not notified of critical incidents",
+      "severity": "HIGH",
+      "cvss_score": 7.9,
+      "description": "Critical security alerts are not escalated to the security team in a timely manner.",
+      "impact": [
+        "Delayed containment of incidents",
+        "Increased damage from attacks",
+        "Poor incident coordination"
+      ],
+      "remediation": [
+        "Automatically notify security teams",
+        "Define escalation paths for critical alerts",
+        "Verify alert delivery mechanisms"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A09-TC-09",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Insufficient Logging",
+      "variant": "Insufficient Logging",
+      "title": "Sensitive data access not logged",
+      "severity": "MEDIUM",
+      "cvss_score": 6.9,
+      "description": "Access to sensitive resources is not logged or audited, making it difficult to trace unauthorized access.",
+      "impact": [
+        "Unauthorized access cannot be traced",
+        "Loss of auditability",
+        "Compliance violations"
+      ],
+      "remediation": [
+        "Enable audit logging for sensitive data",
+        "Log user identity and access context",
+        "Protect audit logs from tampering"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A09-TC-10",
+      "owasp_category": "A09:2025 - Security Logging and Alerting Failures",
+      "owasp_vulnerability": "Insufficient Logging",
+      "variant": "Insufficient Logging",
+      "title": "Log retention period insufficient",
+      "severity": "MEDIUM",
+      "cvss_score": 6.5,
+      "description": "Logs are deleted too quickly, preventing effective forensic analysis after incidents.",
+      "impact": [
+        "Forensic investigations hindered",
+        "Incomplete incident timelines",
+        "Loss of historical security data"
+      ],
+      "remediation": [
+        "Increase log retention periods",
+        "Align retention with compliance requirements",
+        "Secure archived logs"
+      ],
+      "references": "OWASP Top 10 A09:2025"
+    },
+    {
+      "testcase_id": "A10-TC-01",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Stack Trace Disclosure",
+      "variant": "Stack Trace Disclosure",
+      "title": "Stack trace exposed in application error response",
+      "severity": "MEDIUM",
+      "cvss_score": 6.5,
+      "description": "The application displays detailed stack traces to end users when errors occur. These stack traces expose internal code structure, class names, and execution flow.",
+      "impact": [
+        "Disclosure of internal application structure",
+        "Improved attacker reconnaissance",
+        "Increased likelihood of targeted attacks"
+      ],
+      "remediation": [
+        "Disable stack trace display in production",
+        "Log detailed errors internally only",
+        "Show generic error messages to users"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    },
+    {
+      "testcase_id": "A10-TC-02",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Stack Trace Disclosure",
+      "variant": "Stack Trace Disclosure",
+      "title": "Unhandled exception reveals framework internals",
+      "severity": "MEDIUM",
+      "cvss_score": 6.7,
+      "description": "Unhandled exceptions expose framework versions, file paths, and internal components through detailed error responses.",
+      "impact": [
+        "Exposure of framework internals",
+        "Improved attacker reconnaissance",
+        "Assistance in vulnerability chaining"
+      ],
+      "remediation": [
+        "Implement centralized exception handling",
+        "Suppress technical error details in responses",
+        "Log exception details securely on the server"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    },
+    {
+      "testcase_id": "A10-TC-03",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Stack Trace Disclosure",
+      "variant": "Stack Trace Disclosure",
+      "title": "Verbose error messages shown to end users",
+      "severity": "MEDIUM",
+      "cvss_score": 6.3,
+      "description": "Verbose error pages reveal internal method names, variables, and execution logic during application failures.",
+      "impact": [
+        "Disclosure of sensitive implementation details",
+        "Increased attack surface visibility",
+        "Facilitates targeted exploitation"
+      ],
+      "remediation": [
+        "Use generic user-facing error messages",
+        "Disable verbose error output in production",
+        "Apply consistent error response templates"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    },
+    {
+      "testcase_id": "A10-TC-04",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Improper Error Handling",
+      "variant": "Improper Error Handling",
+      "title": "Database error messages exposed to users",
+      "severity": "MEDIUM",
+      "cvss_score": 6.8,
+      "description": "Database errors are returned directly to users, revealing query details and schema information.",
+      "impact": [
+        "Disclosure of database structure",
+        "Information leakage aiding SQL injection",
+        "Increased risk of data compromise"
+      ],
+      "remediation": [
+        "Sanitize database error messages",
+        "Suppress raw database exceptions",
+        "Log database errors securely on the backend"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    },
+    {
+      "testcase_id": "A10-TC-05",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Improper Error Handling",
+      "variant": "Improper Error Handling",
+      "title": "Generic server errors reveal backend logic",
+      "severity": "MEDIUM",
+      "cvss_score": 6.4,
+      "description": "Server error responses leak backend processing logic and application behavior details.",
+      "impact": [
+        "Exposure of backend implementation details",
+        "Facilitates targeted exploitation",
+        "Reduced system resilience against attacks"
+      ],
+      "remediation": [
+        "Implement consistent error handling logic",
+        "Standardize error responses",
+        "Avoid exposing backend processing details"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    },
+    {
+      "testcase_id": "A10-TC-06",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Improper Error Handling",
+      "variant": "Improper Error Handling",
+      "title": "HTTP 500 errors expose internal service details",
+      "severity": "MEDIUM",
+      "cvss_score": 6.6,
+      "description": "Internal service names and configuration details are exposed through HTTP 500 error responses.",
+      "impact": [
+        "Disclosure of internal service architecture",
+        "Improved attacker understanding of system layout",
+        "Increased risk of lateral attacks"
+      ],
+      "remediation": [
+        "Use standardized HTTP error responses",
+        "Mask internal service details",
+        "Log detailed errors internally only"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    },
+    {
+      "testcase_id": "A10-TC-07",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Improper Error Handling",
+      "variant": "Improper Error Handling",
+      "title": "Error handling differs between environments",
+      "severity": "LOW",
+      "cvss_score": 5.4,
+      "description": "Production environments return more verbose error information than expected due to inconsistent configuration.",
+      "impact": [
+        "Information disclosure risk",
+        "Inconsistent security posture",
+        "Configuration drift exposure"
+      ],
+      "remediation": [
+        "Standardize error handling across environments",
+        "Review production error configurations",
+        "Apply environment-specific security controls"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    },
+    {
+      "testcase_id": "A10-TC-08",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Improper Error Handling",
+      "variant": "Improper Error Handling",
+      "title": "Application exposes exception messages in API responses",
+      "severity": "MEDIUM",
+      "cvss_score": 6.1,
+      "description": "Raw exception messages are returned directly in API responses without sanitization.",
+      "impact": [
+        "Exposure of internal logic",
+        "Improved attacker reconnaissance",
+        "Increased exploitation success"
+      ],
+      "remediation": [
+        "Mask internal exception messages",
+        "Return generic API error responses",
+        "Log exception details securely"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    },
+    {
+      "testcase_id": "A10-TC-09",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Stack Trace Disclosure",
+      "variant": "Stack Trace Disclosure",
+      "title": "Stack trace written to client-side logs",
+      "severity": "LOW",
+      "cvss_score": 5.9,
+      "description": "Stack traces are exposed in client-accessible logs, revealing internal call flows and logic.",
+      "impact": [
+        "Disclosure of internal execution paths",
+        "Exposure of sensitive debugging information",
+        "Increased reconnaissance capability"
+      ],
+      "remediation": [
+        "Remove stack traces from client-side logs",
+        "Restrict logging to server-side only",
+        "Review client logging configurations"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    },
+    {
+      "testcase_id": "A10-TC-10",
+      "owasp_category": "A10:2025 - Mishandling of Exceptional Conditions",
+      "owasp_vulnerability": "Stack Trace Disclosure",
+      "variant": "Stack Trace Disclosure",
+      "title": "Error debug mode enabled in production",
+      "severity": "HIGH",
+      "cvss_score": 7.4,
+      "description": "Debug mode is enabled in production, exposing full error details and stack traces to users.",
+      "impact": [
+        "Sensitive information disclosure",
+        "Improved attacker reconnaissance",
+        "Higher risk of targeted attacks"
+      ],
+      "remediation": [
+        "Disable debug mode in production",
+        "Apply environment-based configuration management",
+        "Continuously audit production settings"
+      ],
+      "references": "OWASP Top 10 A10:2025"
+    }
+    
+
+  ]
+}

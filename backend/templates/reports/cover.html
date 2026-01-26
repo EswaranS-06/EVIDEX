@@ -1,65 +1,80 @@
 {% extends "reports/base.html" %}
-
 {% block content %}
 {% load media_path %}
 
+<!-- ================= COVER PAGE ================= -->
+<div class="cover-page">
 
-<!-- COVER PAGE (simple for now) -->
-<div style="
-  height: 100vh;
-  background: #1e4f91;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-">
-  <h1>{{ report.client_name }}</h1>
-  <h2>{{ report.application_name }}</h2>
-  <p>{{ report.report_type }}</p>
-  <p>{{ report.report_date }}</p>
+  <!-- Logo -->
+  <div class="cover-logo">
+    <div class="cover-icon"></div>
+    <p>COMPANY LOGO</p>
+  </div>
+
+  <!-- Title -->
+  <h1 class="cover-title">
+    Vulnerability Assessment &<br>
+    Penetration Testing Report
+  </h1>
+
+  <div class="cover-line"></div>
+
+  <!-- Info -->
+  <div class="cover-info">
+    <div><span>Client :</span><span class="cover-value">{{ report.client_name }}</span></div>
+    <div><span>Application :</span><span class="cover-value">{{ report.application_name }}</span></div>
+    <div><span>Target :</span><span class="cover-value">{{report.target}}</span></div>
+    <div><span>Prepared by :</span><span class="cover-value">{{report.created_by}}</span></div>
+    <div><span>Date :</span><span class="cover-value">{{ report.created_at}}</span></div>
+    
+  </div>
+
+  <!-- Corner -->
+  <div class="cover-corner"></div>
+
+  <!-- Footer -->
+  <div class="cover-footer">
+    CONFIDENTIAL
+  </div>
+
 </div>
 
 <div class="page-break"></div>
 
-<!--==========TABLE OF CONTENTS ============-->
+
+
+<!-- ================= TABLE OF CONTENTS ================= -->
 
 <h2>Table of Contents</h2>
 
-<div class="toc">
-  <div class="toc-row">
-    <a href="#disclaimer">Disclaimer</a>
-    <span class="toc-page" href="#disclaimer"></span>
-  </div>
-
-  <div class="toc-row">
-    <a href="#executive-summary">Executive Summary</a>
-    <span class="toc-page" href="#executive-summary"></span>
-  </div>
-
-  <div class="toc-row">
-    <a href="#findings">Detailed Findings</a>
-    <span class="toc-page" href="#findings"></span>
-  </div>
-
-  <div class="toc-row">
-    <a href="#action-plan">Action Plan</a>
-    <span class="toc-page" href="#action-plan"></span>
-  </div>
-
-  <div class="toc-row">
-    <a href="#conclusion">Conclusion</a>
-    <span class="toc-page" href="#conclusion"></span>
-  </div>
-</div>
+<table class="toc-table">
+  <tr>
+    <td><a href="#disclaimer">1. Disclaimer</a></td>
+    <td class="toc-page" href="#disclaimer"></td>
+  </tr>
+  <tr>
+    <td><a href="#executive-summary">2. Executive Summary</a></td>
+    <td class="toc-page" href="#executive-summary"></td>
+  </tr>
+  <tr>
+    <td><a href="#findings">3. Detailed Findings</a></td>
+    <td class="toc-page" href="#findings"></td>
+  </tr>
+  <tr>
+    <td><a href="#action-plan">4. Action Plan</a></td>
+    <td class="toc-page" href="#action-plan"></td>
+  </tr>
+  <tr>
+    <td><a href="#conclusion">5. Conclusion</a></td>
+    <td class="toc-page" href="#conclusion"></td>
+  </tr>
+</table>
 
 <div class="page-break"></div>
 
-
 <!-- ================= DISCLAIMER PAGE  ================= -->
 
-<h2 id="disclaimer">Disclaimer</h2>
+<h2 id="disclaimer">1. Disclaimer</h2>
 
 <p>
 This report has been prepared exclusively for
@@ -89,9 +104,8 @@ from <strong>{{ report.client_name }}</strong>.
 
 <div class="page-break"></div>
 
-
 <!-- ================= EXECUTIVE SUMMARY ================= -->
-<h2 id="executive-summary">1. Executive Summary</h2>
+<h2 id="executive-summary">2. Executive Summary</h2>
 
 <p>
 Web application vulnerability assessment and penetration testing was conducted
@@ -99,7 +113,7 @@ for <strong>{{ report.client_name }}</strong> on the application
 <strong>{{ report.application_name }}</strong>.
 </p>
 
-<table class="summary-table">
+<table class="summary-table executive-table">
   <thead>
     <tr>
       <th>Severity</th>
@@ -109,119 +123,106 @@ for <strong>{{ report.client_name }}</strong> on the application
   </thead>
   <tbody>
     <tr>
-      <td style="color:#d32f2f;font-weight:bold;">Critical</td>
+      <td class="sev-text critical">Critical</td>
       <td>{{ summary.severity.critical }}</td>
       <td>Immediate remediation required</td>
     </tr>
+
     <tr>
-      <td style="color:#f57c00;font-weight:bold;">High</td>
+      <td class="sev-text high">High</td>
       <td>{{ summary.severity.high }}</td>
       <td>High risk to application security</td>
     </tr>
+
     <tr>
-      <td style="color:#fbc02d;font-weight:bold;">Medium</td>
+      <td class="sev-text medium">Medium</td>
       <td>{{ summary.severity.medium }}</td>
       <td>Moderate security concern</td>
     </tr>
+
     <tr>
-      <td style="color:#388e3c;font-weight:bold;">Low</td>
+      <td class="sev-text low">Low</td>
       <td>{{ summary.severity.low }}</td>
       <td>Low impact, best‑practice fixes</td>
     </tr>
   </tbody>
 </table>
 
-<div class="page-break"></div>
+<br></br>
 
 <!-- ================= DETAILED FINDINGS ================= -->
+
+<!-- <div class="finding-block"> -->
 <h2 id="findings">3. Detailed Findings</h2>
 
 {% for f in findings %}
-<table class="finding-table">
 
-  <tr>
-    <td class="label-cell">Vulnerability #{{ forloop.counter }}</td>
-    <td class="value-cell">
-      <strong>{{ f.final_title }}</strong>
-    </td>
-  </tr>
+    {% if not forloop.first %}
+        <div class="page-break"></div>
+    {% endif %}
 
-  <tr>
-    <td class="label-cell">Severity</td>
-    <td class="
-      {% if f.final_severity == 'CRITICAL' %}severity-critical
-      {% elif f.final_severity == 'HIGH' %}severity-high
-      {% elif f.final_severity == 'MEDIUM' %}severity-medium
-      {% else %}severity-low{% endif %}
-    ">
-      {{ f.final_severity}}
-    </td>
-  </tr>
+    <table class="finding-table">
+        <tr>
+            <td class="label-cell">Vulnerability {{ forloop.counter }}</td>
+            <td class="value-cell"><strong>{{ f.final_title }}</strong></td>
+        </tr>
 
-<tr>
-  <td class="label-cell">Description</td>
-  <td class="value-cell">
-    {{ f.final_description|linebreaks }}
-  </td>
-</tr>
+        <tr>
+            <td class="label-cell">Severity</td>
+            <td class="
+                {% if f.final_severity == 'CRITICAL' %}severity-critical
+                {% elif f.final_severity == 'HIGH' %}severity-high
+                {% elif f.final_severity == 'MEDIUM' %}severity-medium
+                {% else %}severity-low{% endif %}
+            ">
+                {{ f.final_severity }}
+            </td>
+        </tr>
 
-<tr>
-  <td class="label-cell">Implication</td>
-  <td class="value-cell">
-    {{ f.final_impact|linebreaks }}
-  </td>
-</tr>
+        <tr>
+            <td class="label-cell">Description</td>
+            <td class="value-cell">{{ f.final_description|linebreaks }}</td>
+        </tr>
 
-<tr>
-  <td class="label-cell">Recommendation</td>
-  <td class="value-cell">
-    {{ f.final_remediation|linebreaks }}
-  </td>
-</tr>
+        <tr>
+            <td class="label-cell">Implication</td>
+            <td class="value-cell">{{ f.final_impact|linebreaks }}</td>
+        </tr>
 
+        <tr>
+            <td class="label-cell">Recommendation</td>
+            <td class="value-cell">{{ f.final_remediation|linebreaks }}</td>
+        </tr>
+    </table>
 
-  <!-- ✅ Evidence LAST -->
-<tr>
-    <td class="label-cell">Evidence</td>
-    <td class="value-cell">
+    {% if f.evidences.all %}
+    <div class="evidence-section">
+        <h4 class="evidence-heading">Evidence</h4>
 
-        {% if f.evidences.all %}
-            {% for e in f.evidences.all %}
+        {% for e in f.evidences.all %}
+        <div class="evidence-item">
+            <p class="evidence-title"><strong>{{ e.title }}</strong></p>
 
-                <div style="margin-bottom:20px;">
-                    <p><strong>{{ e.title }}</strong></p>
+            {% if e.file %}
+                {% if is_pdf %}
+                    <img src="{{ e.file.path|file_uri }}" class="evidence-image">
+                {% else %}
+                    <img src="{{ MEDIA_URL }}{{ e.file.name }}" class="evidence-image">
+                {% endif %}
+            {% endif %}
 
-                    {% if e.file %}
-        {% if is_pdf %}
-  <img src="{{ e.file.path|file_uri }}" style="max-width:100%; margin-bottom:15px;">
-{% else %}
-  <img src="{{ MEDIA_URL }}{{ e.file.name }}" style="max-width:100%; margin-bottom:15px;">
-{% endif %}
+            {% if e.description %}
+                <p class="evidence-desc">{{ e.description }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-
-
-                    {% endif %}
-
-                    {% if e.description %}
-                        <p style="margin-top:8px;">{{ e.description }}</p>
-                    {% endif %}
-                </div>
-
-            {% endfor %}
-        {% else %}
-            <em>No evidence provided.</em>
-        {% endif %}
-
-    </td>
-</tr>
-
-
-</table>
-
-<div style="height: 40px;"></div>
 {% endfor %}
 
-<div class="page-break"></div> 
+</div>
+<div class="page-break"></div>
 
 <!-- ================= ACTION PLAN ================= -->
 
@@ -250,15 +251,19 @@ posture of the application.
 
 <p><strong>Recommended remediation actions include:</strong></p>
 
-<ul style="margin-left: 25px; line-height: 1.8;">
-  {% for action in action_plan.actions %}
-    <li>{{ action }}</li>
+<ul class="action-plan-list">
+  {% for f in findings %}
+    {% if f.final_remediation %}
+      <li>
+        <strong>{{ f.final_title }}</strong> — {{ f.final_remediation }}
+      </li>
+    {% endif %}
   {% endfor %}
 </ul>
 
+
 {% if action_plan.severity_count.LOW %}
 {% endif %}
-
 
 <div class="page-break"></div>
 

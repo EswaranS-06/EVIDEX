@@ -105,7 +105,7 @@ const Dashboard = () => {
             </div>
 
             {/* Stats Row */}
-            <div style={{ marginBottom: '32px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <div className="stats-row">
                 <div
                     className="glass-panel"
                     onClick={() => setStatusFilter(statusFilter === 'Draft' ? 'All' : 'Draft')}
@@ -197,8 +197,8 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Dashboard Bottom Row: Reports and OWASP Chart */}
-            <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start' }}>
+            {/* Dashboard Bottom Row */}
+            <div className="flex-stack-on-mobile">
 
                 {/* Reports List - LEFT SIDE */}
                 <div className="reports-list" style={{ flex: '1.8' }}>

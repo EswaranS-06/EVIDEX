@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import { Calendar, Globe, CheckCircle, Edit2, Eye, Plus, ChevronLeft, Save } from 'lucide-react';
+import { Calendar, Globe, CheckCircle, Edit2, Eye, Plus, ChevronLeft, Save, Trash2 } from 'lucide-react';
 
 const ReportDetails = () => {
     const { id } = useParams();
@@ -105,9 +105,23 @@ const ReportDetails = () => {
         }
     };
 
-    const [showSidebar, setShowSidebar] = useState(true);
+    const [showSidebar, setShowSidebar] = useState(window.innerWidth > 1280);
     const [isEditing, setIsEditing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Handle Responsive Sidebar
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 1280) {
+                setShowSidebar(false);
+            } else {
+                setShowSidebar(true);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // OWASP Data State
     const [owaspCategories, setOwaspCategories] = useState([]);
@@ -144,7 +158,7 @@ const ReportDetails = () => {
 
         try {
             await api.post(`/api/reports/${id}/findings/`, {
-                vulnerability_definition_id: vulnId,
+                vulnerability: vulnId,
                 affected_url: report.target || '/'
             });
             // Refresh findings
@@ -157,20 +171,35 @@ const ReportDetails = () => {
         }
     };
 
-    // Filter Logic
-    const filteredCategories = owaspCategories.map(cat => {
-        const matchingVulns = cat.vulnerabilities.filter(v =>
-            v.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        // Include category if it matches name OR has matching vulns
-        if (cat.name.toLowerCase().includes(searchTerm.toLowerCase()) || matchingVulns.length > 0) {
-            return { ...cat, vulnerabilities: matchingVulns }; // Return filtered vulns if searching
+    const handleDeleteFinding = async (findingId) => {
+        if (!window.confirm("Are you sure you want to delete this finding from the report?")) return;
+
+        try {
+            await api.delete(`/api/reports/${id}/findings/${findingId}/`);
+            // Refresh list
+            setFindings(findings.filter(f => f.id !== findingId));
+        } catch (err) {
+            console.error("Failed to delete finding:", err);
+            alert("Failed to delete finding.");
         }
-        return null;
-    }).filter(Boolean);
+    };
+
+    // Filter Logic
+    const filteredCategories = useMemo(() => {
+        return owaspCategories.map(cat => {
+            const matchingVulns = cat.vulnerabilities.filter(v =>
+                v.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            // Include category if it matches name OR has matching vulns
+            if (cat.name.toLowerCase().includes(searchTerm.toLowerCase()) || matchingVulns.length > 0) {
+                return { ...cat, vulnerabilities: matchingVulns }; // Return filtered vulns if searching
+            }
+            return null;
+        }).filter(Boolean);
+    }, [owaspCategories, searchTerm]);
 
     return (
-        <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+        <div className="report-details-wrapper" style={{ height: 'calc(100vh - 80px)' }}>
             {/* Center Content Area - Resizes based on sidebar */}
             <div style={{
                 flex: 1,
@@ -180,43 +209,47 @@ const ReportDetails = () => {
             }}>
                 <div className="report-details-container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
-                    {/* Back Button and Sidebar Toggle */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                    {/* Header Action Bar */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
                         <button onClick={() => navigate('/dashboard')} className="btn-ghost" style={{ paddingLeft: 0 }}>
                             <ChevronLeft size={20} style={{ marginRight: '5px' }} /> Back to Dashboard
                         </button>
-                        {!showSidebar && (
-                            <button className="btn btn-primary" onClick={() => setShowSidebar(true)}>
-                                <Plus size={18} style={{ marginRight: '8px' }} /> OWASP VULNERABILITIES
-                            </button>
-                        )}
-                    </div>
 
-                    {/* Header Section (Metadata) - SAME AS BEFORE */}
-                    {/* ... (Keep existing Metadata section logic same as previous step, just collapsed here for brevity if replace tool allows partial context match, otherwise I need to include it all. Since I'm replacing the whole center div, I must include it) */}
-
-                    <div className="glass-panel" style={{ padding: '30px', marginBottom: '30px', position: 'relative' }}>
-                        <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '10px' }}>
-                            {/* ... buttons ... */}
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                             <button className="btn btn-ghost" title="Preview">
-                                <Eye size={18} style={{ marginRight: '5px' }} /> PREVIEW
+                                <Eye size={18} style={{ marginRight: '8px' }} /> PREVIEW
                             </button>
+
                             {isEditing && (
-                                <button className="btn btn-primary" onClick={() => { handleSave(); setIsEditing(false); }} style={{ padding: '4px 12px', fontSize: '0.8rem' }}>
-                                    SAVE
+                                <button className="btn btn-primary" onClick={() => { handleSave(); setIsEditing(false); }}>
+                                    <Save size={18} style={{ marginRight: '8px' }} /> SAVE
                                 </button>
                             )}
+
                             <button
                                 className={`btn ${isEditing ? 'btn-primary' : 'btn-ghost'}`}
                                 title="Edit Metadata"
                                 onClick={() => setIsEditing(!isEditing)}
                                 style={isEditing ? { background: 'var(--color-primary)', color: 'black' } : {}}
                             >
-                                <Edit2 size={18} />
+                                <Edit2 size={18} style={{ marginRight: isEditing ? '8px' : '0' }} />
+                                {isEditing ? 'EDITING' : 'EDIT'}
                             </button>
-                        </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+                            {!showSidebar && (
+                                <button className="btn btn-neon" onClick={() => setShowSidebar(true)}>
+                                    <Plus size={18} style={{ marginRight: '8px' }} /> OWASP VULNERABILITIES
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Header Section (Metadata) - SAME AS BEFORE */}
+                    {/* ... (Keep existing Metadata section logic same as previous step, just collapsed here for brevity if replace tool allows partial context match, otherwise I need to include it all. Since I'm replacing the whole center div, I must include it) */}
+
+                    <div className="glass-panel" style={{ padding: '30px', marginBottom: '30px', position: 'relative' }}>
+
+                        <div className="responsive-grid-2">
                             {/* Client Name */}
                             <div className="input-group">
                                 <label className="input-label">Client Name</label>
@@ -351,9 +384,14 @@ const ReportDetails = () => {
                                                     {finding.final_severity}
                                                 </span>
                                             </div>
-                                            <button className="btn btn-ghost" onClick={() => navigate(`/report/${id}/finding/${finding.id}`)}>
-                                                <Edit2 size={18} />
-                                            </button>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button className="btn btn-ghost" onClick={() => navigate(`/report/${id}/finding/${finding.id}`)}>
+                                                    <Edit2 size={18} />
+                                                </button>
+                                                <button className="btn btn-ghost" onClick={() => handleDeleteFinding(finding.id)} style={{ color: 'var(--color-error)' }}>
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -365,15 +403,7 @@ const ReportDetails = () => {
             </div>
 
             {/* Right Sidebar for Vulnerabilities */}
-            <div style={{
-                width: showSidebar ? '400px' : '0',
-                overflow: 'hidden',
-                transition: 'width 0.3s ease',
-                borderLeft: showSidebar ? '1px solid var(--color-border)' : 'none',
-                background: 'var(--color-bg-card)',
-                display: 'flex',
-                flexDirection: 'column'
-            }}>
+            <div className={`responsive-sidebar ${!showSidebar ? 'collapsed' : ''}`}>
                 <div style={{ padding: '20px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h2 style={{ fontSize: '1.25rem', whiteSpace: 'nowrap' }}>OWASP VULNERABILITIES</h2>
                     <button className="btn btn-ghost" onClick={() => setShowSidebar(false)}>
@@ -448,9 +478,7 @@ const ReportDetails = () => {
                                                         <Plus size={16} />
                                                     </button>
                                                     <span style={{ fontSize: '0.85rem', flex: 1, color: 'var(--color-text-main)' }}>{vuln.name}</span>
-                                                    <button className="btn btn-ghost" style={{ padding: '4px', color: 'var(--color-text-muted)' }} onClick={() => navigate(`/finding/${vuln.id}`)}>
-                                                        <Edit2 size={14} />
-                                                    </button>
+
                                                 </div>
                                             ))
                                         )}

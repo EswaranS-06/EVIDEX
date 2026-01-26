@@ -99,6 +99,7 @@ class ReportSerializer(serializers.ModelSerializer):
             "severity_counts",
             "status", # Added status field
             "created_at",
+            "created_by"
         ]
         read_only_fields = ["id", "created_by", "created_at"]
 
