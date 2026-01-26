@@ -98,12 +98,6 @@ const Reports = () => {
                                 justifyContent: 'space-between',
                                 transition: 'all 0.2s ease',
                                 cursor: 'pointer',
-                                padding: '24px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                transition: 'all 0.2s ease',
-                                cursor: 'pointer',
                                 background: 'var(--glass-bg)',
                                 borderLeft: '4px solid var(--color-primary)',
                                 borderColor: 'var(--glass-border)'

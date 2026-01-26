@@ -1,152 +1,245 @@
-# Netlify + Render Deployment Checklist
+# 🚀 EVIDEX Deployment Checklist
 
-## 🔧 Code Preparation (DONE ✅)
+## Pre-Deployment (Local)
 
-- [x] Created `Procfile` for Render backend
-- [x] Created `.env.example` files for both backend and frontend
-- [x] Created `netlify.toml` for frontend build configuration
-- [x] Updated `settings.py` for production (SECRET_KEY, DEBUG, ALLOWED_HOSTS from env variables)
-- [x] Updated `axios.js` to use `VITE_API_URL` environment variable
-- [x] Added gunicorn to requirements.txt
+### Backend Setup
+- [ ] Python 3.10+ installed
+- [ ] All requirements installed: `pip install -r requirements.txt`
+- [ ] `.env.production` file created with database credentials
+- [ ] `python manage.py migrate` runs successfully
+- [ ] `python manage.py seed_*` commands complete successfully
+- [ ] `python manage.py collectstatic --noinput` works
+- [ ] Local server runs: `python manage.py runserver`
+- [ ] No console errors or warnings
 
-## 📋 Before Deployment
+### Frontend Setup
+- [ ] Node 14+ installed
+- [ ] Dependencies installed: `npm install`
+- [ ] Build works: `npm run build`
+- [ ] Frontend runs: `npm run dev`
+- [ ] API URL is set to backend URL
+- [ ] No console errors
 
-### Backend Preparation
-- [ ] Push code to GitHub (create a new repo or update existing)
-- [ ] Create `.env` file locally with actual database credentials for Render
-  ```
-  DEBUG=False
-  SECRET_KEY=generate-a-secure-key-here
-  ALLOWED_HOSTS=your-backend.onrender.com
-  POSTGRES_DB=evidex_db
-  POSTGRES_USER=postgres
-  POSTGRES_PASSWORD=secure-password
-  POSTGRES_HOST=dpg-xxxxx.onrender.com
-  POSTGRES_PORT=5432
-  CORS_ALLOWED_ORIGINS=https://your-site.netlify.app
-  ```
-
-### Frontend Preparation
-- [ ] Push code to GitHub
-- [ ] Create `.env.production` locally (optional, can be set in Netlify dashboard)
-  ```
-  VITE_API_URL=https://your-backend.onrender.com
-  ```
-
-## 🚀 Deployment Steps
-
-### Step 1: Deploy Backend + Database to Render (15-20 minutes)
-
-1. [ ] Go to [render.com](https://render.com)
-2. [ ] Sign up with GitHub account
-3. [ ] Click "New +" → "Web Service"
-4. [ ] Select your GitHub repository
-5. [ ] Configure:
-   - Name: `evidex-backend`
-   - Environment: `Python 3`
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `gunicorn config.wsgi`
-   - Plan: `Free`
-6. [ ] Click "Create Web Service"
-7. [ ] Wait for deployment to complete (green checkmark)
-8. [ ] Note your backend URL: `https://evidex-backend.onrender.com`
-
-### Step 2: Create PostgreSQL Database on Render
-
-1. [ ] In Render Dashboard, click "New +" → "PostgreSQL"
-2. [ ] Configure:
-   - Name: `evidex-db`
-   - Database: `evidex_db`
-   - User: `postgres`
-   - Region: Same as backend
-   - Plan: `Free`
-3. [ ] Click "Create Database"
-4. [ ] Copy the connection string/credentials
-5. [ ] Update your backend's environment variables with DB details
-
-### Step 3: Set Environment Variables on Render Backend
-
-1. [ ] Go to your backend service on Render
-2. [ ] Click "Environment" tab
-3. [ ] Add all variables from your `.env` file:
-   - `DEBUG=False`
-   - `SECRET_KEY=your-generated-key`
-   - `ALLOWED_HOSTS=your-backend.onrender.com`
-   - `POSTGRES_DB=evidex_db`
-   - `POSTGRES_USER=postgres`
-   - `POSTGRES_PASSWORD=<from-db>`
-   - `POSTGRES_HOST=<from-db>`
-   - `POSTGRES_PORT=5432`
-   - `CORS_ALLOWED_ORIGINS=https://your-netlify-site.netlify.app`
-4. [ ] Click "Save"
-5. [ ] Service will auto-redeploy
-
-### Step 4: Run Database Migrations
-
-1. [ ] Go to backend service → "Shell" tab
-2. [ ] Run these commands:
-   ```bash
-   python manage.py migrate
-   python manage.py seed_roles
-   python manage.py seed_owasp
-   python manage.py seed_owasp_variants
-   python manage.py seed_owasp_vulnerabilities
-   python manage.py seed_owasp_cve_vulnerabilities
-   python manage.py seed_cve_vulnerabilities
-   ```
-3. [ ] Verify no errors
-
-### Step 5: Test Backend
-
-1. [ ] Visit `https://evidex-backend.onrender.com/api/` in browser
-2. [ ] Should see Django REST Framework interface or JSON response
-3. [ ] Verify no 500 errors
-
-### Step 6: Deploy Frontend to Netlify (5-10 minutes)
-
-1. [ ] Go to [netlify.com](https://netlify.com)
-2. [ ] Sign up with GitHub account
-3. [ ] Click "Add new site" → "Import an existing project"
-4. [ ] Select your GitHub repository
-5. [ ] Configure:
-   - Base directory: `frontend`
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-6. [ ] Go to "Site settings" → "Build & deploy" → "Environment"
-7. [ ] Add environment variable:
-   - `VITE_API_URL=https://evidex-backend.onrender.com`
-8. [ ] Trigger a deploy or wait for auto-deploy
-9. [ ] Note your site URL: `https://your-site.netlify.app`
-
-### Step 7: Update Backend CORS Settings
-
-1. [ ] Go back to Render backend service
-2. [ ] Update `CORS_ALLOWED_ORIGINS` environment variable with your actual Netlify URL
-3. [ ] Save and redeploy
-
-## ✅ Final Verification
-
-- [ ] Frontend loads at `https://your-site.netlify.app`
-- [ ] Login page works
-- [ ] Can sign up / login successfully
-- [ ] Backend API calls work without CORS errors
-- [ ] Database persists data correctly
-- [ ] No console errors in browser DevTools
-
-## 🔍 Troubleshooting URLs
-
-- **Render Dashboard**: https://dashboard.render.com
-- **Netlify Dashboard**: https://app.netlify.com
-- **Check Backend Logs**: Render Dashboard → Service → Logs
-- **Check Frontend Logs**: Netlify Dashboard → Site → Deploys
-
-## 💡 Tips
-
-- Both services send **wake-up requests** to inactive free apps (they sleep after 15 mins)
-- First request after sleep takes ~30 seconds
-- Monitor your deployments regularly
-- Keep your `.env` file with actual secrets locally (don't commit to GitHub)
+### Git Setup
+- [ ] Repository created on GitHub
+- [ ] All files committed: `git add .`
+- [ ] Commit message: `git commit -m "Setup: Render and Netlify deployment"`
+- [ ] Code pushed to GitHub: `git push origin main`
 
 ---
 
-**Status**: Ready for deployment! 🚀
+## Backend Deployment (Render)
+
+### 1. Create Web Service
+- [ ] Log in to https://dashboard.render.com/
+- [ ] Click "New +" → "Web Service"
+- [ ] Connect GitHub repository
+- [ ] Select `EVIDEX` repository and `main` branch
+- [ ] Name: `evidex-backend`
+- [ ] Environment: `Python 3`
+- [ ] Build Command:
+  ```bash
+  pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+  ```
+- [ ] Start Command:
+  ```bash
+  gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+  ```
+- [ ] Plan: `Free` or `Starter`
+- [ ] Click "Create Web Service"
+
+### 2. Configure Environment Variables
+In Render dashboard → Settings → Environment, add:
+- [ ] `DEBUG=False`
+- [ ] `SECRET_KEY=<secure-50-char-key>`
+- [ ] `ALLOWED_HOSTS=evidex-backend.onrender.com,localhost,127.0.0.1`
+- [ ] `POSTGRES_DB=evidex_db`
+- [ ] `POSTGRES_USER=evidex_admin`
+- [ ] `POSTGRES_PASSWORD=9obldncOifOV8OvYF7dSa3oY8kJVFWxX`
+- [ ] `POSTGRES_HOST=dpg-d5r4jb95pdvs739hdsvg-a.ohio-postgres.render.com`
+- [ ] `POSTGRES_PORT=5432`
+- [ ] `DATABASE_URL=postgresql://evidex_admin:9obldncOifOV8OvYF7dSa3oY8kJVFWxX@dpg-d5r4jb95pdvs739hdsvg-a.ohio-postgres.render.com/evidex_db`
+- [ ] `CORS_ALLOWED_ORIGINS=https://evidex.netlify.app`
+- [ ] `SECURE_SSL_REDIRECT=True`
+- [ ] `SESSION_COOKIE_SECURE=True`
+- [ ] `CSRF_COOKIE_SECURE=True`
+
+### 3. Initial Setup
+In Render Shell, run:
+- [ ] `python manage.py migrate`
+- [ ] `python manage.py seed_roles`
+- [ ] `python manage.py seed_owasp`
+- [ ] `python manage.py seed_owasp_variants`
+- [ ] `python manage.py seed_owasp_vulnerabilities`
+- [ ] `python manage.py seed_owasp_cve_vulnerabilities`
+- [ ] `python manage.py seed_cve_vulnerabilities`
+- [ ] (Optional) `python manage.py createsuperuser`
+
+### 4. Verify Backend
+- [ ] Get backend URL from Render dashboard (e.g., `https://evidex-backend.onrender.com`)
+- [ ] Visit `https://evidex-backend.onrender.com/api/` - see API root
+- [ ] Visit `https://evidex-backend.onrender.com/admin/` - see login
+- [ ] Check Logs tab for any errors
+- [ ] Database connection test in Shell: `python manage.py dbshell`
+
+---
+
+## Frontend Deployment (Netlify)
+
+### 1. Deploy to Netlify
+- [ ] Log in to https://app.netlify.com/
+- [ ] Click "Add new site" → "Import an existing project"
+- [ ] Select GitHub and authorize
+- [ ] Choose `EVIDEX` repository
+- [ ] Select `main` branch
+- [ ] Configure:
+  - [ ] Base directory: `frontend`
+  - [ ] Build command: `npm run build`
+  - [ ] Publish directory: `dist`
+- [ ] Click "Deploy site"
+- [ ] Wait for deployment to complete
+
+### 2. Verify Frontend
+- [ ] Get Netlify URL (e.g., `https://evidex.netlify.app`)
+- [ ] Visit the URL in browser
+- [ ] Check console (F12) for any errors
+- [ ] Verify API connection works
+- [ ] Test login/logout functionality
+
+---
+
+## Connect Frontend & Backend
+
+### 1. Update Backend CORS
+- [ ] Go to Render `evidex-backend` service
+- [ ] Settings → Environment
+- [ ] Update `CORS_ALLOWED_ORIGINS` with your Netlify URL
+- [ ] Save (Render will auto-redeploy)
+
+### 2. Verify Communication
+- [ ] Open frontend URL in browser
+- [ ] Open DevTools → Network tab
+- [ ] Try making an API call (login, fetch data, etc.)
+- [ ] Verify response status is 200, not CORS error
+- [ ] Check console for any warnings
+
+---
+
+## Post-Deployment Verification
+
+### Security ✅
+- [ ] `SECRET_KEY` changed to secure value
+- [ ] `DEBUG=False` in production
+- [ ] `ALLOWED_HOSTS` includes your domain
+- [ ] CORS restricted to your domain
+- [ ] HTTPS enabled (automatic)
+- [ ] No credentials in GitHub
+
+### Functionality ✅
+- [ ] API endpoints respond correctly
+- [ ] Database operations work
+- [ ] Static files load (CSS, JS, images)
+- [ ] Login/authentication works
+- [ ] Forms submit successfully
+- [ ] PDF reports generate
+- [ ] File uploads work
+- [ ] No 404 errors
+
+### Performance ✅
+- [ ] Page load time acceptable
+- [ ] No console errors
+- [ ] API responses fast
+- [ ] Database queries efficient
+- [ ] Static files cached properly
+
+### Monitoring ✅
+- [ ] Set up error logging (optional: Sentry)
+- [ ] Check Render Logs regularly
+- [ ] Monitor database performance
+- [ ] Set up alerts (optional)
+
+---
+
+## Troubleshooting
+
+### Backend Won't Deploy
+```bash
+# In Render Shell:
+python manage.py migrate
+pip install -r requirements.txt
+python manage.py collectstatic --noinput
+```
+
+### CORS Errors
+- [ ] Verify `CORS_ALLOWED_ORIGINS` includes frontend URL
+- [ ] Use full URL with https:// and www (if applicable)
+- [ ] Restart backend service
+
+### Database Errors
+- [ ] Check `DATABASE_URL` environment variable
+- [ ] Verify Render PostgreSQL service is running
+- [ ] Test in Shell: `python manage.py dbshell`
+
+### Static Files 404
+```bash
+# In Render Shell:
+python manage.py collectstatic --noinput
+```
+
+### Module Not Found
+- [ ] Update requirements.txt
+- [ ] Commit and push
+- [ ] Render will rebuild automatically
+
+---
+
+## Useful Links
+
+| Link | Purpose |
+|------|---------|
+| [https://evidex-backend.onrender.com](https://evidex-backend.onrender.com) | Backend root |
+| [https://evidex-backend.onrender.com/admin/](https://evidex-backend.onrender.com/admin/) | Admin panel |
+| [https://evidex-backend.onrender.com/api/](https://evidex-backend.onrender.com/api/) | API root |
+| [https://evidex.netlify.app](https://evidex.netlify.app) | Frontend |
+| [https://dashboard.render.com/](https://dashboard.render.com/) | Render dashboard |
+| [https://app.netlify.com/](https://app.netlify.com/) | Netlify dashboard |
+| [https://github.com/yourusername/EVIDEX](https://github.com/yourusername/EVIDEX) | GitHub repository |
+
+---
+
+## Final Commands
+
+Before you start, make sure you have:
+
+```bash
+# Generate SECRET_KEY
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+# Test locally
+cd backend
+python manage.py runserver
+
+# In another terminal
+cd frontend
+npm run dev
+
+# Push to GitHub
+git add .
+git commit -m "Deploy: EVIDEX to Render and Netlify"
+git push origin main
+```
+
+---
+
+## Success! 🎉
+
+When all checks are complete, your EVIDEX application is live!
+
+- Backend: https://evidex-backend.onrender.com
+- Frontend: https://evidex.netlify.app
+
+Monitor logs and performance regularly to ensure smooth operation.
+
+---
+
+**Last Updated**: January 26, 2026

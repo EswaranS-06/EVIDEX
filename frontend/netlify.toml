@@ -7,6 +7,15 @@
   to = "/index.html"
   status = 200
 
+# Environment configurations
 [env.production]
   [env.production.context.environment]
-    VITE_API_URL = "https://your-render-backend-url.onrender.com"
+    VITE_API_URL = "https://evidex-backend.onrender.com"
+
+[env.development]
+  [env.development.context.environment]
+    VITE_API_URL = "http://localhost:8000"
+
+# Default environment variables
+[context.environment]
+  VITE_API_URL = "http://localhost:8000"
