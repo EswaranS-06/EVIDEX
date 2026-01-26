@@ -29,10 +29,10 @@ const Login = () => {
             <div className="glass-panel auth-card animate-fade-in">
                 <div className="auth-header">
                     <div className="app-logo">
-                        <Shield size={48} className="text-secondary" style={{ display: 'block', margin: '0 auto 10px', color: 'var(--color-primary)' }} />
+                        <Shield size={42} className="brand-icon" />
                         EVIDEX
                     </div>
-                    <h2 className="auth-title">Welcome Back</h2>
+
                     <p className="auth-subtitle">Sign in to access your pentest reports</p>
 
                     {(authError || localError) && (
