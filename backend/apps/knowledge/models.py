@@ -127,15 +127,30 @@ class VulnerabilityDefinition(models.Model):
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Report(models.Model):
+    STATUS_CHOICES = [
+        ("Draft", "Draft"),
+        ("In Progress", "In Progress"),
+        ("Completed", "Completed"),
+        ("Verified", "Verified"),
+    ]
+
     client_name = models.CharField(max_length=200)
     application_name = models.CharField(max_length=200)
     report_type = models.CharField(max_length=100)
+    target = models.CharField(max_length=255)
 
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
 
     prepared_by = models.CharField(max_length=150)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Draft",
+    )
 
     created_by = models.ForeignKey(
         User,
@@ -148,6 +163,8 @@ class Report(models.Model):
 
     def __str__(self):
         return f"{self.client_name} - {self.application_name}"
+
+
 
 from apps.knowledge.models import VulnerabilityDefinition  
 

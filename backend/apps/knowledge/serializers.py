@@ -79,6 +79,9 @@ class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
 # -------------------------
 
 class ReportSerializer(serializers.ModelSerializer):
+    findings_count = serializers.SerializerMethodField()
+    severity_counts = serializers.SerializerMethodField()
+
     class Meta:
         model = Report
         fields = [
@@ -86,9 +89,13 @@ class ReportSerializer(serializers.ModelSerializer):
             "client_name",
             "application_name",
             "report_type",
+            "target",
             "start_date",
             "end_date",
             "prepared_by",
+            "findings_count",
+            "severity_counts",
+            "status", # Added status field
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]

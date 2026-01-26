@@ -1,0 +1,97 @@
+/* Authentication Layout */
+.auth-container {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top right, #1a0b2e 0%, var(--color-bg-dark) 60%);
+    padding: var(--spacing-md);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Background decorations */
+.auth-bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+    opacity: 0.5;
+}
+
+.circle-1 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(142, 45, 226, 0.2), transparent);
+    top: -200px;
+    right: -200px;
+}
+
+.circle-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.15), transparent);
+    bottom: -100px;
+    left: -100px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 3rem;
+    z-index: 1;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.app-logo {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #fff 0%, var(--color-primary) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.auth-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-main);
+    letter-spacing: -0.01em;
+}
+
+.auth-subtitle {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.auth-footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.auth-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.25rem;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
