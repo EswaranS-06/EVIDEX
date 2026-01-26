@@ -1,22 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import api from '../api/axios';
 import { getEvidence, uploadEvidence, deleteEvidence } from '../api/evidence';
 
 import { ChevronLeft, RefreshCw, Plus, Upload, File, Trash2, Save } from 'lucide-react';
 
 const FindingDetail = () => {
-    const { id } = useParams();
+    const { reportId, id } = useParams();
     const navigate = useNavigate();
     const isNew = id === 'new';
-
-    // Mock Database for Defaults
-    const defaults = {
-        title: 'SQL Injection',
-        source: 'OWASP A03:2021-Injection',
-        description: 'SQL injection errors occur when:\n1. Data enters a program from an untrusted source.\n2. The data is used to dynamically construct a SQL query.',
-        impact: 'An attacker can read sensitive data from the database, modify database data (Insert/Update/Delete), execute administration operations on the database (such as shutdown the DBMS), recover the content of a given file present on the DBMS file system and in some cases issue commands to the operating system.',
-        remediation: '1. Use prepared statements (with parameterized queries).\n2. Use stored procedures.\n3. Validate user input.'
-    };
 
     // Form State
     const [title, setTitle] = useState('');
@@ -24,33 +16,44 @@ const FindingDetail = () => {
     const [description, setDescription] = useState('');
     const [impact, setImpact] = useState('');
     const [remediation, setRemediation] = useState('');
+    const [loading, setLoading] = useState(!isNew);
 
-    // Load data on mount
+    // Load data from Backend
     useEffect(() => {
-        const savedData = localStorage.getItem(`finding_${id}`);
-        if (savedData) {
-            const data = JSON.parse(savedData);
-            setTitle(data.title);
-            setSeverity(data.severity);
-            setDescription(data.description);
-            setImpact(data.impact);
-            setRemediation(data.remediation);
-            if (data.evidence) {
-                // If evidence matches local format (with file objects), it might break. 
-                // But since we are moving to backend, we ignore local evidence for display if possible,
-                // or we rely on the separate evidence fetch.
-                // Let's not load evidence from local storage if we are fetching from API
-                // setEvidenceList(data.evidence); 
-            }
-        } else if (!isNew) {
-            // Use defaults if editing existing but no local changes yet
-            setTitle(defaults.title);
-            setSeverity('High');
-            setDescription(defaults.description);
-            setImpact(defaults.impact);
-            setRemediation(defaults.remediation);
+        if (!isNew) {
+            const fetchData = async () => {
+                setLoading(true);
+                try {
+                    let response;
+                    if (reportId) {
+                        // Editing a specific finding in a report
+                        response = await api.get(`/api/reports/${reportId}/findings/${id}/`);
+                        const f = response.data;
+                        setTitle(f.final_title);
+                        setSeverity(f.final_severity);
+                        setDescription(f.final_description);
+                        setImpact(f.final_impact);
+                        setRemediation(f.final_remediation);
+                        fetchEvidence();
+                    } else {
+                        // Editing a global vulnerability definition
+                        response = await api.get(`/api/vulnerabilities/${id}/`);
+                        const v = response.data;
+                        setTitle(v.name);
+                        setSeverity(v.severity);
+                        setDescription(v.description);
+                        setImpact(v.impact);
+                        setRemediation(v.remediation);
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch data", err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchData();
         }
-    }, [id, isNew]);
+    }, [id, reportId, isNew]);
 
     const severityColors = {
         'Low': { bg: 'rgba(0, 240, 255, 0.1)', text: 'var(--color-primary)', border: 'var(--color-primary)' },
@@ -59,34 +62,15 @@ const FindingDetail = () => {
         'Critical': { bg: 'rgba(142, 45, 226, 0.2)', text: 'var(--color-secondary)', border: 'var(--color-secondary)' }
     };
 
-    // Tracking Edits (for "Using default" badge) - only relevant if not new
-    const [isDescdefault, setIsDescDefault] = useState(!isNew);
-    const [isImpactDefault, setIsImpactDefault] = useState(!isNew);
-    const [isRemediationDefault, setIsRemediationDefault] = useState(!isNew);
 
-    const handleReset = (field) => {
-        if (field === 'description') {
-            setDescription(defaults.description);
-            setIsDescDefault(true);
-        } else if (field === 'impact') {
-            setImpact(defaults.impact);
-            setIsImpactDefault(true);
-        } else if (field === 'remediation') {
-            setRemediation(defaults.remediation);
-            setIsRemediationDefault(true);
-        }
-    };
 
     const handleEdit = (field, value) => {
         if (field === 'description') {
             setDescription(value);
-            setIsDescDefault(!isNew && value === defaults.description);
         } else if (field === 'impact') {
             setImpact(value);
-            setIsImpactDefault(!isNew && value === defaults.impact);
         } else if (field === 'remediation') {
             setRemediation(value);
-            setIsRemediationDefault(!isNew && value === defaults.remediation);
         }
     };
 
@@ -94,7 +78,7 @@ const FindingDetail = () => {
     const [evidenceList, setEvidenceList] = useState([]);
     const [showUploadForm, setShowUploadForm] = useState(false);
     const [newEvidence, setNewEvidence] = useState({ title: '', file: null, notes: '' });
-    const fileInputRef = React.useRef(null);
+    const fileInputRef = useRef(null);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -140,27 +124,41 @@ const FindingDetail = () => {
         }
     };
 
-    const handleSave = () => {
-        // Collect all updated data
-        const savedData = {
-            title,
+    const handleSave = async () => {
+        const payload = reportId ? {
+            final_title: title,
+            final_severity: severity,
+            final_description: description,
+            final_impact: impact,
+            final_remediation: remediation
+        } : {
+            name: title,
             severity,
             description,
             impact,
-            remediation,
-            evidence: evidenceList
+            remediation
         };
 
-        // Save to localStorage for mock persistence
-        localStorage.setItem(`finding_${id}`, JSON.stringify(savedData));
-
-        console.log('Saving OWASP Vulnerability:', savedData);
-
-        // Show success feedback
-        alert('OWASP Vulnerability saved successfully!');
-
-        // Navigate back to the previous page
-        navigate(-1);
+        try {
+            if (reportId) {
+                if (isNew) {
+                    await api.post(`/api/reports/${reportId}/findings/`, payload);
+                } else {
+                    await api.patch(`/api/reports/${reportId}/findings/${id}/`, payload);
+                }
+            } else {
+                if (isNew) {
+                    await api.post(`/api/vulnerabilities/`, payload);
+                } else {
+                    await api.patch(`/api/vulnerabilities/${id}/`, payload);
+                }
+            }
+            alert('Saved successfully!');
+            navigate(-1);
+        } catch (err) {
+            console.error("Save failed", err);
+            alert("Failed to save.");
+        }
     };
 
     return (
@@ -239,27 +237,12 @@ const FindingDetail = () => {
                         </span>
                     </h1>
                 )}
-                {!isNew && <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>Source: {defaults.source}</div>}
             </div>
 
             {/* Description Field */}
             <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                     <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>Description</label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        {!isNew && (
-                            <>
-                                <span style={{ fontSize: '0.75rem', color: isDescdefault ? 'var(--color-text-muted)' : 'var(--color-primary)' }}>
-                                    {isDescdefault ? '(Using default)' : '(Edited)'}
-                                </span>
-                                {!isDescdefault && (
-                                    <button onClick={() => handleReset('description')} className="btn-ghost" style={{ padding: '2px 8px', fontSize: '0.75rem', height: 'auto' }}>
-                                        <RefreshCw size={12} style={{ marginRight: '4px' }} /> Reset
-                                    </button>
-                                )}
-                            </>
-                        )}
-                    </div>
                 </div>
                 <textarea
                     className="input-field"
@@ -273,20 +256,6 @@ const FindingDetail = () => {
             <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                     <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>Impact</label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        {!isNew && (
-                            <>
-                                <span style={{ fontSize: '0.75rem', color: isImpactDefault ? 'var(--color-text-muted)' : 'var(--color-primary)' }}>
-                                    {isImpactDefault ? '(Using default)' : '(Edited)'}
-                                </span>
-                                {!isImpactDefault && (
-                                    <button onClick={() => handleReset('impact')} className="btn-ghost" style={{ padding: '2px 8px', fontSize: '0.75rem', height: 'auto' }}>
-                                        <RefreshCw size={12} style={{ marginRight: '4px' }} /> Reset
-                                    </button>
-                                )}
-                            </>
-                        )}
-                    </div>
                 </div>
                 <textarea
                     className="input-field"
@@ -300,20 +269,6 @@ const FindingDetail = () => {
             <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                     <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>Remediation</label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        {!isNew && (
-                            <>
-                                <span style={{ fontSize: '0.75rem', color: isRemediationDefault ? 'var(--color-text-muted)' : 'var(--color-primary)' }}>
-                                    {isRemediationDefault ? '(Using default)' : '(Edited)'}
-                                </span>
-                                {!isRemediationDefault && (
-                                    <button onClick={() => handleReset('remediation')} className="btn-ghost" style={{ padding: '2px 8px', fontSize: '0.75rem', height: 'auto' }}>
-                                        <RefreshCw size={12} style={{ marginRight: '4px' }} /> Reset
-                                    </button>
-                                )}
-                            </>
-                        )}
-                    </div>
                 </div>
                 <textarea
                     className="input-field"
@@ -336,11 +291,8 @@ const FindingDetail = () => {
                 </div>
 
                 {/* Evidence List */}
-                {evidenceList.map((item, index) => (
+                {evidenceList.map((item) => (
                     <div key={item.id} className="glass-panel" style={{ padding: '20px', marginBottom: '16px', position: 'relative' }}>
-                        <div style={{ position: 'absolute', top: '20px', right: '20px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-                            {/* Evidence Index */}
-                        </div>
                         <h3 style={{ marginBottom: '10px', fontSize: '1.1rem' }}>{item.title}</h3>
                         {item.description && <p style={{ color: 'var(--color-text-muted)', marginBottom: '15px', fontSize: '0.9rem' }}>{item.description}</p>}
 
