@@ -48,7 +48,7 @@ def test_pdf(request):
 # REPORT CRUD
 # -------------------------
 class ReportViewSet(ModelViewSet):
-    queryset = Report.objects.all().order_by("-created_at")
+    queryset = Report.objects.all().order_by("-created_at").prefetch_related("findings__vulnerability")
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
 

@@ -6,27 +6,18 @@ from .models import (
     VulnerabilityDefinition,
     Report,
     ReportFinding,
-    FindingEvidence,
 )
-
-# -------------------------
-# OWASP / Vulnerability
-# -------------------------
 
 class OWASPCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = OWASPCategory
         fields = "__all__"
-
-
 class OWASPVulnerabilitySerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField(source="category.name")
 
     class Meta:
         model = OWASPVulnerability
         fields = "__all__"
-
-
 class VulnerabilityVariantSerializer(serializers.ModelSerializer):
     owasp_vulnerability_name = serializers.ReadOnlyField(
         source="owasp_vulnerability.name"
@@ -79,6 +70,9 @@ class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
 # -------------------------
 
 class ReportSerializer(serializers.ModelSerializer):
+    findings_count = serializers.SerializerMethodField()
+    severity_counts = serializers.SerializerMethodField()
+
     class Meta:
         model = Report
         fields = [
@@ -86,13 +80,17 @@ class ReportSerializer(serializers.ModelSerializer):
             "client_name",
             "application_name",
             "report_type",
+            "target",
             "start_date",
             "end_date",
             "prepared_by",
+            "findings_count",
+            "severity_counts",
+            "status", # Added status field
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
-
+        
     def validate(self, data):
         start = data.get("start_date")
         end = data.get("end_date")
@@ -103,28 +101,6 @@ class ReportSerializer(serializers.ModelSerializer):
             )
         return data
 
-
-# -------------------------
-# EVIDENCE
-# -------------------------
-
-class FindingEvidenceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FindingEvidence
-        fields = [
-            "id",
-            "finding",
-            "title",
-            "file",
-            "description",
-            "created_at",
-        ]
-        read_only_fields = ["id", "created_at", "finding"]
-
-
-# -------------------------
-# REPORT FINDINGS (THE IMPORTANT ONE)
-# -------------------------
 
 class ReportFindingSerializer(serializers.ModelSerializer):
     # Final computed fields

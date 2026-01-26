@@ -1,0 +1,1075 @@
+openapi: 3.0.3
+info:
+  title: My API
+  version: 1.0.0
+  description: API documentation
+paths:
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/evidences/{id}/:
+    delete:
+      operationId: evidences_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - evidences
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/findings/{finding_id}/evidences/:
+    get:
+      operationId: findings_evidences_retrieve
+      parameters:
+      - in: path
+        name: finding_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: findings_evidences_create
+      parameters:
+      - in: path
+        name: finding_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/findings/{id}/:
+    patch:
+      operationId: findings_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: findings_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/owasp/categories/:
+    get:
+      operationId: owasp_categories_list
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OWASPCategory'
+          description: ''
+    post:
+      operationId: owasp_categories_create
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OWASPCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OWASPCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OWASPCategory'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OWASPCategory'
+          description: ''
+  /api/owasp/variants/:
+    get:
+      operationId: owasp_variants_list
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VulnerabilityVariant'
+          description: ''
+    post:
+      operationId: owasp_variants_create
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityVariant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityVariant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityVariant'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityVariant'
+          description: ''
+  /api/owasp/vulnerabilities/:
+    get:
+      operationId: owasp_vulnerabilities_list
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OWASPVulnerability'
+          description: ''
+    post:
+      operationId: owasp_vulnerabilities_create
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OWASPVulnerability'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OWASPVulnerability'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OWASPVulnerability'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OWASPVulnerability'
+          description: ''
+  /api/owasp/vulnerabilities/{id}/:
+    get:
+      operationId: owasp_vulnerabilities_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OWASPVulnerability'
+          description: ''
+  /api/owasp/vulnerabilities/{vuln_id}/variants/:
+    get:
+      operationId: owasp_vulnerabilities_variants_list
+      parameters:
+      - in: path
+        name: vuln_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VulnerabilityVariant'
+          description: ''
+  /api/reports/:
+    get:
+      operationId: reports_list
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+          description: ''
+    post:
+      operationId: reports_create
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Report'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Report'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+  /api/reports/{id}/:
+    get:
+      operationId: reports_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+    patch:
+      operationId: reports_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReport'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+    delete:
+      operationId: reports_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reports/{report_id}/findings/:
+    get:
+      operationId: reports_findings_retrieve
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: reports_findings_create
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - ht
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/vulnerabilities/:
+    get:
+      operationId: vulnerabilities_list
+      tags:
+      - vulnerabilities
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+    post:
+      operationId: vulnerabilities_create
+      tags:
+      - vulnerabilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+  /api/vulnerabilities/{id}/:
+    get:
+      operationId: vulnerabilities_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - vulnerabilities
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+    put:
+      operationId: vulnerabilities_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - vulnerabilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+    patch:
+      operationId: vulnerabilities_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - vulnerabilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVulnerabilityDefinition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVulnerabilityDefinition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVulnerabilityDefinition'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+    delete:
+      operationId: vulnerabilities_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - vulnerabilities
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    OWASPCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    OWASPVulnerability:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        default_severity:
+          type: string
+          maxLength: 20
+        default_impact:
+          type: string
+        default_remediation:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        category:
+          type: integer
+      required:
+      - category
+      - category_name
+      - created_at
+      - default_impact
+      - default_remediation
+      - default_severity
+      - description
+      - id
+      - name
+      - updated_at
+    PatchedReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        client_name:
+          type: string
+          maxLength: 200
+        application_name:
+          type: string
+          maxLength: 200
+        report_type:
+          type: string
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        prepared_by:
+          type: string
+          maxLength: 150
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedVulnerabilityDefinition:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        source_type:
+          $ref: '#/components/schemas/SourceTypeEnum'
+        cve_id:
+          type: string
+          nullable: true
+          maxLength: 50
+        cvss_score:
+          type: number
+          format: double
+          nullable: true
+        cvss_vector:
+          type: string
+          nullable: true
+          maxLength: 200
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        description:
+          type: string
+        impact:
+          type: string
+        remediation:
+          type: string
+        references:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        owasp_category:
+          type: integer
+          nullable: true
+        owasp_vulnerability:
+          type: integer
+          nullable: true
+        variant:
+          type: integer
+          nullable: true
+        created_by:
+          type: integer
+          nullable: true
+    Report:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        client_name:
+          type: string
+          maxLength: 200
+        application_name:
+          type: string
+          maxLength: 200
+        report_type:
+          type: string
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        prepared_by:
+          type: string
+          maxLength: 150
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - application_name
+      - client_name
+      - created_at
+      - id
+      - prepared_by
+      - report_type
+    SeverityEnum:
+      enum:
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+      - LOW
+      type: string
+      description: |-
+        * `CRITICAL` - Critical
+        * `HIGH` - High
+        * `MEDIUM` - Medium
+        * `LOW` - Low
+    SourceTypeEnum:
+      enum:
+      - OWASP
+      - CVE
+      - CUSTOM
+      type: string
+      description: |-
+        * `OWASP` - OWASP
+        * `CVE` - CVE
+        * `CUSTOM` - Custom
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    VulnerabilityDefinition:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        source_type:
+          $ref: '#/components/schemas/SourceTypeEnum'
+        cve_id:
+          type: string
+          nullable: true
+          maxLength: 50
+        cvss_score:
+          type: number
+          format: double
+          nullable: true
+        cvss_vector:
+          type: string
+          nullable: true
+          maxLength: 200
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        description:
+          type: string
+        impact:
+          type: string
+        remediation:
+          type: string
+        references:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        owasp_category:
+          type: integer
+          nullable: true
+        owasp_vulnerability:
+          type: integer
+          nullable: true
+        variant:
+          type: integer
+          nullable: true
+        created_by:
+          type: integer
+          nullable: true
+      required:
+      - created_at
+      - description
+      - id
+      - impact
+      - remediation
+      - severity
+      - source_type
+      - title
+      - updated_at
+    VulnerabilityVariant:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        owasp_vulnerability_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        owasp_vulnerability:
+          type: integer
+      required:
+      - id
+      - name
+      - owasp_vulnerability
+      - owasp_vulnerability_name
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
