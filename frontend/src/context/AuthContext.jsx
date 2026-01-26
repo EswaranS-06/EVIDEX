@@ -33,11 +33,11 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
-    const login = async (email, password) => {
+    const login = async (username, password) => {
         setError(null);
         try {
             const response = await api.post('/api/auth/login/', {
-                username: email, // Backend might expect 'username' even if we use email
+                username: username,
                 password: password,
             });
 
@@ -49,7 +49,8 @@ export const AuthProvider = ({ children }) => {
             await checkAuth();
             return true;
         } catch (err) {
-            setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+            console.error('Login error:', err.response?.data || err);
+            setError(err.response?.data?.error || err.response?.data?.detail || 'Login failed. Please check your credentials.');
             return false;
         }
     };

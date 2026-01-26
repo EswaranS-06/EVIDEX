@@ -32,7 +32,11 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Error Handlers - for custom error templates
+if not DEBUG:
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
 
+ALLOWED_HOSTS += ['https://evidex-iz2p.onrender.com']
 # Application definition
 
 INSTALLED_APPS = [

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>400 - Bad Request | EVIDEX</title>
+    <style>
+        :root {
+            --color-bg-dark: #05070a;
+            --color-bg-card: rgba(15, 20, 28, 0.8);
+            --color-primary: #00f0ff;
+            --color-primary-glow: rgba(0, 240, 255, 0.3);
+            --color-secondary: #8e2de2;
+            --color-accent: #f72585;
+            --color-text-main: #f8f9fa;
+            --color-text-muted: #94a3b8;
+            --color-warning: #fee440;
+            --glass-bg: rgba(15, 20, 28, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-blur: blur(16px);
+            --radius-lg: 16px;
+            --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.4);
+            --font-family-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-bg-dark);
+            color: var(--color-text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(142, 45, 226, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 240, 255, 0.05) 0px, transparent 50%);
+        }
+
+        .error-container {
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top right, #1a0b2e 0%, var(--color-bg-dark) 60%);
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .error-bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.5;
+        }
+
+        .circle-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(142, 45, 226, 0.2), transparent);
+            top: -200px;
+            right: -200px;
+        }
+
+        .circle-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.15), transparent);
+            bottom: -100px;
+            left: -100px;
+        }
+
+        .error-card {
+            width: 100%;
+            max-width: 500px;
+            padding: 3rem;
+            z-index: 1;
+            position: relative;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            text-align: center;
+            animation: fade-in 0.5s ease-out;
+        }
+
+        .error-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .error-code {
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #fee440 0%, #f72585 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: var(--font-family-display);
+            line-height: 1;
+        }
+
+        .error-icon {
+            width: 64px;
+            height: 64px;
+            color: var(--color-warning);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .error-content {
+            margin-bottom: 2.5rem;
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--color-text-main);
+            letter-spacing: -0.01em;
+            font-family: var(--font-family-display);
+        }
+
+        .error-subtitle {
+            color: var(--color-text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .error-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-size: 0.875rem;
+            text-decoration: none;
+            width: 100%;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8e2de2, #5a00d6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(142, 45, 226, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(142, 45, 226, 0.5);
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--color-text-muted);
+            border: 1px solid transparent;
+        }
+
+        .btn-ghost:hover {
+            color: var(--color-text-main);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .error-card {
+                padding: 2rem;
+                max-width: 100%;
+            }
+
+            .error-code {
+                font-size: 3.5rem;
+            }
+
+            .error-title {
+                font-size: 1.5rem;
+            }
+
+            .error-icon {
+                width: 48px;
+                height: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-bg-circle circle-1"></div>
+        <div class="error-bg-circle circle-2"></div>
+
+        <div class="error-card">
+            <div class="error-header">
+                <div class="error-code">400</div>
+                <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0v2m0-6v-2m0 6v2m6-6a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+            </div>
+
+            <div class="error-content">
+                <h1 class="error-title">Bad Request</h1>
+                <p class="error-subtitle">
+                    Your request couldn't be processed. Please check your input and try again.
+                </p>
+            </div>
+
+            <div class="error-actions">
+                <a href="/" class="btn btn-primary">Go to Dashboard</a>
+                <button onclick="history.back()" class="btn btn-ghost">Go Back</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

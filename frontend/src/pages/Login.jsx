@@ -6,7 +6,7 @@ import '../styles/Auth.css';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [localError, setLocalError] = useState('');
     const { login, error: authError } = useAuth();
@@ -15,7 +15,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLocalError('');
-        const success = await login(email, password);
+        const success = await login(username, password);
         if (success) {
             navigate('/dashboard');
         }
@@ -53,7 +53,7 @@ const Login = () => {
 
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">
-                        <label className="input-label">Username / Email</label>
+                        <label className="input-label">Username</label>
                         <div style={{ position: 'relative' }}>
                             <User size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
                             <input
@@ -61,8 +61,8 @@ const Login = () => {
                                 className="input-field"
                                 placeholder="Enter your username"
                                 style={{ paddingLeft: '40px', width: '100%' }}
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 required
                             />
                         </div>
