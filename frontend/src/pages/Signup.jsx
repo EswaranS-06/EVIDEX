@@ -48,7 +48,7 @@ const Signup = () => {
             <div className="glass-panel auth-card animate-fade-in">
                 <div className="auth-header">
                     <div className="app-logo">
-                        <Shield size={48} className="text-secondary" style={{ display: 'block', margin: '0 auto 10px', color: 'var(--color-secondary)' }} />
+                        <Shield size={42} className="brand-icon" />
                         EVIDEX
                     </div>
                     <h2 className="auth-title">Create Account</h2>
