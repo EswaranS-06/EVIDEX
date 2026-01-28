@@ -38,10 +38,11 @@ urlpatterns = [
     path("test/report/", test_report_preview),
     path("test/pdf/", test_pdf),
 
-    # ✅ ONLY ONE preview route (WITH int)
-    path("api/reports/<int:report_id>/preview/", report_preview),
+    # # ✅ ONLY ONE preview route (WITH int)
+    # path("api/reports/<int:report_id>/preview/", report_preview),
     
-    path("api/reports/<int:report_id>/pdf/", report_pdf),
+    # path("api/reports/<int:report_id>/pdf/", report_pdf),
+    
     # OpenAPI schema
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
 

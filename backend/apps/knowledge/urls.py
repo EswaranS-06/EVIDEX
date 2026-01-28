@@ -18,6 +18,9 @@ from .report_views import (
     EvidenceDeleteView,
 )
 
+from .report_preview_views import report_preview
+from .report_pdf_views import report_pdf
+
 urlpatterns = [
     # -----------------------
     # OWASP APIs
@@ -79,6 +82,12 @@ urlpatterns = [
         "evidences/<int:pk>/",
         EvidenceDeleteView.as_view(),
     ),
+    
+    # ✅ ONLY ONE preview route (WITH int)
+    path("api/reports/<int:report_id>/preview/", report_preview),
+    
+    path("api/reports/<int:report_id>/pdf/", report_pdf),
+    
 ]
 
 from django.conf import settings
