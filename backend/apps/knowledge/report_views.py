@@ -80,8 +80,17 @@ class ReportFindingListCreateView(APIView):
 
         serializer = ReportFindingSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(report=report)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            finding = serializer.save(report=report)
+            # Refresh finding with proper relationships for response
+            finding = (
+                ReportFinding.objects
+                .filter(id=finding.id)
+                .select_related("vulnerability")
+                .prefetch_related("evidences")
+                .first()
+            )
+            response_serializer = ReportFindingSerializer(finding)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -89,13 +98,37 @@ class ReportFindingListCreateView(APIView):
 class ReportFindingDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def _get_finding(self, pk, report_id=None):
+        """Get finding with proper relationships loaded"""
+        if report_id:
+            finding = (
+                ReportFinding.objects
+                .filter(id=pk, report_id=report_id)
+                .select_related("vulnerability")
+                .prefetch_related("evidences")
+                .first()
+            )
+            if not finding:
+                raise get_object_or_404(ReportFinding, id=pk, report_id=report_id)
+        else:
+            finding = (
+                ReportFinding.objects
+                .filter(id=pk)
+                .select_related("vulnerability")
+                .prefetch_related("evidences")
+                .first()
+            )
+            if not finding:
+                raise get_object_or_404(ReportFinding, id=pk)
+        return finding
+
     def get(self, request, pk, report_id=None):
-        finding = get_object_or_404(ReportFinding, id=pk)
+        finding = self._get_finding(pk, report_id)
         serializer = ReportFindingSerializer(finding)
         return Response(serializer.data)
 
     def patch(self, request, pk, report_id=None):
-        finding = get_object_or_404(ReportFinding, id=pk)
+        finding = self._get_finding(pk, report_id)
 
         serializer = ReportFindingSerializer(
             finding,
@@ -105,12 +138,15 @@ class ReportFindingDetailView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            # Refresh to get updated relationships
+            finding = self._get_finding(pk, report_id)
+            response_serializer = ReportFindingSerializer(finding)
+            return Response(response_serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, report_id=None):
-        finding = get_object_or_404(ReportFinding, id=pk)
+        finding = self._get_finding(pk, report_id)
         finding.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
