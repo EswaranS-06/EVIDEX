@@ -95,6 +95,88 @@ class ReportFindingListCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class BulkReportFindingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, report_id):
+        """
+        Bulk create findings for a report.
+        
+        Expected payload: list of finding objects
+        [
+            {"vulnerability": 1, "tester_title": "...", ...},
+            {"vulnerability": 2, "tester_description": "...", ...},
+            ...
+        ]
+        """
+        report = get_object_or_404(Report, id=report_id)
+
+        # Validate that data is a list
+        if not isinstance(request.data, list):
+            return Response(
+                {"error": "Expected a list of findings"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(request.data) == 0:
+            return Response(
+                {"error": "At least one finding is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        created_findings = []
+        errors = []
+
+        for idx, finding_data in enumerate(request.data):
+            serializer = ReportFindingSerializer(data=finding_data)
+            
+            if serializer.is_valid():
+                finding = serializer.save(report=report)
+                # Refresh with proper relationships
+                finding = (
+                    ReportFinding.objects
+                    .filter(id=finding.id)
+                    .select_related("vulnerability")
+                    .prefetch_related("evidences")
+                    .first()
+                )
+                response_serializer = ReportFindingSerializer(finding)
+                created_findings.append(response_serializer.data)
+            else:
+                errors.append({
+                    "index": idx,
+                    "data": finding_data,
+                    "errors": serializer.errors
+                })
+
+        # If all failed, return error
+        if not created_findings:
+            return Response(
+                {"errors": errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # If some succeeded and some failed, return partial success
+        if errors:
+            return Response(
+                {
+                    "created": created_findings,
+                    "errors": errors,
+                    "message": f"Created {len(created_findings)} findings with {len(errors)} errors"
+                },
+                status=status.HTTP_207_MULTI_STATUS  # Partial success
+            )
+
+        # All succeeded
+        return Response(
+            {
+                "created": created_findings,
+                "message": f"Successfully created {len(created_findings)} findings"
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+
 class ReportFindingDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
