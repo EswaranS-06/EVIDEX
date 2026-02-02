@@ -89,7 +89,12 @@ class ReportFindingListCreateView(APIView):
 class ReportFindingDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def patch(self, request, pk):
+    def get(self, request, pk, report_id=None):
+        finding = get_object_or_404(ReportFinding, id=pk)
+        serializer = ReportFindingSerializer(finding)
+        return Response(serializer.data)
+
+    def patch(self, request, pk, report_id=None):
         finding = get_object_or_404(ReportFinding, id=pk)
 
         serializer = ReportFindingSerializer(
@@ -104,7 +109,7 @@ class ReportFindingDetailView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk):
+    def delete(self, request, pk, report_id=None):
         finding = get_object_or_404(ReportFinding, id=pk)
         finding.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

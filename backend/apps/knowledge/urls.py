@@ -67,6 +67,10 @@ urlpatterns = [
         "findings/<int:pk>/",
         ReportFindingDetailView.as_view(),
     ),
+    path(
+        "reports/<int:report_id>/findings/<int:pk>/",
+        ReportFindingDetailView.as_view(),
+    ),
 
     # -----------------------
     # ✅ EVIDENCE APIs (FIXED)

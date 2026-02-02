@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Reports = lazy(() => import('./pages/Reports'));
 const ReportDetails = lazy(() => import('./pages/ReportDetails'));
 const FindingDetail = lazy(() => import('./pages/FindingDetail'));
+const ReportStatus = lazy(() => import('./pages/ReportStatus'));
 
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -35,6 +36,7 @@ function App() {
                   <Route path="/report/:id" element={<ReportDetails />} />
                   <Route path="/report/:reportId/finding/:id" element={<FindingDetail />} />
                   <Route path="/finding/:id" element={<FindingDetail />} />
+                  <Route path="/report-status" element={<ReportStatus />} />
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 </Route>
               </Route>

@@ -205,6 +205,16 @@ class ReportFinding(models.Model):
     tester_description = models.TextField(blank=True)
     tester_impact = models.TextField(blank=True)
     tester_remediation = models.TextField(blank=True)
+    
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Patched", "Patched"),
+    ]
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Pending",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 

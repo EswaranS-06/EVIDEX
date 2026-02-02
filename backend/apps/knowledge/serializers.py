@@ -159,6 +159,7 @@ class ReportFindingSerializer(serializers.ModelSerializer):
     final_description = serializers.ReadOnlyField()
     final_impact = serializers.ReadOnlyField()
     final_remediation = serializers.ReadOnlyField()
+    vulnerability_name = serializers.ReadOnlyField(source="vulnerability.title")
 
     # Nested evidences (needed for API + PDF)
     evidences = FindingEvidenceSerializer(many=True, read_only=True)
@@ -185,10 +186,12 @@ class ReportFindingSerializer(serializers.ModelSerializer):
             "final_description",
             "final_impact",
             "final_remediation",
+            "vulnerability_name",
 
             # Evidence
             "evidences",
 
+            "status",
             "created_at",
         ]
         read_only_fields = [

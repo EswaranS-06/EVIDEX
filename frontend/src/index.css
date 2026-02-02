@@ -169,9 +169,8 @@ h4,
 
 @media (max-width: 1280px) {
   .report-details-wrapper {
-    /* Prevent side-by-side overflow on medium screens */
-    flex-direction: column;
-    overflow-y: auto;
+    /* Ensure it stays flex but allow internal scrolling if needed */
+    flex-direction: row; 
   }
 }
 

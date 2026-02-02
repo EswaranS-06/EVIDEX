@@ -199,7 +199,7 @@ const ReportDetails = () => {
     }, [owaspCategories, searchTerm]);
 
     return (
-        <div className="report-details-wrapper" style={{ height: 'calc(100vh - 80px)' }}>
+        <div className="report-details-wrapper" style={{ height: '100%' }}>
             {/* Center Content Area - Resizes based on sidebar */}
             <div style={{
                 flex: 1,

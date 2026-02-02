@@ -41,7 +41,7 @@ const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSid
 
                 <NavLink
                     to="/reports"
-                    className={`nav-item ${location.pathname.startsWith('/report') ? 'active' : ''}`}
+                    className={`nav-item ${location.pathname === '/reports' ? 'active' : ''}`}
                     onClick={isMobile ? closeMobileSidebar : undefined}
                     style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
                     title={isCollapsed ? "Reports" : ""}
@@ -50,6 +50,19 @@ const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSid
                     <span style={{
                         display: isCollapsed ? 'none' : 'block'
                     }}>Reports</span>
+                </NavLink>
+
+                <NavLink
+                    to="/report-status"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    onClick={isMobile ? closeMobileSidebar : undefined}
+                    style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
+                    title={isCollapsed ? "Report Status" : ""}
+                >
+                    <Shield size={iconSize} style={{ minWidth: `${iconSize}px` }} />
+                    <span style={{
+                        display: isCollapsed ? 'none' : 'block'
+                    }}>Report Status</span>
                 </NavLink>
 
 
