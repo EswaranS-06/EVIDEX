@@ -977,9 +977,9 @@ uritemplate==4.2.0 \
     # via
     #   drf-spectacular
     #   drf-yasg
-weasyprint==67.0 \
-    --hash=sha256:abc2f40872ea01c29c11f7799dafc4b23c078335bf7777f72a8affeb36e1d201 \
-    --hash=sha256:fdfbccf700e8086c8fd1607ec42e25d4b584512c29af2d9913587a4e448dead4
+weasyprint==68.0 \
+    --hash=sha256:447f40898b747cb44ac31a5d493d512e7441fd56e13f63744c099383bbf9cda9 \
+    --hash=sha256:c2cb40c71b50837c5971f00171c9e4078e8c9912dd7c217f3e90e068f11e8aa1
     # via backend
 webencodings==0.5.1 \
     --hash=sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78 \
