@@ -13,6 +13,7 @@ from .views import (
 from .report_views import (
     ReportViewSet,
     ReportFindingListCreateView,
+    BulkReportFindingsView,
     ReportFindingDetailView,
     EvidenceListCreateView,
     EvidenceDeleteView,
@@ -64,7 +65,15 @@ urlpatterns = [
         ReportFindingListCreateView.as_view(),
     ),
     path(
+        "reports/<int:report_id>/bulk-findings/",
+        BulkReportFindingsView.as_view(),
+    ),
+    path(
         "findings/<int:pk>/",
+        ReportFindingDetailView.as_view(),
+    ),
+    path(
+        "reports/<int:report_id>/findings/<int:pk>/",
         ReportFindingDetailView.as_view(),
     ),
 
