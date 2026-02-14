@@ -1,4 +1,6 @@
 from django.urls import path
+from .reports.views import report_preview, report_pdf
+
 
 from .views import (
     OWASPCategoryListCreateView,
@@ -18,6 +20,9 @@ from .report_views import (
     EvidenceListCreateView,
     EvidenceDeleteView,
 )
+
+from .report_preview_views import report_preview
+from .reports.report_pdf_views import report_pdf
 
 urlpatterns = [
     # -----------------------
@@ -88,6 +93,12 @@ urlpatterns = [
         "evidences/<int:pk>/",
         EvidenceDeleteView.as_view(),
     ),
+    
+    # ✅ ONLY ONE preview route (WITH int)
+    path("reports/<int:report_id>/preview/", report_preview),
+    
+    path("reports/<int:report_id>/pdf/", report_pdf),
+    
 ]
 
 from django.conf import settings
