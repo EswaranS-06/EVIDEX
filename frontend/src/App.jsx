@@ -15,37 +15,40 @@ const ReportStatus = lazy(() => import('./pages/ReportStatus'));
 const CreateReport = lazy(() => import('./pages/CreateReport'));
 
 import { AuthProvider } from './context/AuthContext';
+import { ModalProvider } from './context/ModalContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/MainLayout';
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <ScrollToTop />
-        <ErrorBoundary>
-          <Suspense fallback={<div style={{ padding: '20px', display: 'flex', justifyContent: 'center' }}><LoadingSkeleton /></div>}>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+      <ModalProvider>
+        <Router>
+          <ScrollToTop />
+          <ErrorBoundary>
+            <Suspense fallback={<div style={{ padding: '20px', display: 'flex', justifyContent: 'center' }}><LoadingSkeleton /></div>}>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
 
-              {/* Protected Routes wrapped in ProtectedRoute and MainLayout */}
-              <Route element={<ProtectedRoute />}>
-                <Route element={<MainLayout />}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/report/:id" element={<ReportDetails />} />
-                  <Route path="/report/:reportId/finding/:id" element={<FindingDetail />} />
-                  <Route path="/finding/:id" element={<FindingDetail />} />
-                  <Route path="/report-status" element={<ReportStatus />} />
-                  <Route path="/create" element={<CreateReport />} />
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                {/* Protected Routes wrapped in ProtectedRoute and MainLayout */}
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<MainLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/report/:id" element={<ReportDetails />} />
+                    <Route path="/report/:reportId/finding/:id" element={<FindingDetail />} />
+                    <Route path="/finding/:id" element={<FindingDetail />} />
+                    <Route path="/report-status" element={<ReportStatus />} />
+                    <Route path="/create" element={<CreateReport />} />
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  </Route>
                 </Route>
-              </Route>
-            </Routes>
-          </Suspense>
-        </ErrorBoundary>
-      </Router>
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        </Router>
+      </ModalProvider>
     </AuthProvider>
   );
 }

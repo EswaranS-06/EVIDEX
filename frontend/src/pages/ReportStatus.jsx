@@ -13,8 +13,10 @@ import {
     User,
     Activity
 } from 'lucide-react';
+import { useModal } from '../context/ModalContext';
 
 const ReportStatus = () => {
+    const { alert } = useModal();
     const [reports, setReports] = useState([]);
     const [selectedReport, setSelectedReport] = useState(null);
     const [findings, setFindings] = useState([]);
@@ -76,7 +78,7 @@ const ReportStatus = () => {
             setFindings(findings.map(f => f.id === findingId ? { ...f, status: newStatus } : f));
         } catch (err) {
             console.error("Failed to update status:", err);
-            alert("Failed to update status.");
+            await alert("Failed to update finding status. Please try again.", "Update Failed");
         }
     };
 
