@@ -4,10 +4,12 @@ import api from '../api/axios';
 import { getEvidence, uploadEvidence, deleteEvidence } from '../api/evidence';
 
 import { ChevronLeft, RefreshCw, Plus, Upload, File, Trash2, Save, Eye } from 'lucide-react';
+import { useModal } from '../context/ModalContext';
 
 const FindingDetail = () => {
     const { reportId, id } = useParams();
     const navigate = useNavigate();
+    const { alert, confirm } = useModal();
     const isNew = id === 'new';
 
     // Form State
@@ -138,7 +140,7 @@ const FindingDetail = () => {
             setShowUploadForm(false);
         } catch (error) {
             console.error("Upload failed", error);
-            alert("Failed to upload evidence");
+            await alert("Failed to upload evidence", "Upload Error");
         }
     };
 
@@ -172,12 +174,12 @@ const FindingDetail = () => {
                     await api.patch(`/api/vulnerabilities/${id}/`, payload);
                 }
             }
-            alert('Saved successfully!');
+            await alert('Assessment data saved successfully!', 'Save Successful');
             navigate(-1);
         } catch (err) {
             console.error("Save failed", err);
             const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : "Check your connection and try again.";
-            alert("Failed to save: " + errorMsg);
+            await alert("Failed to save: " + errorMsg, "Save Error");
         } finally {
             setSaving(false);
         }

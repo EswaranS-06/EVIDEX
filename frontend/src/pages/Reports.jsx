@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Edit2, Trash2, CheckCircle, Lock, Calendar, FileText } from 'lucide-react';
+import { useModal } from '../context/ModalContext';
 
 const Reports = () => {
     const navigate = useNavigate();
+    const { confirm } = useModal();
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -49,6 +51,23 @@ const Reports = () => {
         report.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         report.application_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const handleDeleteReport = async (reportId) => {
+        const isConfirmed = await confirm(
+            "This action cannot be undone. All findings and evidence associated with this report will be permanently removed.",
+            "Delete Report?",
+            { confirmText: 'Delete', isDangerous: true }
+        );
+
+        if (!isConfirmed) return;
+
+        try {
+            await api.delete(`/api/reports/${reportId}/`);
+            setReports(reports.filter(r => r.id !== reportId));
+        } catch (err) {
+            console.error("Failed to delete report:", err);
+        }
+    };
 
     return (
         <div className="reports-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -149,7 +168,7 @@ const Reports = () => {
                                 <button className="btn btn-ghost" title="Edit" onClick={(e) => { e.stopPropagation(); navigate(`/report/${report.id}`); }}>
                                     <Edit2 size={18} />
                                 </button>
-                                <button className="btn btn-ghost" title="Actions" onClick={(e) => e.stopPropagation()}>
+                                <button className="btn btn-ghost" title="Delete" onClick={(e) => { e.stopPropagation(); handleDeleteReport(report.id); }}>
                                     <Trash2 size={18} style={{ color: 'var(--color-error)' }} />
                                 </button>
                                 <button className="btn btn-ghost" title="Verify" onClick={(e) => e.stopPropagation()}>

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useModal } from '../context/ModalContext';
 
-import { Calendar, Globe, CheckCircle, Edit2, Eye, Plus, ChevronLeft, Save, Trash2 } from 'lucide-react';
+import { Calendar, Globe, CheckCircle, Edit2, Eye, Plus, ChevronLeft, Save, Trash2, X } from 'lucide-react';
 
 const ReportDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { alert, confirm } = useModal();
     const isNew = id === 'new';
 
     // Data State
@@ -95,15 +97,15 @@ const ReportDetails = () => {
             let response;
             if (isNew) {
                 response = await api.post('/api/reports/', payload);
-                alert('Report created successfully!');
+                await alert('Assessment created successfully!', 'Success');
                 navigate(`/report/${response.data.id}`); // Redirect to edit mode
             } else {
                 response = await api.patch(`/api/reports/${id}/`, payload);
-                alert('Report updated successfully!');
+                await alert('Assessment metadata updated successfully!', 'Success');
             }
         } catch (err) {
             console.error("Failed to save report:", err);
-            alert("Failed to save report. Check console for details.");
+            await alert("Failed to save assessment details. Please check your network.", "Error");
         }
     };
 
@@ -154,7 +156,7 @@ const ReportDetails = () => {
 
     const addFinding = async (vulnId) => {
         if (isNew) {
-            alert("Please save the report first before adding findings.");
+            await alert("Please save the report first before adding findings.", "Warning");
             return;
         }
 
@@ -166,15 +168,16 @@ const ReportDetails = () => {
             // Refresh findings
             const findingsRes = await api.get(`/api/reports/${id}/findings/`);
             setFindings(findingsRes.data);
-            alert("Finding added to report!");
+            await alert("Vulnerability added to report successfully!", "Finding Added");
         } catch (err) {
             console.error("Failed to add finding:", err);
-            alert("Failed to add finding.");
+            await alert("Failed to add finding. Please try again.", "Error");
         }
     };
 
     const handleDeleteFinding = async (findingId) => {
-        if (!window.confirm("Are you sure you want to delete this finding from the report?")) return;
+        const isConfirmed = await confirm("Are you sure you want to remove this finding from the report?", "Confirm Delete", { isDangerous: true, confirmText: 'Remove' });
+        if (!isConfirmed) return;
 
         try {
             await api.delete(`/api/reports/${id}/findings/${findingId}/`);
@@ -207,14 +210,15 @@ const ReportDetails = () => {
                 flex: 1,
                 overflowY: 'auto',
                 padding: '20px',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                marginRight: showSidebar && window.innerWidth > 1400 ? '480px' : (showSidebar ? '400px' : '0')
             }}>
                 <div className="report-details-container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
                     {/* Header Action Bar */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-                        <button onClick={() => navigate('/dashboard')} className="btn-ghost" style={{ paddingLeft: 0 }}>
-                            <ChevronLeft size={20} style={{ marginRight: '5px' }} /> Back to Dashboard
+                        <button onClick={() => navigate('/reports')} className="btn-ghost" style={{ paddingLeft: 0 }}>
+                            <ChevronLeft size={20} style={{ marginRight: '5px' }} /> Back to Reports
                         </button>
 
                         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -246,112 +250,144 @@ const ReportDetails = () => {
                         </div>
                     </div>
 
-                    {/* Header Section (Metadata) - SAME AS BEFORE */}
-                    {/* ... (Keep existing Metadata section logic same as previous step, just collapsed here for brevity if replace tool allows partial context match, otherwise I need to include it all. Since I'm replacing the whole center div, I must include it) */}
-
-                    <div className="glass-panel" style={{ padding: '30px', marginBottom: '30px', position: 'relative' }}>
-
-                        <div className="responsive-grid-2">
-                            {/* Client Name */}
-                            <div className="input-group">
-                                <label className="input-label">Client Name</label>
-                                <input
-                                    type="text"
-                                    className="input-field"
-                                    value={report.client_name || ''}
-                                    onChange={(e) => setReport({ ...report, client_name: e.target.value })}
-                                    style={{ fontSize: '1.25rem', fontWeight: 'bold' }}
-                                    disabled={!isEditing && !isNew}
-                                />
+                    {/* Header Section (Metadata) */}
+                    {!isEditing && !isNew ? (
+                        <div style={{ marginBottom: '40px', padding: '0 10px' }}>
+                            <h1 style={{
+                                fontSize: '2.8rem',
+                                fontWeight: '900',
+                                margin: 0,
+                                background: 'linear-gradient(to right, #fff, var(--color-text-muted))',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                letterSpacing: '-0.03em'
+                            }}>
+                                {report.client_name || 'Loading...'}
+                            </h1>
+                            <div style={{
+                                display: 'flex',
+                                gap: '20px',
+                                marginTop: '12px',
+                                color: 'var(--color-text-muted)',
+                                fontSize: '1rem',
+                                alignItems: 'center'
+                            }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Globe size={16} /> {report.application_name}
+                                </span>
+                                <span style={{ width: '4px', height: '4px', background: 'var(--color-border)', borderRadius: '50%' }}></span>
+                                <span>{report.report_type}</span>
+                                <span style={{ width: '4px', height: '4px', background: 'var(--color-border)', borderRadius: '50%' }}></span>
+                                <span style={{
+                                    background: getSeverityBg(report.status),
+                                    color: getSeverityColor(report.status),
+                                    padding: '2px 10px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.8rem',
+                                    fontWeight: '700',
+                                    border: `1px solid ${getSeverityColor(report.status)}`
+                                }}>
+                                    {report.status?.toUpperCase()}
+                                </span>
                             </div>
-
-                            {/* Application Name */}
-                            <div className="input-group">
-                                <label className="input-label">Application Name</label>
-                                <input
-                                    type="text"
-                                    className="input-field"
-                                    value={report.application_name || ''}
-                                    onChange={(e) => setReport({ ...report, application_name: e.target.value })}
-                                    disabled={!isEditing && !isNew}
-                                />
-                            </div>
-
-                            {/* Target */}
-                            <div className="input-group">
-                                <label className="input-label">Target URL / IP</label>
-                                <div style={{ position: 'relative' }}>
-                                    <Globe size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
+                        </div>
+                    ) : (
+                        <div className="glass-panel" style={{ padding: '30px', marginBottom: '30px', position: 'relative' }}>
+                            <div className="responsive-grid-2">
+                                {/* Client Name */}
+                                <div className="input-group">
+                                    <label className="input-label">Client Name</label>
                                     <input
                                         type="text"
                                         className="input-field"
-                                        value={report.target || ''}
-                                        onChange={(e) => setReport({ ...report, target: e.target.value })}
-                                        style={{ paddingLeft: '40px' }}
-                                        disabled={!isEditing && !isNew}
+                                        value={report.client_name || ''}
+                                        onChange={(e) => setReport({ ...report, client_name: e.target.value })}
+                                        style={{ fontSize: '1.25rem', fontWeight: 'bold' }}
                                     />
                                 </div>
-                            </div>
 
-                            {/* Dates */}
-                            <div className="input-group">
-                                <label className="input-label">Start Date</label>
-                                <div style={{ position: 'relative' }}>
-                                    <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
+                                {/* Application Name */}
+                                <div className="input-group">
+                                    <label className="input-label">Application Name</label>
                                     <input
-                                        type="date"
+                                        type="text"
                                         className="input-field"
-                                        value={report.start_date || ''}
-                                        onChange={(e) => setReport({ ...report, start_date: e.target.value })}
-                                        style={{ paddingLeft: '40px' }}
-                                        disabled={!isEditing && !isNew}
+                                        value={report.application_name || ''}
+                                        onChange={(e) => setReport({ ...report, application_name: e.target.value })}
                                     />
                                 </div>
-                            </div>
-                            <div className="input-group">
-                                <label className="input-label">End Date</label>
-                                <div style={{ position: 'relative' }}>
-                                    <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
+
+                                {/* Target */}
+                                <div className="input-group">
+                                    <label className="input-label">Target URL / IP</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <Globe size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
+                                        <input
+                                            type="text"
+                                            className="input-field"
+                                            value={report.target || ''}
+                                            onChange={(e) => setReport({ ...report, target: e.target.value })}
+                                            style={{ paddingLeft: '40px' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Dates */}
+                                <div className="input-group">
+                                    <label className="input-label">Start Date</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
+                                        <input
+                                            type="date"
+                                            className="input-field"
+                                            value={report.start_date || ''}
+                                            onChange={(e) => setReport({ ...report, start_date: e.target.value })}
+                                            style={{ paddingLeft: '40px' }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="input-group">
+                                    <label className="input-label">End Date</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-text-muted)' }} />
+                                        <input
+                                            type="date"
+                                            className="input-field"
+                                            value={report.end_date || ''}
+                                            onChange={(e) => setReport({ ...report, end_date: e.target.value })}
+                                            style={{ paddingLeft: '40px' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Report Type */}
+                                <div className="input-group">
+                                    <label className="input-label">Report Type</label>
                                     <input
-                                        type="date"
+                                        type="text"
                                         className="input-field"
-                                        value={report.end_date || ''}
-                                        onChange={(e) => setReport({ ...report, end_date: e.target.value })}
-                                        style={{ paddingLeft: '40px' }}
-                                        disabled={!isEditing && !isNew}
+                                        value={report.report_type || ''}
+                                        onChange={(e) => setReport({ ...report, report_type: e.target.value })}
                                     />
                                 </div>
-                            </div>
 
-                            {/* Report Type */}
-                            <div className="input-group">
-                                <label className="input-label">Report Type</label>
-                                <input
-                                    type="text"
-                                    className="input-field"
-                                    value={report.report_type || ''}
-                                    onChange={(e) => setReport({ ...report, report_type: e.target.value })}
-                                    disabled={!isEditing && !isNew}
-                                />
-                            </div>
-
-                            {/* Status */}
-                            <div className="input-group">
-                                <label className="input-label">Status</label>
-                                <select
-                                    className="input-field"
-                                    value={report.status || 'Draft'}
-                                    onChange={(e) => setReport({ ...report, status: e.target.value })}
-                                    disabled={!isEditing && !isNew}
-                                >
-                                    <option value="Draft">Draft</option>
-                                    <option value="In Progress">In Progress</option>
-                                    <option value="Completed">Completed</option>
-                                    <option value="Verified">Verified</option>
-                                </select>
+                                {/* Status */}
+                                <div className="input-group">
+                                    <label className="input-label">Status</label>
+                                    <select
+                                        className="input-field"
+                                        value={report.status || 'Draft'}
+                                        onChange={(e) => setReport({ ...report, status: e.target.value })}
+                                    >
+                                        <option value="Draft">Draft</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Verified">Verified</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
 
                     {/* Findings Section */}
@@ -406,10 +442,24 @@ const ReportDetails = () => {
 
             {/* Right Sidebar for Vulnerabilities */}
             <div className={`responsive-sidebar ${!showSidebar ? 'collapsed' : ''}`}>
-                <div style={{ padding: '20px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2 style={{ fontSize: '1.25rem', whiteSpace: 'nowrap' }}>OWASP VULNERABILITIES</h2>
-                    <button className="btn btn-ghost" onClick={() => setShowSidebar(false)}>
-                        <ChevronLeft size={20} style={{ transform: 'rotate(180deg)' }} />
+                <div style={{
+                    padding: '24px',
+                    borderBottom: '1px solid var(--glass-border)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: 'rgba(255,255,255,0.02)'
+                }}>
+                    <div>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: '800', letterSpacing: '-0.02em', margin: 0 }}>VULNERABILITIES</h2>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>OWASP TOP 10 & VARIANTS</span>
+                    </div>
+                    <button
+                        className="btn btn-icon"
+                        onClick={() => setShowSidebar(false)}
+                        style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}
+                    >
+                        <X size={20} />
                     </button>
                 </div>
 

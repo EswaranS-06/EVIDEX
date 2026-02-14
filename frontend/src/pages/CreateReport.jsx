@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useModal } from '../context/ModalContext';
 import {
     ChevronRight,
     ChevronLeft,
@@ -18,6 +19,7 @@ import {
 
 const CreateReport = () => {
     const navigate = useNavigate();
+    const { alert } = useModal();
     const [step, setStep] = useState(1);
     const [organizations, setOrganizations] = useState([]);
     const [isCreateNewOrg, setIsCreateNewOrg] = useState(false);
@@ -518,12 +520,12 @@ const CreateReport = () => {
                 ));
             }
 
-            alert('Assessment Initialized Successfully!');
+            await alert('Assessment Initialized Successfully!', 'Success');
             navigate(`/report/${reportId}`);
         } catch (err) {
             console.error("Failed to create report:", err);
             const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : "Check your input and try again.";
-            alert("Failed to create report: " + errorMsg);
+            await alert("Failed to create report: " + errorMsg, "Error");
         }
     };
 
