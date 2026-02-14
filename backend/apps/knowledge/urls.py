@@ -1,4 +1,6 @@
 from django.urls import path
+from .reports.views import report_preview, report_pdf
+
 
 from .views import (
     OWASPCategoryListCreateView,
@@ -19,7 +21,7 @@ from .report_views import (
 )
 
 from .report_preview_views import report_preview
-from .report_pdf_views import report_pdf
+from .reports.report_pdf_views import report_pdf
 
 urlpatterns = [
     # -----------------------
@@ -84,9 +86,9 @@ urlpatterns = [
     ),
     
     # ✅ ONLY ONE preview route (WITH int)
-    path("api/reports/<int:report_id>/preview/", report_preview),
+    path("reports/<int:report_id>/preview/", report_preview),
     
-    path("api/reports/<int:report_id>/pdf/", report_pdf),
+    path("reports/<int:report_id>/pdf/", report_pdf),
     
 ]
 

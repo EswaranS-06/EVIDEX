@@ -20,7 +20,7 @@ from django.urls import path, include
 from apps.knowledge.test_preview import test_report_preview
 from apps.knowledge.report_views import test_pdf
 from apps.knowledge.report_preview_views import report_preview
-from apps.knowledge.report_pdf_views import report_pdf
+from apps.knowledge.reports.report_pdf_views import report_pdf
 
 # API Schema and Documentation  
 from drf_spectacular.views import (
