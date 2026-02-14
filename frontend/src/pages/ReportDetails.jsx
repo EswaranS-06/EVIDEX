@@ -57,21 +57,23 @@ const ReportDetails = () => {
     }, [id, isNew]);
 
     const getSeverityBg = (sev) => {
-        switch (sev) {
-            case 'Critical': return 'rgba(142, 45, 226, 0.1)';
-            case 'High': return 'rgba(255, 77, 109, 0.1)';
-            case 'Medium': return 'rgba(254, 228, 64, 0.1)';
-            case 'Low': return 'rgba(0, 240, 255, 0.1)';
+        const s = (sev || '').toLowerCase();
+        switch (s) {
+            case 'critical': return 'rgba(142, 45, 226, 0.1)';
+            case 'high': return 'rgba(255, 77, 109, 0.1)';
+            case 'medium': return 'rgba(254, 228, 64, 0.1)';
+            case 'low': return 'rgba(0, 240, 255, 0.1)';
             default: return 'var(--glass-bg)';
         }
     };
 
     const getSeverityColor = (sev) => {
-        switch (sev) {
-            case 'Critical': return 'var(--color-secondary)';
-            case 'High': return 'var(--color-error)';
-            case 'Medium': return 'var(--color-warning)';
-            case 'Low': return 'var(--color-primary)';
+        const s = (sev || '').toLowerCase();
+        switch (s) {
+            case 'critical': return 'var(--color-secondary)';
+            case 'high': return 'var(--color-error)';
+            case 'medium': return 'var(--color-warning)';
+            case 'low': return 'var(--color-primary)';
             default: return 'var(--color-border)';
         }
     };
@@ -428,10 +430,6 @@ const ReportDetails = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                             </div>
                         </div>
-
-                        <button className="btn btn-primary" style={{ padding: '8px 12px', whiteSpace: 'nowrap' }} onClick={() => navigate('/finding/new')}>
-                            <Plus size={18} style={{ marginRight: '4px' }} /> Vuln
-                        </button>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -460,25 +458,43 @@ const ReportDetails = () => {
                                             <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', padding: '8px' }}>No vulnerabilities found.</div>
                                         ) : (
                                             cat.vulnerabilities.map(vuln => (
-                                                <div key={vuln.id} style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    padding: '8px',
-                                                    gap: '10px',
-                                                    borderRadius: '4px',
-                                                    background: selectedVulns.has(vuln.id) ? 'rgba(0, 240, 255, 0.1)' : 'transparent',
-                                                    marginBottom: '4px'
-                                                }}>
-                                                    <button
-                                                        className="btn btn-ghost"
-                                                        style={{ color: 'var(--color-primary)' }}
-                                                        title="Add to Report"
-                                                        onClick={(e) => { e.stopPropagation(); addFinding(vuln.id); }}
-                                                    >
-                                                        <Plus size={16} />
-                                                    </button>
-                                                    <span style={{ fontSize: '0.85rem', flex: 1, color: 'var(--color-text-main)' }}>{vuln.name}</span>
+                                                <div key={vuln.id}
+                                                    className="vuln-selection-item"
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        padding: '10px',
+                                                        gap: '6px',
+                                                        borderRadius: '6px',
+                                                        background: selectedVulns.has(vuln.id) ? 'rgba(0, 240, 255, 0.08)' : 'transparent',
+                                                        marginBottom: '6px',
+                                                        cursor: 'pointer',
+                                                        border: `1px solid ${selectedVulns.has(vuln.id) ? 'var(--color-primary)' : 'transparent'}`
+                                                    }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        <button
+                                                            className="btn btn-ghost"
+                                                            style={{ color: 'var(--color-primary)', padding: '4px' }}
+                                                            title="Add to Report"
+                                                            onClick={(e) => { e.stopPropagation(); addFinding(vuln.id); }}
+                                                        >
+                                                            <Plus size={16} />
+                                                        </button>
+                                                        <span className="vuln-name" style={{ fontSize: '0.85rem', flex: 1, color: 'var(--color-text-main)' }}>{vuln.name}</span>
+                                                    </div>
 
+                                                    <div className="vuln-description" style={{
+                                                        fontSize: '0.75rem',
+                                                        color: 'var(--color-text-muted)',
+                                                        lineHeight: '1.4',
+                                                        maxHeight: '0',
+                                                        opacity: '0',
+                                                        overflow: 'hidden',
+                                                        transition: 'all 0.3s ease-out',
+                                                        paddingLeft: '32px'
+                                                    }}>
+                                                        {vuln.description}
+                                                    </div>
                                                 </div>
                                             ))
                                         )}

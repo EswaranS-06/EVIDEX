@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { getEvidence, uploadEvidence, deleteEvidence } from '../api/evidence';
 
-import { ChevronLeft, RefreshCw, Plus, Upload, File, Trash2, Save } from 'lucide-react';
+import { ChevronLeft, RefreshCw, Plus, Upload, File, Trash2, Save, Eye } from 'lucide-react';
 
 const FindingDetail = () => {
     const { reportId, id } = useParams();
@@ -17,6 +17,7 @@ const FindingDetail = () => {
     const [impact, setImpact] = useState('');
     const [remediation, setRemediation] = useState('');
     const [loading, setLoading] = useState(!isNew);
+    const [saving, setSaving] = useState(false);
 
     // Load data from Backend
     useEffect(() => {
@@ -29,17 +30,18 @@ const FindingDetail = () => {
                         // Editing a specific finding in a report
                         response = await api.get(`/api/reports/${reportId}/findings/${id}/`);
                         const f = response.data;
-                        setTitle(f.final_title);
-                        setSeverity(f.final_severity);
-                        setDescription(f.final_description);
-                        setImpact(f.final_impact);
-                        setRemediation(f.final_remediation);
+                        // Load the tester fields for editing if they exist, otherwise use the final (computed) defaults
+                        setTitle(f.tester_title || f.final_title);
+                        setSeverity(f.tester_severity || f.final_severity);
+                        setDescription(f.tester_description || f.final_description);
+                        setImpact(f.tester_impact || f.final_impact);
+                        setRemediation(f.tester_remediation || f.final_remediation);
                         fetchEvidence();
                     } else {
                         // Editing a global vulnerability definition
                         response = await api.get(`/api/vulnerabilities/${id}/`);
                         const v = response.data;
-                        setTitle(v.name);
+                        setTitle(v.title); // VulnerabilityDefinition uses 'title', not 'name'
                         setSeverity(v.severity);
                         setDescription(v.description);
                         setImpact(v.impact);
@@ -56,13 +58,29 @@ const FindingDetail = () => {
     }, [id, reportId, isNew]);
 
     const severityColors = {
-        'Low': { bg: 'rgba(0, 240, 255, 0.1)', text: 'var(--color-primary)', border: 'var(--color-primary)' },
-        'Medium': { bg: 'rgba(254, 228, 64, 0.1)', text: 'var(--color-warning)', border: 'var(--color-warning)' },
-        'High': { bg: 'rgba(255, 77, 109, 0.1)', text: 'var(--color-error)', border: 'var(--color-error)' },
-        'Critical': { bg: 'rgba(142, 45, 226, 0.2)', text: 'var(--color-secondary)', border: 'var(--color-secondary)' }
+        'low': { bg: 'rgba(0, 240, 255, 0.1)', text: 'var(--color-primary)', border: 'var(--color-primary)' },
+        'medium': { bg: 'rgba(254, 228, 64, 0.1)', text: 'var(--color-warning)', border: 'var(--color-warning)' },
+        'high': { bg: 'rgba(255, 77, 109, 0.1)', text: 'var(--color-error)', border: 'var(--color-error)' },
+        'critical': { bg: 'rgba(142, 45, 226, 0.2)', text: 'var(--color-secondary)', border: 'var(--color-secondary)' },
+        'default': { bg: 'rgba(255,255,255,0.05)', text: 'var(--color-text-muted)', border: 'var(--color-border)' }
     };
 
+    const getSeverityStyle = (sev) => {
+        const s = (sev || 'medium').toLowerCase();
+        return severityColors[s] || severityColors['default'];
+    };
 
+    const currentStyle = getSeverityStyle(severity);
+
+    // Helper to get full URL for images/files
+    const getFullImageUrl = (path) => {
+        if (!path) return '';
+        if (typeof path !== 'string') return ''; // Handle File objects if they slip through
+        if (path.startsWith('http')) return path;
+        // Prepend backend base URL if it's a relative path
+        const baseUrl = 'http://localhost:8000';
+        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
 
     const handleEdit = (field, value) => {
         if (field === 'description') {
@@ -126,19 +144,20 @@ const FindingDetail = () => {
 
     const handleSave = async () => {
         const payload = reportId ? {
-            final_title: title,
-            final_severity: severity,
-            final_description: description,
-            final_impact: impact,
-            final_remediation: remediation
+            tester_title: title,
+            tester_severity: severity.toUpperCase(),
+            tester_description: description,
+            tester_impact: impact,
+            tester_remediation: remediation
         } : {
-            name: title,
-            severity,
-            description,
-            impact,
-            remediation
+            title: title,
+            severity: severity.toUpperCase(),
+            description: description,
+            impact: impact,
+            remediation: remediation
         };
 
+        setSaving(true);
         try {
             if (reportId) {
                 if (isNew) {
@@ -157,15 +176,22 @@ const FindingDetail = () => {
             navigate(-1);
         } catch (err) {
             console.error("Save failed", err);
-            alert("Failed to save.");
+            const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : "Check your connection and try again.";
+            alert("Failed to save: " + errorMsg);
+        } finally {
+            setSaving(false);
         }
     };
+
+    if (loading) {
+        return <div style={{ padding: '40px', textAlign: 'center' }}>Loading Finding...</div>;
+    }
 
     return (
         <div className="finding-detail-container" style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '40px' }}>
 
             {/* Back Button */}
-            <button onClick={() => navigate(-1)} className="btn-ghost" style={{ marginBottom: '20px', paddingLeft: 0 }}>
+            <button onClick={() => navigate(-1)} className="btn btn-ghost" style={{ marginBottom: '20px', paddingLeft: 0 }}>
                 <ChevronLeft size={20} style={{ marginRight: '5px' }} /> Back
             </button>
 
@@ -173,37 +199,41 @@ const FindingDetail = () => {
             <div className="glass-panel" style={{
                 padding: '24px',
                 marginBottom: '24px',
-                borderLeft: `6px solid ${severityColors[severity].text}`,
+                borderLeft: `6px solid ${currentStyle.text}`,
                 transition: 'border-color 0.3s ease'
             }}>
                 <div style={{ marginBottom: '20px' }}>
                     <label className="input-label" style={{ marginBottom: '12px', display: 'block' }}>Severity Level</label>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        {Object.keys(severityColors).map((level) => (
-                            <button
-                                key={level}
-                                onClick={() => setSeverity(level)}
-                                style={{
-                                    flex: 1,
-                                    padding: '8px',
-                                    borderRadius: '8px',
-                                    border: '1px solid',
-                                    borderColor: severity === level ? severityColors[level].text : 'var(--color-border)',
-                                    background: severity === level ? severityColors[level].bg : 'transparent',
-                                    color: severity === level ? severityColors[level].text : 'var(--color-text-muted)',
-                                    cursor: 'pointer',
-                                    fontWeight: '600',
-                                    fontSize: '0.8rem',
-                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '6px'
-                                }}
-                            >
-                                {level}
-                            </button>
-                        ))}
+                        {['Low', 'Medium', 'High', 'Critical'].map((level) => {
+                            const style = getSeverityStyle(level);
+                            const isActive = severity.toLowerCase() === level.toLowerCase();
+                            return (
+                                <button
+                                    key={level}
+                                    onClick={() => setSeverity(level)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px',
+                                        borderRadius: '8px',
+                                        border: '1px solid',
+                                        borderColor: isActive ? style.text : 'var(--color-border)',
+                                        background: isActive ? style.bg : 'transparent',
+                                        color: isActive ? style.text : 'var(--color-text-muted)',
+                                        cursor: 'pointer',
+                                        fontWeight: '600',
+                                        fontSize: '0.8rem',
+                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px'
+                                    }}
+                                >
+                                    {level}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -224,12 +254,12 @@ const FindingDetail = () => {
                         {title}
                         <span style={{
                             fontSize: '0.75rem',
-                            background: severityColors[severity].bg,
-                            color: severityColors[severity].text,
+                            background: currentStyle.bg,
+                            color: currentStyle.text,
                             padding: '4px 12px',
                             borderRadius: '100px',
                             marginLeft: '15px',
-                            border: `1px solid ${severityColors[severity].text}`,
+                            border: `1px solid ${currentStyle.text}`,
                             fontWeight: '700',
                             letterSpacing: '0.05em'
                         }}>
@@ -298,10 +328,16 @@ const FindingDetail = () => {
 
                         {/* Display Image */}
                         {item.file && (typeof item.file === 'string' ? (
-                            <div style={{ marginTop: '10px' }}>
-                                <img src={item.file} alt={item.title} style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '8px' }} />
-                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '5px' }}>
-                                    <a href={item.file} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)' }}>View Full Size</a>
+                            <div className="evidence-image-container">
+                                <img
+                                    src={getFullImageUrl(item.file)}
+                                    alt={item.title}
+                                    className="evidence-image"
+                                />
+                                <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)', width: '100%' }}>
+                                    <a href={getFullImageUrl(item.file)} target="_blank" rel="noopener noreferrer" className="evidence-link">
+                                        <Eye size={14} /> View Original Image
+                                    </a>
                                 </div>
                             </div>
                         ) : (
@@ -379,8 +415,14 @@ const FindingDetail = () => {
             </div>
 
             <div style={{ textAlign: 'right', marginTop: '40px' }}>
-                <button className="btn btn-primary" onClick={handleSave} style={{ padding: '12px 30px', fontSize: '1rem' }}>
-                    <Save size={20} style={{ marginRight: '8px' }} /> Save OWASP VULNERABILITIES
+                <button
+                    className={`btn btn-primary ${saving ? 'saving' : ''}`}
+                    onClick={handleSave}
+                    disabled={saving}
+                    style={{ padding: '12px 30px', fontSize: '1rem' }}
+                >
+                    {!saving && <Save size={20} style={{ marginRight: '8px' }} />}
+                    {saving ? 'Saving...' : 'Save OWASP VULNERABILITIES'}
                 </button>
             </div>
 

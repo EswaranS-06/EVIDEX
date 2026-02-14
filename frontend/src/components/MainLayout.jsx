@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, memo } from 'react';
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
-import { LayoutDashboard, FileText, Settings, LogOut, Shield, Menu, X } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Shield, Menu, X, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LoadingSkeleton from './LoadingSkeleton';
 import Navbar from './Navbar';
@@ -26,17 +26,29 @@ const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSid
 
 
                 <NavLink
-                    to="/dashboard"
+                    to="/report-status"
                     className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                     onClick={isMobile ? closeMobileSidebar : undefined}
                     style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
-                    title={isCollapsed ? "Dashboard" : ""}
+                    title={isCollapsed ? "Report Status" : ""}
                 >
-                    <LayoutDashboard size={iconSize} style={{ minWidth: `${iconSize}px` }} />
+                    <Shield size={iconSize} style={{ minWidth: `${iconSize}px` }} />
                     <span style={{
-                        display: isCollapsed ? 'none' : 'block',
-                        opacity: isCollapsed ? 0 : 1
-                    }}>Dashboard</span>
+                        display: isCollapsed ? 'none' : 'block'
+                    }}>Report Status</span>
+                </NavLink>
+
+                <NavLink
+                    to="/create"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    onClick={isMobile ? closeMobileSidebar : undefined}
+                    style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
+                    title={isCollapsed ? "Create" : ""}
+                >
+                    <Plus size={iconSize} style={{ minWidth: `${iconSize}px` }} />
+                    <span style={{
+                        display: isCollapsed ? 'none' : 'block'
+                    }}>Create</span>
                 </NavLink>
 
                 <NavLink
@@ -53,19 +65,18 @@ const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSid
                 </NavLink>
 
                 <NavLink
-                    to="/report-status"
+                    to="/dashboard"
                     className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                     onClick={isMobile ? closeMobileSidebar : undefined}
                     style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
-                    title={isCollapsed ? "Report Status" : ""}
+                    title={isCollapsed ? "Dashboard" : ""}
                 >
-                    <Shield size={iconSize} style={{ minWidth: `${iconSize}px` }} />
+                    <LayoutDashboard size={iconSize} style={{ minWidth: `${iconSize}px` }} />
                     <span style={{
-                        display: isCollapsed ? 'none' : 'block'
-                    }}>Report Status</span>
+                        display: isCollapsed ? 'none' : 'block',
+                        opacity: isCollapsed ? 0 : 1
+                    }}>Dashboard</span>
                 </NavLink>
-
-
 
                 <NavLink
                     to="/settings"

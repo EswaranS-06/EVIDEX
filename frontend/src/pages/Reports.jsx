@@ -77,7 +77,7 @@ const Reports = () => {
                     />
                 </div>
 
-                <button className="btn btn-primary" onClick={() => navigate('/report/new')}>
+                <button className="btn btn-primary" onClick={() => navigate('/create')}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     NEW REPORT
                 </button>
@@ -92,12 +92,6 @@ const Reports = () => {
                             className="glass-panel"
                             onClick={() => navigate(`/report/${report.id}`)}
                             style={{
-                                padding: '24px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                transition: 'all 0.2s ease',
-                                cursor: 'pointer',
                                 padding: '24px',
                                 display: 'flex',
                                 alignItems: 'center',
