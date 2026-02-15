@@ -19,8 +19,6 @@ from django.urls import path, include
 
 from apps.knowledge.test_preview import test_report_preview
 from apps.knowledge.report_views import test_pdf
-from apps.knowledge.report_preview_views import report_preview
-from apps.knowledge.reports.report_pdf_views import report_pdf
 
 # API Schema and Documentation  
 from drf_spectacular.views import (
@@ -37,11 +35,6 @@ urlpatterns = [
     # test routes (optional)
     path("test/report/", test_report_preview),
     path("test/pdf/", test_pdf),
-
-    # # ✅ ONLY ONE preview route (WITH int)
-    # path("api/reports/<int:report_id>/preview/", report_preview),
-    
-    # path("api/reports/<int:report_id>/pdf/", report_pdf),
     
     # OpenAPI schema
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

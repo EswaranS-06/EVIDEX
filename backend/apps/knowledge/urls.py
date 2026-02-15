@@ -1,5 +1,6 @@
 from django.urls import path
-from .reports.views import report_preview, report_pdf
+from .report_preview_views import ReportPreviewView
+from .reports.report_pdf_views import ReportPDFView
 
 
 from .views import (
@@ -20,9 +21,6 @@ from .report_views import (
     EvidenceListCreateView,
     EvidenceDeleteView,
 )
-
-from .report_preview_views import report_preview
-from .reports.report_pdf_views import report_pdf
 
 urlpatterns = [
     # -----------------------
@@ -94,10 +92,9 @@ urlpatterns = [
         EvidenceDeleteView.as_view(),
     ),
     
-    # ✅ ONLY ONE preview route (WITH int)
-    path("reports/<int:report_id>/preview/", report_preview),
-    
-    path("reports/<int:report_id>/pdf/", report_pdf),
+    # ✅ Report Preview and PDF APIs with JWT Auth
+    path("reports/<int:report_id>/preview/", ReportPreviewView.as_view(), name="report-preview"),
+    path("reports/<int:report_id>/pdf/", ReportPDFView.as_view(), name="report-pdf"),
     
 ]
 

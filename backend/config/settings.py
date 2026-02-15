@@ -192,6 +192,17 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'My API',
     'DESCRIPTION': 'API documentation',
     'VERSION': '1.0.0',
+    # Add JWT Bearer auth to show Authorize button in Swagger
+    'COMPONENTS': {
+        'securitySchemes': {
+            'BearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    },
+    'SECURITY': [{'BearerAuth': []}],
 }
 
 INSTALLED_APPS += ['corsheaders']
