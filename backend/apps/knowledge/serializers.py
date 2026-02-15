@@ -8,6 +8,8 @@ from .models import (
     ReportFinding,
     FindingEvidence,
 )
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 # -------------------------
 # OWASP / Vulnerability
@@ -113,9 +115,11 @@ class ReportSerializer(serializers.ModelSerializer):
             )
         return data
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_findings_count(self, obj):
         return obj.findings.count()
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_severity_counts(self, obj):
         counts = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0}
         # Efficiently iterate without N+1 (prefetched in view)

@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
 
 from apps.knowledge.models import (
     Report,
@@ -61,7 +63,10 @@ class ReportViewSet(ModelViewSet):
 # -------------------------
 class ReportFindingListCreateView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @extend_schema(
+        responses=ReportFindingSerializer(many=True),
+        description="List findings for a report",
+    )
     def get(self, request, report_id):
         report = get_object_or_404(Report, id=report_id)
 
@@ -75,6 +80,11 @@ class ReportFindingListCreateView(APIView):
         serializer = ReportFindingSerializer(findings, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=ReportFindingSerializer,
+        responses={201: ReportFindingSerializer},
+        description="Create a finding for a report",
+    )
     def post(self, request, report_id):
         report = get_object_or_404(Report, id=report_id)
 
@@ -97,7 +107,11 @@ class ReportFindingListCreateView(APIView):
 
 class BulkReportFindingsView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @extend_schema(
+        request=ReportFindingSerializer(many=True),
+        responses={201: OpenApiTypes.OBJECT, 207: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+        description="Bulk create findings for a report",
+    )
     def post(self, request, report_id):
         """
         Bulk create findings for a report.
@@ -204,11 +218,20 @@ class ReportFindingDetailView(APIView):
                 raise get_object_or_404(ReportFinding, id=pk)
         return finding
 
+    @extend_schema(
+        responses=ReportFindingSerializer,
+        description="Retrieve a finding",
+    )
     def get(self, request, pk, report_id=None):
         finding = self._get_finding(pk, report_id)
         serializer = ReportFindingSerializer(finding)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=ReportFindingSerializer,
+        responses=ReportFindingSerializer,
+        description="Partially update a finding",
+    )
     def patch(self, request, pk, report_id=None):
         finding = self._get_finding(pk, report_id)
 
@@ -227,6 +250,7 @@ class ReportFindingDetailView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(responses={204: None})
     def delete(self, request, pk, report_id=None):
         finding = self._get_finding(pk, report_id)
         finding.delete()
@@ -238,12 +262,20 @@ class ReportFindingDetailView(APIView):
 # -------------------------
 class EvidenceListCreateView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @extend_schema(
+        responses=FindingEvidenceSerializer(many=True),
+        description="List evidences for a finding",
+    )
     def get(self, request, finding_id):
         evidences = FindingEvidence.objects.filter(finding_id=finding_id)
         serializer = FindingEvidenceSerializer(evidences, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=FindingEvidenceSerializer,
+        responses={201: FindingEvidenceSerializer, 400: OpenApiTypes.OBJECT},
+        description="Create evidence for a finding",
+    )
     def post(self, request, finding_id):
         serializer = FindingEvidenceSerializer(data=request.data)
 

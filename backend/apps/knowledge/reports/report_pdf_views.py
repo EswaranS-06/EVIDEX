@@ -4,15 +4,19 @@ from .pdf_reportlab.build import build_report
 import tempfile
 
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
+# from rest_framework.permissions import IsAuthenticated    <------- Enable JWT auth later
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
 
 
 class ReportPDFView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]     <------- Enable JWT auth later
+    # permission_classes = [IsAuthenticated]    <------- Enable JWT auth later
+    # Temporarily disable JWT authentication (allow anonymous access)
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
     @extend_schema(
         operation_id="download_report_pdf",

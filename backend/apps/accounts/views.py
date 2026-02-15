@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404
 
 from .models import Role, UserProfile
 from .serializers import RegisterSerializer
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
 
 from rest_framework.permissions import AllowAny
 
@@ -17,6 +19,11 @@ class RegisterUserView(APIView):
     # class RegisterUserView(APIView): #secure feature off for now
     #     permission_classes = [IsAuthenticated]  # later we’ll restrict to Admin
 
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={201: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+        description="Register a new user",
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -31,11 +38,15 @@ class RegisterUserView(APIView):
             "message": "User created successfully",
             "username": user.username,
             "role": "Pentester"
-        })
+        }, status=201)
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        responses={200: OpenApiTypes.OBJECT, 401: OpenApiTypes.OBJECT},
+        description="Get current user's profile",
+    )
     def get(self, request):
         profile = UserProfile.objects.get(user=request.user)
 
