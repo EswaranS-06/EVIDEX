@@ -17,10 +17,11 @@ from drf_spectacular.types import OpenApiTypes
 
 class OWASPVulnerabilitySerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField(source="category.name")
+    variants = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         model = OWASPVulnerability
-        fields = "__all__"
+        fields = ["id", "category", "category_name", "name", "description", "default_severity", "default_impact", "default_remediation", "variants", "created_at", "updated_at"]
 
 
 class OWASPCategorySerializer(serializers.ModelSerializer):

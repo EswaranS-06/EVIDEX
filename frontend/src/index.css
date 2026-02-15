@@ -566,26 +566,28 @@ svg {
   }
 }
 
-/* Responsive Right Sidebar - Absolute Side Panel */
+/* Responsive Right Sidebar - Top Level Fixed Overlay */
 .responsive-sidebar {
-  position: absolute;
+  position: fixed;
   right: 0;
-  top: 0;
+  top: var(--navbar-height);
   bottom: 0;
   width: 480px;
-  background: rgba(8, 10, 14, 0.95) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-left: 1px solid var(--glass-border);
+  background: #0a0c10 !important;
+  border-left: 2px solid var(--color-primary);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease;
   z-index: 50;
+  /* Lower than navbar usually, or same but we want navbar on top */
   transform: translateX(0);
+  pointer-events: auto;
 }
 
 .responsive-sidebar.collapsed {
   transform: translateX(100%);
+  box-shadow: none;
 }
 
 @media (max-width: 1400px) {
@@ -594,23 +596,11 @@ svg {
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 768px) {
   .responsive-sidebar {
-    position: fixed;
-    right: 0;
-    top: 0;
-    bottom: 0;
+    width: 100% !important;
+    max-width: 100%;
     z-index: 1000;
-    width: 450px;
-    background: rgba(8, 10, 14, 0.98) !important;
-    transform: translateX(0);
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .responsive-sidebar.collapsed {
-    transform: translateX(100%);
-    width: 450px;
   }
 }
 

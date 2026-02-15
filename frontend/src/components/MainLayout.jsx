@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, memo } from 'react';
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
-import { LayoutDashboard, FileText, Settings, LogOut, Shield, Menu, X, Plus } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Shield, Menu, X, Plus, Database } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LoadingSkeleton from './LoadingSkeleton';
 import Navbar from './Navbar';
@@ -62,6 +62,19 @@ const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSid
                     <span style={{
                         display: isCollapsed ? 'none' : 'block'
                     }}>Reports</span>
+                </NavLink>
+
+                <NavLink
+                    to="/vulnerabilities"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    onClick={isMobile ? closeMobileSidebar : undefined}
+                    style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
+                    title={isCollapsed ? "Library" : ""}
+                >
+                    <Database size={iconSize} style={{ minWidth: `${iconSize}px` }} />
+                    <span style={{
+                        display: isCollapsed ? 'none' : 'block'
+                    }}>Library</span>
                 </NavLink>
 
                 <NavLink
@@ -158,6 +171,16 @@ const MainLayout = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Portal target for page-specific sidebars (like OWASP vulnerabilities) */}
+            <div id="sidebar-portal-root" style={{
+                position: 'fixed',
+                top: 'var(--navbar-height)',
+                right: 0,
+                bottom: 0,
+                pointerEvents: 'none',
+                zIndex: 90
+            }}></div>
         </div>
     );
 };

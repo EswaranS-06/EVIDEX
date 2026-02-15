@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../api/axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useModal } from '../context/ModalContext';
 
-import { Calendar, Globe, CheckCircle, Edit2, Eye, Plus, ChevronLeft, Save, Trash2, X } from 'lucide-react';
+import { Calendar, Globe, CheckCircle, Edit2, Eye, Plus, ArrowRight, ChevronLeft, ChevronRight, Save, Trash2, X } from 'lucide-react';
 
 const ReportDetails = () => {
     const { id } = useParams();
@@ -204,24 +205,31 @@ const ReportDetails = () => {
     }, [owaspCategories, searchTerm]);
 
     return (
-        <div className="report-details-wrapper" style={{ height: '100%' }}>
-            {/* Center Content Area - Resizes based on sidebar */}
+        <div className="report-details-wrapper" style={{ height: '100%', position: 'relative', overflow: 'hidden', display: 'flex' }}>
+            {/* Center Content Area - Resizes when sidebar is open to preserve visibility */}
             <div style={{
                 flex: 1,
                 overflowY: 'auto',
                 padding: '20px',
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                marginRight: showSidebar && window.innerWidth > 1400 ? '480px' : (showSidebar ? '400px' : '0')
+                marginRight: showSidebar && window.innerWidth > 1024 ? (window.innerWidth > 1400 ? '480px' : '400px') : '0'
             }}>
                 <div className="report-details-container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
-                    {/* Header Action Bar */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-                        <button onClick={() => navigate('/reports')} className="btn-ghost" style={{ paddingLeft: 0 }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '24px',
+                        flexWrap: 'wrap',
+                        gap: '20px',
+                        padding: '10px 0'
+                    }}>
+                        <button onClick={() => navigate('/reports')} className="btn-ghost" style={{ paddingLeft: 0, minWidth: '150px', justifyContent: 'flex-start' }}>
                             <ChevronLeft size={20} style={{ marginRight: '5px' }} /> Back to Reports
                         </button>
 
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', flex: 1 }}>
                             <button className="btn btn-ghost" title="Preview">
                                 <Eye size={18} style={{ marginRight: '8px' }} /> PREVIEW
                             </button>
@@ -440,132 +448,141 @@ const ReportDetails = () => {
                 </div>
             </div>
 
-            {/* Right Sidebar for Vulnerabilities */}
-            <div className={`responsive-sidebar ${!showSidebar ? 'collapsed' : ''}`}>
-                <div style={{
-                    padding: '24px',
-                    borderBottom: '1px solid var(--glass-border)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    background: 'rgba(255,255,255,0.02)'
-                }}>
-                    <div>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: '800', letterSpacing: '-0.02em', margin: 0 }}>VULNERABILITIES</h2>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>OWASP TOP 10 & VARIANTS</span>
+            {/* Right Sidebar for Vulnerabilities - Rendered via Portal for screen-level fixed positioning */}
+            {document.getElementById('sidebar-portal-root') && createPortal(
+                <div className={`responsive-sidebar ${!showSidebar ? 'collapsed' : ''}`}>
+                    <div style={{
+                        padding: '24px',
+                        borderBottom: '1px solid var(--glass-border)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        background: 'rgba(255,255,255,0.02)'
+                    }}>
+                        <div>
+                            <h2 style={{ fontSize: '1.2rem', fontWeight: '800', letterSpacing: '-0.02em', margin: 0 }}>VULNERABILITIES</h2>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>OWASP TOP 10 & VARIANTS</span>
+                        </div>
+                        <button
+                            className="btn-icon"
+                            onClick={() => setShowSidebar(false)}
+                            style={{
+                                background: 'rgba(255,255,255,0.08)',
+                                borderRadius: '10px',
+                                color: 'var(--color-primary)',
+                                width: '40px',
+                                height: '40px'
+                            }}
+                        >
+                            <ChevronRight size={24} />
+                        </button>
                     </div>
-                    <button
-                        className="btn btn-icon"
-                        onClick={() => setShowSidebar(false)}
-                        style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
 
-                <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
+                    <div style={{ padding: '20px', flex: 1, overflowY: 'auto' }}>
 
-                    {/* Add New & Search */}
-                    <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
-                        <div style={{ position: 'relative', flex: 1 }}>
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className="input-field"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ fontSize: '0.9rem', width: '100%', paddingLeft: '32px' }}
-                            />
-                            <div style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        {/* Add New & Search */}
+                        <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="input-field"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    style={{ fontSize: '0.9rem', width: '100%', paddingLeft: '32px' }}
+                                />
+                                <div style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                </div>
                             </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {filteredCategories.map((cat) => (
+                                <div key={cat.id} style={{ border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden' }}>
+                                    <div
+                                        onClick={() => toggleCategory(cat.id)}
+                                        style={{
+                                            padding: '12px',
+                                            background: 'rgba(255,255,255,0.03)',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            fontWeight: '600',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        <span>{cat.code ? `${cat.code} - ` : ''}{cat.name}</span>
+                                        <ChevronLeft size={16} style={{ transform: expandedCategories.has(cat.id) ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                                    </div>
+
+                                    {expandedCategories.has(cat.id) && (
+                                        <div style={{ padding: '10px', background: 'rgba(0,0,0,0.2)' }}>
+                                            {cat.vulnerabilities.length === 0 ? (
+                                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', padding: '8px' }}>No vulnerabilities found.</div>
+                                            ) : (
+                                                cat.vulnerabilities.map(vuln => (
+                                                    <div key={vuln.id}
+                                                        className="vuln-selection-item"
+                                                        style={{
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            padding: '10px',
+                                                            gap: '6px',
+                                                            borderRadius: '6px',
+                                                            background: selectedVulns.has(vuln.id) ? 'rgba(0, 240, 255, 0.08)' : 'transparent',
+                                                            marginBottom: '6px',
+                                                            cursor: 'pointer',
+                                                            border: `1px solid ${selectedVulns.has(vuln.id) ? 'var(--color-primary)' : 'transparent'}`
+                                                        }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            <button
+                                                                className="btn btn-ghost"
+                                                                style={{ color: 'var(--color-primary)', padding: '4px' }}
+                                                                title="Add to Report"
+                                                                onClick={(e) => { e.stopPropagation(); addFinding(vuln.id); }}
+                                                            >
+                                                                <Plus size={16} />
+                                                            </button>
+                                                            <span className="vuln-name" style={{ fontSize: '0.85rem', flex: 1, color: 'var(--color-text-main)' }}>{vuln.name}</span>
+                                                        </div>
+
+                                                        <div className="vuln-description" style={{
+                                                            fontSize: '0.75rem',
+                                                            color: 'var(--color-text-muted)',
+                                                            lineHeight: '1.4',
+                                                            maxHeight: '0',
+                                                            opacity: '0',
+                                                            overflow: 'hidden',
+                                                            transition: 'all 0.3s ease-out',
+                                                            paddingLeft: '32px'
+                                                        }}>
+                                                            {vuln.description}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {filteredCategories.map((cat) => (
-                            <div key={cat.id} style={{ border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden' }}>
-                                <div
-                                    onClick={() => toggleCategory(cat.id)}
-                                    style={{
-                                        padding: '12px',
-                                        background: 'rgba(255,255,255,0.03)',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        fontWeight: '600',
-                                        fontSize: '0.9rem'
-                                    }}
-                                >
-                                    <span>{cat.code ? `${cat.code} - ` : ''}{cat.name}</span>
-                                    <ChevronLeft size={16} style={{ transform: expandedCategories.has(cat.id) ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                                </div>
-
-                                {expandedCategories.has(cat.id) && (
-                                    <div style={{ padding: '10px', background: 'rgba(0,0,0,0.2)' }}>
-                                        {cat.vulnerabilities.length === 0 ? (
-                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', padding: '8px' }}>No vulnerabilities found.</div>
-                                        ) : (
-                                            cat.vulnerabilities.map(vuln => (
-                                                <div key={vuln.id}
-                                                    className="vuln-selection-item"
-                                                    style={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        padding: '10px',
-                                                        gap: '6px',
-                                                        borderRadius: '6px',
-                                                        background: selectedVulns.has(vuln.id) ? 'rgba(0, 240, 255, 0.08)' : 'transparent',
-                                                        marginBottom: '6px',
-                                                        cursor: 'pointer',
-                                                        border: `1px solid ${selectedVulns.has(vuln.id) ? 'var(--color-primary)' : 'transparent'}`
-                                                    }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                        <button
-                                                            className="btn btn-ghost"
-                                                            style={{ color: 'var(--color-primary)', padding: '4px' }}
-                                                            title="Add to Report"
-                                                            onClick={(e) => { e.stopPropagation(); addFinding(vuln.id); }}
-                                                        >
-                                                            <Plus size={16} />
-                                                        </button>
-                                                        <span className="vuln-name" style={{ fontSize: '0.85rem', flex: 1, color: 'var(--color-text-main)' }}>{vuln.name}</span>
-                                                    </div>
-
-                                                    <div className="vuln-description" style={{
-                                                        fontSize: '0.75rem',
-                                                        color: 'var(--color-text-muted)',
-                                                        lineHeight: '1.4',
-                                                        maxHeight: '0',
-                                                        opacity: '0',
-                                                        overflow: 'hidden',
-                                                        transition: 'all 0.3s ease-out',
-                                                        paddingLeft: '32px'
-                                                    }}>
-                                                        {vuln.description}
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                    {/* Sidebar Footer Save Button */}
+                    <div style={{ padding: '20px', borderTop: '1px solid var(--color-border)', background: 'rgba(0,0,0,0.2)' }}>
+                        <button
+                            className="btn btn-primary"
+                            style={{ width: '100%', padding: '12px' }}
+                            onClick={() => alert('OWASP Vulnerabilities selection saved successfully!')}
+                        >
+                            <Save size={18} style={{ marginRight: '8px' }} /> Save OWASP VULNERABILITIES
+                        </button>
                     </div>
-                </div>
-
-                {/* Sidebar Footer Save Button */}
-                <div style={{ padding: '20px', borderTop: '1px solid var(--color-border)', background: 'rgba(0,0,0,0.2)' }}>
-                    <button
-                        className="btn btn-primary"
-                        style={{ width: '100%', padding: '12px' }}
-                        onClick={() => alert('OWASP Vulnerabilities selection saved successfully!')}
-                    >
-                        <Save size={18} style={{ marginRight: '8px' }} /> Save OWASP VULNERABILITIES
-                    </button>
-                </div>
-            </div>
+                </div>,
+                document.getElementById('sidebar-portal-root')
+            )}
 
         </div>
     );
