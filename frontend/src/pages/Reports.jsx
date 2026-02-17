@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Edit2, Trash2, CheckCircle, Lock, Calendar, FileText } from 'lucide-react';
+import { Search, FilePlus, Edit2, Trash2, CheckCircle, Lock, Calendar, FileText } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 
 const Reports = () => {
@@ -97,7 +97,7 @@ const Reports = () => {
                 </div>
 
                 <button className="btn btn-primary" onClick={() => navigate('/create')}>
-                    <Plus size={18} style={{ marginRight: '8px' }} />
+                    <FilePlus size={18} style={{ marginRight: '8px' }} />
                     NEW REPORT
                 </button>
             </div>

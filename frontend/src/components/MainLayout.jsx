@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, memo } from 'react';
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
-import { LayoutDashboard, FileText, Settings, LogOut, Shield, Menu, X, Plus, Database } from 'lucide-react';
+import { LayoutDashboard, FileText, FilePlus, Settings, LogOut, Shield, Menu, X, Plus, Database, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LoadingSkeleton from './LoadingSkeleton';
 import Navbar from './Navbar';
@@ -32,7 +32,7 @@ const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSid
                     style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
                     title={isCollapsed ? "Report Status" : ""}
                 >
-                    <Shield size={iconSize} style={{ minWidth: `${iconSize}px` }} />
+                    <Activity size={iconSize} style={{ minWidth: `${iconSize}px` }} />
                     <span style={{
                         display: isCollapsed ? 'none' : 'block'
                     }}>Report Status</span>
@@ -45,7 +45,7 @@ const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSid
                     style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
                     title={isCollapsed ? "Create" : ""}
                 >
-                    <Plus size={iconSize} style={{ minWidth: `${iconSize}px` }} />
+                    <FilePlus size={iconSize} style={{ minWidth: `${iconSize}px` }} />
                     <span style={{
                         display: isCollapsed ? 'none' : 'block'
                     }}>Create</span>

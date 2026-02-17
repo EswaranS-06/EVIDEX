@@ -10,7 +10,7 @@ import {
     ShieldCheck,
     Layout,
     Check,
-    Plus,
+    FilePlus,
     Users,
     Search,
     AlertCircle,
@@ -539,7 +539,7 @@ const CreateReport = () => {
                         borderRadius: '12px',
                         color: 'var(--color-primary)'
                     }}>
-                        <Layout size={28} />
+                        <FilePlus size={28} />
                     </div>
                     <div>
                         <h1 style={{ fontSize: '1.75rem', fontWeight: '800', letterSpacing: '-0.02em' }}>Initialize Assessment</h1>
