@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
 
 from apps.knowledge.models import (
     Report,
@@ -61,7 +63,10 @@ class ReportViewSet(ModelViewSet):
 # -------------------------
 class ReportFindingListCreateView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @extend_schema(
+        responses=ReportFindingSerializer(many=True),
+        description="List findings for a report",
+    )
     def get(self, request, report_id):
         report = get_object_or_404(Report, id=report_id)
 
@@ -75,22 +80,160 @@ class ReportFindingListCreateView(APIView):
         serializer = ReportFindingSerializer(findings, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=ReportFindingSerializer,
+        responses={201: ReportFindingSerializer},
+        description="Create a finding for a report",
+    )
     def post(self, request, report_id):
         report = get_object_or_404(Report, id=report_id)
 
         serializer = ReportFindingSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(report=report)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            finding = serializer.save(report=report)
+            # Refresh finding with proper relationships for response
+            finding = (
+                ReportFinding.objects
+                .filter(id=finding.id)
+                .select_related("vulnerability")
+                .prefetch_related("evidences")
+                .first()
+            )
+            response_serializer = ReportFindingSerializer(finding)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BulkReportFindingsView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        request=ReportFindingSerializer(many=True),
+        responses={201: OpenApiTypes.OBJECT, 207: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+        description="Bulk create findings for a report",
+    )
+    def post(self, request, report_id):
+        """
+        Bulk create findings for a report.
+        
+        Expected payload: list of finding objects
+        [
+            {"vulnerability": 1, "tester_title": "...", ...},
+            {"vulnerability": 2, "tester_description": "...", ...},
+            ...
+        ]
+        """
+        report = get_object_or_404(Report, id=report_id)
+
+        # Validate that data is a list
+        if not isinstance(request.data, list):
+            return Response(
+                {"error": "Expected a list of findings"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(request.data) == 0:
+            return Response(
+                {"error": "At least one finding is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        created_findings = []
+        errors = []
+
+        for idx, finding_data in enumerate(request.data):
+            serializer = ReportFindingSerializer(data=finding_data)
+            
+            if serializer.is_valid():
+                finding = serializer.save(report=report)
+                # Refresh with proper relationships
+                finding = (
+                    ReportFinding.objects
+                    .filter(id=finding.id)
+                    .select_related("vulnerability")
+                    .prefetch_related("evidences")
+                    .first()
+                )
+                response_serializer = ReportFindingSerializer(finding)
+                created_findings.append(response_serializer.data)
+            else:
+                errors.append({
+                    "index": idx,
+                    "data": finding_data,
+                    "errors": serializer.errors
+                })
+
+        # If all failed, return error
+        if not created_findings:
+            return Response(
+                {"errors": errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # If some succeeded and some failed, return partial success
+        if errors:
+            return Response(
+                {
+                    "created": created_findings,
+                    "errors": errors,
+                    "message": f"Created {len(created_findings)} findings with {len(errors)} errors"
+                },
+                status=status.HTTP_207_MULTI_STATUS  # Partial success
+            )
+
+        # All succeeded
+        return Response(
+            {
+                "created": created_findings,
+                "message": f"Successfully created {len(created_findings)} findings"
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 
 class ReportFindingDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def patch(self, request, pk):
-        finding = get_object_or_404(ReportFinding, id=pk)
+    def _get_finding(self, pk, report_id=None):
+        """Get finding with proper relationships loaded"""
+        if report_id:
+            finding = (
+                ReportFinding.objects
+                .filter(id=pk, report_id=report_id)
+                .select_related("vulnerability")
+                .prefetch_related("evidences")
+                .first()
+            )
+            if not finding:
+                raise get_object_or_404(ReportFinding, id=pk, report_id=report_id)
+        else:
+            finding = (
+                ReportFinding.objects
+                .filter(id=pk)
+                .select_related("vulnerability")
+                .prefetch_related("evidences")
+                .first()
+            )
+            if not finding:
+                raise get_object_or_404(ReportFinding, id=pk)
+        return finding
+
+    @extend_schema(
+        responses=ReportFindingSerializer,
+        description="Retrieve a finding",
+    )
+    def get(self, request, pk, report_id=None):
+        finding = self._get_finding(pk, report_id)
+        serializer = ReportFindingSerializer(finding)
+        return Response(serializer.data)
+
+    @extend_schema(
+        request=ReportFindingSerializer,
+        responses=ReportFindingSerializer,
+        description="Partially update a finding",
+    )
+    def patch(self, request, pk, report_id=None):
+        finding = self._get_finding(pk, report_id)
 
         serializer = ReportFindingSerializer(
             finding,
@@ -100,12 +243,16 @@ class ReportFindingDetailView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            # Refresh to get updated relationships
+            finding = self._get_finding(pk, report_id)
+            response_serializer = ReportFindingSerializer(finding)
+            return Response(response_serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk):
-        finding = get_object_or_404(ReportFinding, id=pk)
+    @extend_schema(responses={204: None})
+    def delete(self, request, pk, report_id=None):
+        finding = self._get_finding(pk, report_id)
         finding.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -115,12 +262,20 @@ class ReportFindingDetailView(APIView):
 # -------------------------
 class EvidenceListCreateView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @extend_schema(
+        responses=FindingEvidenceSerializer(many=True),
+        description="List evidences for a finding",
+    )
     def get(self, request, finding_id):
         evidences = FindingEvidence.objects.filter(finding_id=finding_id)
         serializer = FindingEvidenceSerializer(evidences, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=FindingEvidenceSerializer,
+        responses={201: FindingEvidenceSerializer, 400: OpenApiTypes.OBJECT},
+        description="Create evidence for a finding",
+    )
     def post(self, request, finding_id):
         serializer = FindingEvidenceSerializer(data=request.data)
 

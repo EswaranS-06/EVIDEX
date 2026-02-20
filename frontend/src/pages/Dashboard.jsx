@@ -96,8 +96,7 @@ const Dashboard = () => {
                 </div>
 
                 <button className="btn btn-primary" onClick={() => {
-                    setIsCollapsed(true);
-                    navigate('/report/new');
+                    navigate('/create');
                 }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     NEW REPORT
