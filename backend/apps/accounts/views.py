@@ -2,22 +2,27 @@ from django.shortcuts import render
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .models import Role, UserProfile
 from .serializers import RegisterSerializer
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
 
-from rest_framework.permissions import AllowAny
+
+class LoginView(TokenObtainPairView):
+    pass
+    # permission_classes = [AllowAny]
+
+
+class RefreshTokenView(TokenRefreshView):
+    permission_classes = [IsAuthenticated]
+
 
 class RegisterUserView(APIView):
-    permission_classes = [AllowAny]
-
-
-    # class RegisterUserView(APIView): #secure feature off for now
-    #     permission_classes = [IsAuthenticated]  # later we’ll restrict to Admin
+    # permission_classes = [AllowAny]
 
     @extend_schema(
         request=RegisterSerializer,
