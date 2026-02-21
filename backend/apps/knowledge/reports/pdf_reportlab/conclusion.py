@@ -4,7 +4,7 @@ from reportlab.platypus import Paragraph
 from reportlab.lib.colors import black
 
 
-def draw_conclusion(c, data, page_no, total_pages):
+def draw_conclusion(c, data,page_no, total_pages):
     W, H = A4
     margin = 55
 

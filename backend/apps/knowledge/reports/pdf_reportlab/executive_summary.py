@@ -5,7 +5,7 @@ from reportlab.platypus import Paragraph, Table, TableStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 
-def draw_executive_summary(c, data, page_no, total_pages):
+def draw_executive_summary(c, data,page_no, total_pages):
 
     W, H = A4
     margin = 40
@@ -30,25 +30,29 @@ def draw_executive_summary(c, data, page_no, total_pages):
         fontSize=10,
         leading=14,
         textColor=black,
+        spaceAfter=4,
     )
 
     overview_text = f"""
-    <b>1.1 Overview</b><br/>
-    
-This report presents the results of the Penetration Testing of web application allocated to <b>{data["application_name"]}</b>.
-<br/>
-This testing was performed by a security analyst. The purpose of this testing is to identify application-
-level security issues that could affect the confidentiality, integrity, or availability of <b>{data["application_name"]}</b>.The
-scope of this exercise includes assessing and testing the URL under consideration to understand the
-security posture of the application. The Testing exercise concentrated on evaluating the security of
-our web applications, covering front-end, back-end components, databases, and user interactions.
-<br/>
-The objective was to identify vulnerabilities like SQL injection and XSS, ensuring the robustness of
-application security.
-<br/>
-In summary, this document outlines the analysis, findings, and recommendations from <b>{data["created_by"]}</b> for the
-vulnerabilities, aimed at enhancing the overall security posture of the network infrastructure.
-    """
+<b>1.1 Overview</b><br/><br/>
+
+A security assessment was conducted to evaluate the effectiveness of existing controls and to identify
+vulnerabilities that may impact the confidentiality, integrity, and availability of the assessed environment.
+<br/><br/>
+
+The engagement was performed using industry-recognized testing methodologies and simulated real-world
+attack scenarios to assess potential exposure to security threats. The objective was to identify exploitable
+weaknesses that could result in unauthorized access, data compromise, privilege escalation, or service disruption.
+<br/><br/>
+
+The assessment identified findings across multiple severity levels. Each observation has been risk-rated
+based on standardized classification criteria and includes detailed technical analysis, impact evaluation,
+and recommended remediation measures.
+<br/><br/>
+
+Timely remediation of identified high-risk vulnerabilities is recommended to reduce overall exposure and
+strengthen the organization's security posture.
+"""
 
     p = Paragraph(overview_text, body_style)
     text_width = W - 2 * margin - 20

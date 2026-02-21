@@ -13,3 +13,4 @@ wheels/
 *.jpeg
 *.jpg
 *.webp
+!stepss.png
