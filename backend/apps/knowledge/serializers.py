@@ -24,25 +24,12 @@ class OWASPVulnerabilitySerializer(serializers.ModelSerializer):
         fields = ["id", "category", "category_name", "name", "description", "default_severity", "default_impact", "default_remediation", "variants", "created_at", "updated_at"]
 
 
-class OWASPCategorySerializer(serializers.ModelSerializer):
-    vulnerabilities = OWASPVulnerabilitySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = OWASPCategory
-        fields = ["id", "name", "description", "vulnerabilities"]
-
-
-class VulnerabilityVariantSerializer(serializers.ModelSerializer):
-    owasp_vulnerability_name = serializers.ReadOnlyField(
-        source="owasp_vulnerability.name"
-    )
-
-    class Meta:
-        model = VulnerabilityVariant
-        fields = "__all__"
-
-
 class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source="title")
+    default_severity = serializers.ReadOnlyField(source="severity")
+    default_impact = serializers.ReadOnlyField(source="impact")
+    default_remediation = serializers.ReadOnlyField(source="remediation")
+
     class Meta:
         model = VulnerabilityDefinition
         fields = "__all__"
@@ -79,6 +66,25 @@ class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
         return value
 
 
+class OWASPCategorySerializer(serializers.ModelSerializer):
+    vulnerabilities = VulnerabilityDefinitionSerializer(source="vulnerabilitydefinition_set", many=True, read_only=True)
+
+    class Meta:
+        model = OWASPCategory
+        fields = ["id", "name", "description", "vulnerabilities"]
+
+
+# VulnerabilityVariant moved down to keep it near its usage if needed or just alphabetical
+class VulnerabilityVariantSerializer(serializers.ModelSerializer):
+    owasp_vulnerability_name = serializers.ReadOnlyField(
+        source="owasp_vulnerability.name"
+    )
+
+    class Meta:
+        model = VulnerabilityVariant
+        fields = "__all__"
+
+
 # -------------------------
 # REPORT
 # -------------------------
@@ -95,9 +101,13 @@ class ReportSerializer(serializers.ModelSerializer):
             "application_name",
             "report_type",
             "target",
+            "tools_used",
+            "test_location",
             "start_date",
             "end_date",
             "prepared_by",
+            "reviewed_by",
+            "approved_by",
             "findings_count",
             "severity_counts",
             "status", # Added status field
@@ -165,6 +175,7 @@ class ReportFindingSerializer(serializers.ModelSerializer):
     final_impact = serializers.ReadOnlyField()
     final_remediation = serializers.ReadOnlyField()
     vulnerability_name = serializers.ReadOnlyField(source="vulnerability.title")
+    category_name = serializers.ReadOnlyField(source="vulnerability.owasp_category.name")
 
     # Nested evidences (needed for API + PDF)
     evidences = FindingEvidenceSerializer(many=True, read_only=True)
@@ -192,6 +203,7 @@ class ReportFindingSerializer(serializers.ModelSerializer):
             "final_impact",
             "final_remediation",
             "vulnerability_name",
+            "category_name",
 
             # Evidence
             "evidences",

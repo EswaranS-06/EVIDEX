@@ -13,6 +13,11 @@ import {
     FilePlus,
     Users,
     Search,
+    MapPin,
+    HardDrive,
+    Trash2,
+    Plus,
+    Wrench,
     AlertCircle,
     Activity
 } from 'lucide-react';
@@ -30,10 +35,14 @@ const CreateReport = () => {
         organizationId: '',
         newOrganizationName: '',
         applicationName: '',
-        target: '',
-        startDate: '',
+        targets: [''], // Array of strings for multiple URLs
+        toolsUsed: [''], // Array of strings for multiple tools
+        testLocation: 'Off-site', // On-site, Off-site
+        startDate: new Date().toISOString().split('T')[0],
         endDate: '',
         preparedBy: 'Pentester',
+        reviewedBy: '',
+        approvedBy: '',
         selectedVulnerabilityIds: []
     });
     const [owaspCategories, setOwaspCategories] = useState([]);
@@ -44,7 +53,9 @@ const CreateReport = () => {
         const fetchOrgs = async () => {
             try {
                 const response = await api.get('/api/reports/');
-                const uniqueClients = [...new Set(response.data.map(r => r.client_name))].sort();
+                // Handle both paginated and non-paginated responses
+                const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
+                const uniqueClients = [...new Set(data.map(r => r.client_name))].filter(Boolean).sort();
                 setOrganizations(uniqueClients);
             } catch (err) {
                 console.error("Failed to fetch organizations:", err);
@@ -99,6 +110,28 @@ const CreateReport = () => {
         }
         return null;
     }).filter(Boolean);
+
+    const getSeverityBg = (sev) => {
+        const s = (sev || '').toLowerCase();
+        switch (s) {
+            case 'critical': return 'rgba(142, 45, 226, 0.1)';
+            case 'high': return 'rgba(255, 77, 109, 0.1)';
+            case 'medium': return 'rgba(254, 228, 64, 0.1)';
+            case 'low': return 'rgba(0, 240, 255, 0.1)';
+            default: return 'var(--glass-bg)';
+        }
+    };
+
+    const getSeverityColor = (sev) => {
+        const s = (sev || '').toLowerCase();
+        switch (s) {
+            case 'critical': return 'var(--color-secondary)';
+            case 'high': return 'var(--color-error)';
+            case 'medium': return 'var(--color-warning)';
+            case 'low': return 'var(--color-primary)';
+            default: return 'var(--color-border)';
+        }
+    };
 
 
 
@@ -187,6 +220,48 @@ const CreateReport = () => {
                 </div>
             </div>
 
+            {/* Test Performed (On-site/Off-site) */}
+            <div className="input-group">
+                <label className="input-label" style={{ marginBottom: '16px' }}>Test Performed</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    <div
+                        onClick={() => setFormData({ ...formData, testLocation: 'On-site' })}
+                        style={{
+                            padding: '20px',
+                            borderRadius: '16px',
+                            border: `1px solid ${formData.testLocation === 'On-site' ? 'var(--color-primary)' : 'var(--glass-border)'}`,
+                            background: formData.testLocation === 'On-site' ? 'rgba(0, 240, 255, 0.05)' : 'var(--color-bg-card)',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                        }}
+                    >
+                        <MapPin size={24} color={formData.testLocation === 'On-site' ? 'var(--color-primary)' : 'var(--color-text-muted)'} />
+                        <div style={{ fontWeight: '600', fontSize: '1rem' }}>On-site</div>
+                    </div>
+
+                    <div
+                        onClick={() => setFormData({ ...formData, testLocation: 'Off-site' })}
+                        style={{
+                            padding: '20px',
+                            borderRadius: '16px',
+                            border: `1px solid ${formData.testLocation === 'Off-site' ? 'var(--color-primary)' : 'var(--glass-border)'}`,
+                            background: formData.testLocation === 'Off-site' ? 'rgba(0, 240, 255, 0.05)' : 'var(--color-bg-card)',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                        }}
+                    >
+                        <HardDrive size={24} color={formData.testLocation === 'Off-site' ? 'var(--color-primary)' : 'var(--color-text-muted)'} />
+                        <div style={{ fontWeight: '600', fontSize: '1rem' }}>Off-site</div>
+                    </div>
+                </div>
+            </div>
+
             {/* Organization Selection */}
             <div className="input-group">
                 <label className="input-label">Organization</label>
@@ -251,7 +326,7 @@ const CreateReport = () => {
                     onClick={nextStep}
                     className="btn btn-primary"
                     style={{ padding: '12px 32px' }}
-                    disabled={!isCreateNewOrg && !formData.organizationId}
+                    disabled={isCreateNewOrg ? !formData.newOrganizationName.trim() : !formData.organizationId}
                 >
                     Next <ChevronRight size={18} style={{ marginLeft: '8px' }} />
                 </button>
@@ -278,21 +353,113 @@ const CreateReport = () => {
             </div>
 
             <div className="input-group">
-                <label className="input-label">Target URL / IP Range</label>
-                <input
-                    type="text"
-                    className="input-field"
-                    placeholder="e.g. 192.168.1.0/24 or app.example.com"
-                    value={formData.target}
-                    onChange={(e) => setFormData({ ...formData, target: e.target.value })}
-                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <label className="input-label" style={{ margin: 0 }}>Target URLs / IP Ranges</label>
+                    <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, targets: [...formData.targets, ''] })}
+                        className="btn btn-ghost"
+                        style={{ padding: '4px 12px', fontSize: '0.8rem', color: 'var(--color-primary)' }}
+                    >
+                        <Plus size={14} style={{ marginRight: '4px' }} /> Add URL
+                    </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {formData.targets.map((target, index) => (
+                        <div key={index} style={{ display: 'flex', gap: '10px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                                <Globe size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="e.g. https://app.example.com"
+                                    value={target}
+                                    onChange={(e) => {
+                                        const newTargets = [...formData.targets];
+                                        newTargets[index] = e.target.value;
+                                        setFormData({ ...formData, targets: newTargets });
+                                    }}
+                                    style={{ paddingLeft: '40px' }}
+                                />
+                            </div>
+                            {formData.targets.length > 1 && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const newTargets = formData.targets.filter((_, i) => i !== index);
+                                        setFormData({ ...formData, targets: newTargets });
+                                    }}
+                                    className="btn btn-ghost"
+                                    style={{ color: 'var(--color-error)', padding: '0 12px' }}
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="input-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <label className="input-label" style={{ margin: 0 }}>Tools used for testing</label>
+                    <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, toolsUsed: [...formData.toolsUsed, ''] })}
+                        className="btn btn-ghost"
+                        style={{ padding: '4px 12px', fontSize: '0.8rem', color: 'var(--color-primary)' }}
+                    >
+                        <Plus size={14} style={{ marginRight: '4px' }} /> Add Tool
+                    </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {formData.toolsUsed.map((tool, index) => (
+                        <div key={index} style={{ display: 'flex', gap: '10px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                                <Wrench size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="e.g. Burp Suite, Nmap, Metasploit"
+                                    value={tool}
+                                    onChange={(e) => {
+                                        const newTools = [...formData.toolsUsed];
+                                        newTools[index] = e.target.value;
+                                        setFormData({ ...formData, toolsUsed: newTools });
+                                    }}
+                                    style={{ paddingLeft: '40px' }}
+                                />
+                            </div>
+                            {formData.toolsUsed.length > 1 && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const newTools = formData.toolsUsed.filter((_, i) => i !== index);
+                                        setFormData({ ...formData, toolsUsed: newTools });
+                                    }}
+                                    className="btn btn-ghost"
+                                    style={{ color: 'var(--color-error)', padding: '0 12px' }}
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                 <button onClick={prevStep} className="btn btn-ghost" style={{ padding: '12px 24px' }}>
                     <ChevronLeft size={18} style={{ marginRight: '8px' }} /> Previous
                 </button>
-                <button onClick={nextStep} className="btn btn-primary" style={{ padding: '12px 32px' }}>
+                <button
+                    onClick={nextStep}
+                    className="btn btn-primary"
+                    style={{ padding: '12px 32px' }}
+                    disabled={!formData.applicationName.trim()}
+                >
                     Next <ChevronRight size={18} style={{ marginLeft: '8px' }} />
                 </button>
             </div>
@@ -327,13 +494,36 @@ const CreateReport = () => {
                 </div>
             </div>
 
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="input-group">
+                    <label className="input-label">Prepared By</label>
+                    <input
+                        type="text"
+                        className="input-field"
+                        value={formData.preparedBy}
+                        onChange={(e) => setFormData({ ...formData, preparedBy: e.target.value })}
+                    />
+                </div>
+                <div className="input-group">
+                    <label className="input-label">Reviewed By</label>
+                    <input
+                        type="text"
+                        className="input-field"
+                        placeholder="Name of reviewer"
+                        value={formData.reviewedBy}
+                        onChange={(e) => setFormData({ ...formData, reviewedBy: e.target.value })}
+                    />
+                </div>
+            </div>
+
             <div className="input-group">
-                <label className="input-label">Prepared By</label>
+                <label className="input-label">Approved By</label>
                 <input
                     type="text"
                     className="input-field"
-                    value={formData.preparedBy}
-                    onChange={(e) => setFormData({ ...formData, preparedBy: e.target.value })}
+                    placeholder="Name of approver"
+                    value={formData.approvedBy}
+                    onChange={(e) => setFormData({ ...formData, approvedBy: e.target.value })}
                 />
             </div>
 
@@ -345,6 +535,7 @@ const CreateReport = () => {
                     onClick={nextStep}
                     className="btn btn-primary"
                     style={{ padding: '12px 32px' }}
+                    disabled={!formData.startDate || !formData.endDate}
                 >
                     Next <ChevronRight size={18} style={{ marginLeft: '8px' }} />
                 </button>
@@ -420,7 +611,10 @@ const CreateReport = () => {
                                                     flexDirection: 'column',
                                                     gap: '8px',
                                                     background: isSelected ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255,255,255,0.02)',
-                                                    border: `1px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}`,
+                                                    borderLeft: `3px solid ${getSeverityColor(vuln.default_severity)}`,
+                                                    borderBottom: `1px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}`,
+                                                    borderTop: `1px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}`,
+                                                    borderRight: `1px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}`,
                                                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                                     position: 'relative',
                                                     overflow: 'hidden'
@@ -443,8 +637,21 @@ const CreateReport = () => {
                                                     <span className="vuln-name" style={{
                                                         fontSize: '0.9rem',
                                                         fontWeight: '500',
-                                                        color: isSelected ? '#fff' : 'rgba(255,255,255,0.8)'
+                                                        color: isSelected ? '#fff' : 'rgba(255,255,255,0.8)',
+                                                        flex: 1
                                                     }}>{vuln.name}</span>
+                                                    <span style={{
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: '700',
+                                                        padding: '2px 8px',
+                                                        borderRadius: '4px',
+                                                        background: getSeverityBg(vuln.default_severity),
+                                                        color: getSeverityColor(vuln.default_severity),
+                                                        border: `1px solid ${getSeverityColor(vuln.default_severity)}`,
+                                                        textTransform: 'uppercase'
+                                                    }}>
+                                                        {vuln.default_severity}
+                                                    </span>
                                                 </div>
 
                                                 <div className="vuln-description" style={{
@@ -499,10 +706,14 @@ const CreateReport = () => {
             client_name: isCreateNewOrg ? formData.newOrganizationName : formData.organizationId,
             application_name: formData.applicationName,
             report_type: formData.assessmentType,
-            target: formData.target,
+            target: formData.targets.filter(t => t.trim() !== '').join('\n'),
+            tools_used: formData.toolsUsed.filter(t => t.trim() !== '').join('\n'),
+            test_location: formData.testLocation,
             start_date: formData.startDate,
             end_date: formData.endDate,
             prepared_by: formData.preparedBy,
+            reviewed_by: formData.reviewedBy,
+            approved_by: formData.approvedBy,
             status: 'Draft'
         };
 
@@ -515,7 +726,7 @@ const CreateReport = () => {
                 await Promise.all(formData.selectedVulnerabilityIds.map(vulnId =>
                     api.post(`/api/reports/${reportId}/findings/`, {
                         vulnerability: vulnId,
-                        affected_url: formData.target || '/'
+                        affected_url: formData.targets[0] || '/'
                     })
                 ));
             }

@@ -13,8 +13,7 @@ from drf_spectacular.types import OpenApiTypes
 
 
 class LoginView(TokenObtainPairView):
-    pass
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
 
 
 class RefreshTokenView(TokenRefreshView):
@@ -22,7 +21,7 @@ class RefreshTokenView(TokenRefreshView):
 
 
 class RegisterUserView(APIView):
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
 
     @extend_schema(
         request=RegisterSerializer,
