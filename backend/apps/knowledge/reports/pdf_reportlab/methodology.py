@@ -80,20 +80,20 @@ def draw_methodology(c, data, page_no, total_pages):
     )
 
     text = """
-    <b>1. Planning and Reconnaissance</b><br/>
-    In this initial phase, the pentester gathers information about the target system, defining the scope and objectives of the test. This may involve system documentation and publicly available information.<br/><br/>
+    <b><br/>1. Planning and Reconnaissance</b><br/>
+    In this initial phase, the scope and objectives of the penetration test are defined. The tester gathers relevant information about the target system through documentation review and publicly available sources to understand the environment.<br/><br/>
 
     <b>2. Scanning</b><br/>
-    The pentester uses automated tools to scan the target system for vulnerabilities such as open ports, weak passwords, and misconfigured software. This helps identify potential entry points for attackers.<br/><br/>
+    The tester uses automated and manual tools to identify vulnerabilities such as open ports, weak credentials, and misconfigurations. This phase helps determine potential entry points for exploitation.<br/><br/>
 
     <b>3. Gaining Access</b><br/>
-    The pentester attempts to exploit the vulnerabilities identified during scanning. This may involve using techniques such as SQL injection or social engineering.<br/><br/>
+    The identified vulnerabilities are exploited to gain unauthorized access. Techniques may include SQL injection, password attacks, or social engineering, depending on the defined scope.<br/><br/>
 
     <b>4. Maintaining Access (Optional)</b><br/>
-    In some tests, the pentester may try to maintain access to the system after gaining initial access to assess lateral movement and privilege escalation.<br/><br/>
+    If permitted, the tester attempts to establish persistence within the compromised system. This phase evaluates lateral movement, privilege escalation, and the overall impact of sustained unauthorized access.<br/><br/>
 
     <b>5. Reporting</b><br/>
-    After completing the test, the pentester creates a report detailing the vulnerabilities found and recommendations for remediation.
+    After completing the assessment, a detailed report is prepared outlining the vulnerabilities identified, their risk level, and potential business impact. The report also provides clear and prioritized remediation recommendations.
     """
 
     p = Paragraph(text, detail_style)

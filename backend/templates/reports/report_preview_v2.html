@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Penetration Testing Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            color: #000;
+        }
+
+        h1, h2 {
+            margin-bottom: 10px;
+        }
+
+        .section {
+            margin-top: 40px;
+        }
+
+        .summary-table, .findings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .summary-table th,
+        .summary-table td,
+        .findings-table th,
+        .findings-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .summary-table th {
+            background-color: #1F4E8C;
+            color: white;
+        }
+
+        .findings-table th {
+            background-color: #1F4E8C;
+            color: white;
+        }
+
+        .critical { color: #C00000; font-weight: bold; }
+        .high { color: #FF0000; font-weight: bold; }
+        .medium { color: #FFC000; font-weight: bold; }
+        .low { color: #0070C0; font-weight: bold; }
+
+        .patched { color: green; font-weight: bold; }
+        .pending { color: #C00000; font-weight: bold; }
+
+        .footer {
+            margin-top: 60px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>{{ report.application_name }}</h1>
+    <h2>Penetration Testing Report</h2>
+
+    <!-- 3. Project Scope -->
+    <div class="section">
+        <h2>3. Project Scope</h2>
+        <p>
+            Formal communication from {{ report.application_name }} outlined the application 
+            to be tested and the type of testing to be carried out. 
+            A RED team resource was deployed to perform this activity.
+        </p>
+    </div>
+
+    <!-- 4. Penetration Testing Results -->
+    <div class="section">
+        <h2>4. Penetration Testing Results</h2>
+
+        <!-- Summary Table -->
+        <table class="summary-table">
+            <tr>
+                <th>Critical</th>
+                <th>High</th>
+                <th>Medium</th>
+                <th>Low</th>
+            </tr>
+            <tr>
+                <td>{{ summary.severity.critical }}</td>
+                <td>{{ summary.severity.high }}</td>
+                <td>{{ summary.severity.medium }}</td>
+                <td>{{ summary.severity.low }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Findings Table -->
+    <div class="section">
+        <h2>5. Detailed Findings</h2>
+
+        <table class="findings-table">
+            <tr>
+                <th>S.No</th>
+                <th>Vulnerability Name</th>
+                <th>Severity</th>
+                <th>Status</th>
+            </tr>
+
+            {% for f in findings %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ f.final_title }}</td>
+
+                <td class="
+                    {% if f.final_severity == 'CRITICAL' %}critical
+                    {% elif f.final_severity == 'HIGH' %}high
+                    {% elif f.final_severity == 'MEDIUM' %}medium
+                    {% elif f.final_severity == 'LOW' %}low
+                    {% endif %}
+                ">
+                    {{ f.final_severity }}
+                </td>
+
+                <td class="
+                    {% if f.status == 'Patched' %}patched
+                    {% else %}pending
+                    {% endif %}
+                ">
+                    {{ f.status }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="footer">
+        <span>Confidential</span>
+        <span>Prepared By: {{ report.prepared_by }}</span>
+    </div>
+
+</body>
+</html>

@@ -47,6 +47,18 @@ class VariantsByVulnerabilityView(generics.ListAPIView):
         return VulnerabilityVariant.objects.filter(
             owasp_vulnerability_id=vuln_id
         )
+class OWASPCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = OWASPCategory.objects.all()
+    serializer_class = OWASPCategorySerializer
+    permission_classes = [IsAuthenticated]
+
+
+class VulnerabilityVariantDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = VulnerabilityVariant.objects.all()
+    serializer_class = VulnerabilityVariantSerializer
+    permission_classes = [IsAuthenticated]
+
+
 class VulnerabilityDefinitionListCreateView(generics.ListCreateAPIView):
     queryset = VulnerabilityDefinition.objects.all()
     serializer_class = VulnerabilityDefinitionSerializer

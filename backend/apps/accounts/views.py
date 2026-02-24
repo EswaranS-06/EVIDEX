@@ -114,10 +114,28 @@ from django.shortcuts import get_object_or_404
 
 from .models import Role, UserProfile
 from .serializers import RegisterSerializer
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+
+
+class LoginView(TokenObtainPairView):
+    permission_classes = [AllowAny]
+
+
+class RefreshTokenView(TokenRefreshView):
+    permission_classes = [IsAuthenticated]
+
 
 from rest_framework.permissions import AllowAny
 
 class RegisterUserView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={201: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+        description="Register a new user",
+    )
     permission_classes = [AllowAny]
     
 

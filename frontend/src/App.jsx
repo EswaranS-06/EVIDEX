@@ -14,6 +14,7 @@ const ReportDetails = lazy(() => import('./pages/ReportDetails'));
 const FindingDetail = lazy(() => import('./pages/FindingDetail'));
 const ReportStatus = lazy(() => import('./pages/ReportStatus'));
 const CreateReport = lazy(() => import('./pages/CreateReport'));
+const Vulnerabilities = lazy(() => import('./pages/Vulnerabilities'));
 
 import { AuthProvider } from './context/AuthContext';
 import { ModalProvider } from './context/ModalContext';
@@ -40,6 +41,7 @@ function App() {
                     <Route path="/report/:id" element={<ReportDetails />} />
                     <Route path="/report/:reportId/finding/:id" element={<FindingDetail />} />
                     <Route path="/finding/:id" element={<FindingDetail />} />
+                    <Route path="/vulnerabilities" element={<Vulnerabilities />} />
                     <Route path="/report-status" element={<ReportStatus />} />
                     <Route path="/create" element={<CreateReport />} />
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />

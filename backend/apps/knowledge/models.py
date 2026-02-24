@@ -139,12 +139,16 @@ class Report(models.Model):
     client_name = models.CharField(max_length=200)
     application_name = models.CharField(max_length=200)
     report_type = models.CharField(max_length=100)
-    target = models.CharField(max_length=255)
+    target = models.TextField()
+    tools_used = models.TextField(blank=True, default="")
+    test_location = models.CharField(max_length=50, default="Off-site") # On-site, Off-site
 
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
 
     prepared_by = models.CharField(max_length=150)
+    reviewed_by = models.CharField(max_length=150, blank=True, default="")
+    approved_by = models.CharField(max_length=150, blank=True, default="")
 
     status = models.CharField(
         max_length=20,
