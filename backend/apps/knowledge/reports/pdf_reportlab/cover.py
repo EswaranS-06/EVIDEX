@@ -1,6 +1,6 @@
 from reportlab.lib.pagesizes import A4
 
-def draw_cover(c, d, page_no=1, total_pages=8):
+def draw_cover(c, d, page_no, total_pages=8):
     W, H = A4
     margin = 40
 

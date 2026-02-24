@@ -9,7 +9,7 @@ LEGAL_TEXT = [
     "privacy law."
 ]
 
-def draw_legal(c, data, page_no=2, total_pages=8):
+def draw_legal(c, data, page_no, total_pages=8):
     W, H = A4
     margin = 40
 
