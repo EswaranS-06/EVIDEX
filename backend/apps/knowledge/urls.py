@@ -5,9 +5,11 @@ from .reports.report_pdf_views import ReportPDFView
 
 from .views import (
     OWASPCategoryListCreateView,
+    OWASPCategoryDetailView,
     OWASPVulnerabilityListCreateView,
     OWASPVulnerabilityDetailView,
     VulnerabilityVariantListCreateView,
+    VulnerabilityVariantDetailView,
     VariantsByVulnerabilityView,
     VulnerabilityDefinitionListCreateView,
     VulnerabilityDefinitionDetailView,
@@ -27,9 +29,11 @@ urlpatterns = [
     # OWASP APIs
     # -----------------------
     path("owasp/categories/", OWASPCategoryListCreateView.as_view()),
+    path("owasp/categories/<int:pk>/", OWASPCategoryDetailView.as_view()),
     path("owasp/vulnerabilities/", OWASPVulnerabilityListCreateView.as_view()),
     path("owasp/vulnerabilities/<int:pk>/", OWASPVulnerabilityDetailView.as_view()),
     path("owasp/variants/", VulnerabilityVariantListCreateView.as_view()),
+    path("owasp/variants/<int:pk>/", VulnerabilityVariantDetailView.as_view()),
     path(
         "owasp/vulnerabilities/<int:vuln_id>/variants/",
         VariantsByVulnerabilityView.as_view(),
