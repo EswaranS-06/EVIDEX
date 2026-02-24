@@ -21,8 +21,8 @@ def draw_results(c, data, report_id, page_no, total_pages):
     }
 
     STATUS_ORDER = {
-        "Patched": 0,
-        "Pending": 1,
+        "Pending": 0,
+        "Patched": 1,
     }
 
     SEVERITY_COLORS = {
@@ -44,7 +44,7 @@ def draw_results(c, data, report_id, page_no, total_pages):
 
     findings.sort(
         key=lambda f: (
-            STATUS_ORDER.get(f.status, 1),
+            STATUS_ORDER.get(f.status or "Pending", 1),
             SEVERITY_ORDER.get((f.final_severity or "").upper(), 5)
         )
     )
@@ -197,6 +197,7 @@ def draw_results(c, data, report_id, page_no, total_pages):
     # =========================
     # Paginated Findings Table
     # =========================
+    
     table_y = chart_bottom - 60
 
     if findings:

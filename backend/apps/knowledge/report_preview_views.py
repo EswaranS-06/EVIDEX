@@ -10,6 +10,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
+from django.urls import reverse
 
 from apps.knowledge.models import Report, ReportFinding
 
@@ -18,7 +19,7 @@ class ReportPreviewView(APIView):
     # authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]
     # Temporarily disable JWT authentication (allow anonymous access)
-    authentication_classes = []
+    #authentication_classes = []
     permission_classes = [AllowAny]
 
     @extend_schema(
@@ -100,7 +101,26 @@ class ReportPreviewView(APIView):
             "MEDIA_URL": request.build_absolute_uri(settings.MEDIA_URL),
             "is_pdf": False,
         }
-
-        # IMPORTANT: pass request so MEDIA_URL works in browser
-        html = render_to_string("reports/cover.html", context, request=request)
+        pdf_url = f"/api/reports/{report.id}/pdf/" 
+        
+        html = f"""
+<html>
+<head>
+    <title>Report Preview</title>
+    <style>
+        body {{
+            margin: 0;
+        }}
+        iframe {{
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }}
+    </style>
+</head>
+<body>
+    <iframe src="{pdf_url}"></iframe>
+</body>
+</html>
+"""
         return HttpResponse(html)

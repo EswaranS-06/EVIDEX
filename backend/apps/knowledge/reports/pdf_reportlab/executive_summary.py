@@ -21,7 +21,7 @@ def draw_executive_summary(c, data,page_no, total_pages):
 
     y = H - 95
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(margin + 10, y, "1. Executive Summary")
+    c.drawString(margin + 10, y-15, "1. Executive Summary")
 
     # ===== BODY TEXT =====
     body_style = ParagraphStyle(
@@ -30,7 +30,7 @@ def draw_executive_summary(c, data,page_no, total_pages):
         fontSize=10,
         leading=14,
         textColor=black,
-        spaceAfter=4,
+        
     )
 
     overview_text = f"""
