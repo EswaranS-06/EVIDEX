@@ -12,6 +12,7 @@ const Reports = lazy(() => import('./pages/Reports'));
 const ReportDetails = lazy(() => import('./pages/ReportDetails'));
 const FindingDetail = lazy(() => import('./pages/FindingDetail'));
 const ReportStatus = lazy(() => import('./pages/ReportStatus'));
+const ReportPreview = lazy(() => import('./pages/ReportPreview'));
 const CreateReport = lazy(() => import('./pages/CreateReport'));
 const Vulnerabilities = lazy(() => import('./pages/Vulnerabilities'));
 
@@ -38,6 +39,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/reports" element={<Reports />} />
                     <Route path="/report/:id" element={<ReportDetails />} />
+                    <Route path="/report/:id/preview" element={<ReportPreview />} />
                     <Route path="/report/:reportId/finding/:id" element={<FindingDetail />} />
                     <Route path="/finding/:id" element={<FindingDetail />} />
                     <Route path="/vulnerabilities" element={<Vulnerabilities />} />
