@@ -224,9 +224,9 @@ if os.getenv('CORS_ALLOWED_ORIGINS'):
 CORS_ALLOWED_ORIGINS = list(set(CORS_ALLOWED_ORIGINS))  # Remove duplicates
 CORS_ALLOW_CREDENTIALS = True
 
-# ============================================
-# CSRF CONFIGURATION
-# ============================================
+CORS_EXPOSE_HEADERS = [
+    "Content-Disposition",
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://evidex.netlify.app",
