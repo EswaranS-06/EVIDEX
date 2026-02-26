@@ -52,11 +52,12 @@ const Dashboard = () => {
     const filteredReports = reports.filter(r => statusFilter === 'All' || r.status === statusFilter);
 
     const getSeverityBg = (sev) => {
-        switch (sev) {
-            case 'Critical': return 'rgba(142, 45, 226, 0.1)';
-            case 'High': return 'rgba(255, 77, 109, 0.1)';
-            case 'Medium': return 'rgba(254, 228, 64, 0.1)';
-            case 'Low': return 'rgba(0, 240, 255, 0.1)';
+        const s = (sev || '').toLowerCase();
+        switch (s) {
+            case 'critical': return 'var(--sev-critical-bg)';
+            case 'high': return 'var(--sev-high-bg)';
+            case 'medium': return 'var(--sev-medium-bg)';
+            case 'low': return 'var(--sev-low-bg)';
             default: return 'var(--glass-bg)';
         }
     };
@@ -91,7 +92,7 @@ const Dashboard = () => {
                         type="text"
                         className="input-field"
                         placeholder="Search reports..."
-                        style={{ width: '100%', paddingLeft: '40px', background: 'rgba(0,0,0,0.2)' }}
+                        style={{ width: '100%', paddingLeft: '40px', background: 'var(--tag-bg)' }}
                     />
                 </div>
 
@@ -151,7 +152,7 @@ const Dashboard = () => {
                         cursor: 'pointer',
                         transform: statusFilter === 'Completed' ? 'translateY(-4px)' : 'none',
                         borderColor: statusFilter === 'Completed' ? 'var(--color-success)' : 'var(--color-border)',
-                        boxShadow: statusFilter === 'Completed' ? '0 0 15px rgba(0, 245, 212, 0.2)' : 'var(--shadow-card)',
+                        boxShadow: statusFilter === 'Completed' ? '0 0 15px var(--color-primary-glow)' : 'var(--shadow-card)',
                         transition: 'all 0.3s ease'
                     }}
                 >

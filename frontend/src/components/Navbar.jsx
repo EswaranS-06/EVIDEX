@@ -65,7 +65,7 @@ const Navbar = ({ toggleSidebar, isSidebarCollapsed }) => {
                             flexDirection: 'column',
                             display: 'flex',
                             gap: '4px',
-                            background: '#05070a', // Solid bg to prevent transparency issues
+                            background: 'var(--glass-bg)', // Themed background
                         }}>
                             <button
                                 className="btn-ghost"
