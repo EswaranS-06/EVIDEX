@@ -11,12 +11,16 @@ import {
     Shield,
     Calendar,
     User,
-    Activity
+    Activity,
+    Edit2
 } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const ReportStatus = () => {
     const { alert } = useModal();
+    const navigate = useNavigate();
+    const location = useLocation();
     const [reports, setReports] = useState([]);
     const [selectedReport, setSelectedReport] = useState(null);
     const [findings, setFindings] = useState([]);
@@ -45,7 +49,17 @@ const ReportStatus = () => {
         try {
             const response = await api.get('/api/reports/');
             setReports(response.data);
-            if (response.data.length > 0) {
+
+            // Handle cross-page navigation selection
+            const passedId = location.state?.reportId;
+            if (passedId) {
+                const found = response.data.find(r => r.id.toString() === passedId.toString());
+                if (found) {
+                    handleSelectReport(found);
+                } else if (response.data.length > 0) {
+                    handleSelectReport(response.data[0]);
+                }
+            } else if (response.data.length > 0) {
                 handleSelectReport(response.data[0]);
             }
         } catch (err) {
@@ -137,7 +151,7 @@ const ReportStatus = () => {
                             maxHeight: '400px',
                             overflowY: 'auto',
                             zIndex: 1000,
-                            background: '#0a0d14',
+                            background: 'var(--glass-bg)',
                             padding: '10px',
                             border: '1px solid var(--color-primary)',
                             boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
@@ -162,11 +176,11 @@ const ReportStatus = () => {
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            background: selectedReport?.id === report.id ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255,255,255,0.02)'
+                                            background: selectedReport?.id === report.id ? 'var(--nav-active-bg)' : 'var(--tag-bg)'
                                         }}
                                     >
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ fontWeight: '600', color: selectedReport?.id === report.id ? 'var(--color-primary)' : '#fff' }}>
+                                            <span style={{ fontWeight: '600', color: selectedReport?.id === report.id ? 'var(--color-primary)' : 'var(--color-text-main)' }}>
                                                 {report.client_name}
                                             </span>
                                             <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
@@ -181,7 +195,7 @@ const ReportStatus = () => {
                                                 fontSize: '0.65rem',
                                                 padding: '2px 6px',
                                                 borderRadius: '4px',
-                                                background: 'rgba(255,255,255,0.05)',
+                                                background: 'var(--tag-bg)',
                                                 color: 'var(--color-text-muted)'
                                             }}>
                                                 {report.status}
@@ -199,13 +213,13 @@ const ReportStatus = () => {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     {selectedReport && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'rgba(0, 240, 255, 0.05)', borderRadius: '8px', border: '1px solid rgba(0, 240, 255, 0.2)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'var(--nav-active-bg)', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
                             <FileText size={16} color="var(--color-primary)" />
                             <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>Active: {selectedReport.client_name}</span>
                         </div>
                     )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <h1 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#fff', margin: 0 }}>Status Tracker</h1>
+                        <h1 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--color-text-main)', margin: 0 }}>Status Tracker</h1>
                         <Activity size={20} color="var(--color-primary)" />
                     </div>
                 </div>
@@ -219,7 +233,7 @@ const ReportStatus = () => {
                     {selectedReport ? (
                         <>
                             {/* Selected Report Header */}
-                            <div style={{ padding: '24px', borderBottom: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.02)' }}>
+                            <div style={{ padding: '24px', borderBottom: '1px solid var(--color-border)', background: 'var(--table-hover-bg)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                                     <div>
                                         <h1 style={{ fontSize: '1.5rem', marginBottom: '4px' }}>{selectedReport.client_name} - {selectedReport.application_name}</h1>
@@ -229,7 +243,7 @@ const ReportStatus = () => {
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={14} /> {selectedReport.report_type}</span>
                                         </div>
                                     </div>
-                                    <div style={{ textAlign: 'right' }}>
+                                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                                         <div style={{
                                             padding: '4px 12px',
                                             borderRadius: '20px',
@@ -241,6 +255,13 @@ const ReportStatus = () => {
                                         }}>
                                             {selectedReport.status?.toUpperCase()}
                                         </div>
+                                        <button
+                                            className="btn btn-ghost"
+                                            style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                                            onClick={() => navigate(`/report/${selectedReport.id}`)}
+                                        >
+                                            <Edit2 size={14} style={{ marginRight: '6px' }} /> EDIT REPORT
+                                        </button>
                                     </div>
                                 </div>
 
@@ -375,16 +396,16 @@ const ReportStatus = () => {
                 <style dangerouslySetInnerHTML={{
                     __html: `
                     .report-item-hover:hover {
-                        background: rgba(255,255,255,0.03) !important;
+                        background: var(--table-hover-bg) !important;
                     }
                     .table-row-hover:hover {
-                        background: rgba(255,255,255,0.01);
+                        background: var(--table-hover-bg);
                     }
                 `}} />
                 <style dangerouslySetInnerHTML={{
                     __html: `
                     .search-result-item:hover {
-                        background: rgba(0, 240, 255, 0.1) !important;
+                        background: var(--nav-active-bg) !important;
                         transform: translateX(4px);
                     }
                     .search-dropdown::-webkit-scrollbar {

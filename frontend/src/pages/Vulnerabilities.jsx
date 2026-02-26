@@ -181,7 +181,7 @@ const Vulnerabilities = () => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <div className="glass-panel" style={{ padding: '4px', display: 'flex', borderRadius: '12px', background: 'rgba(0,0,0,0.2)' }}>
+                    <div className="glass-panel" style={{ padding: '4px', display: 'flex', borderRadius: '12px', background: 'var(--tag-bg)' }}>
                         <button
                             className={`btn ${viewMode === 'list' ? 'btn-primary' : 'btn-ghost'}`}
                             onClick={() => setViewMode('list')}
@@ -229,7 +229,7 @@ const Vulnerabilities = () => {
                                         fontWeight: '800',
                                         padding: '4px 10px',
                                         borderRadius: '6px',
-                                        background: 'rgba(255,255,255,0.05)',
+                                        background: 'var(--tag-bg)',
                                         color: 'var(--color-text-muted)',
                                         letterSpacing: '0.05em'
                                     }}>
@@ -241,7 +241,7 @@ const Vulnerabilities = () => {
                                             fontWeight: '800',
                                             padding: '4px 10px',
                                             borderRadius: '6px',
-                                            background: 'rgba(0, 240, 255, 0.1)',
+                                            background: 'var(--nav-active-bg)',
                                             color: 'var(--color-primary)'
                                         }}>
                                             {vuln.cve_id}
@@ -293,7 +293,7 @@ const Vulnerabilities = () => {
                                 onClick={() => toggleCategory(cat.id)}
                                 style={{
                                     padding: '24px',
-                                    background: 'rgba(255,255,255,0.02)',
+                                    background: 'var(--table-hover-bg)',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     justifyContent: 'space-between',

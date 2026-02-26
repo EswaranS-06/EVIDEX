@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import ScrollToTop from './components/ScrollToTop';
@@ -14,6 +14,7 @@ const FindingDetail = lazy(() => import('./pages/FindingDetail'));
 const ReportStatus = lazy(() => import('./pages/ReportStatus'));
 const CreateReport = lazy(() => import('./pages/CreateReport'));
 const Vulnerabilities = lazy(() => import('./pages/Vulnerabilities'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 import { AuthProvider } from './context/AuthContext';
 import { ModalProvider } from './context/ModalContext';
@@ -21,7 +22,18 @@ import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/MainLayout';
 import IntroSplash from './components/IntroSplash';
 
+
+
 function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      document.documentElement.classList.add('light-mode');
+    } else {
+      document.documentElement.classList.remove('light-mode');
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <ModalProvider>
@@ -45,6 +57,7 @@ function App() {
                     <Route path="/vulnerabilities" element={<Vulnerabilities />} />
                     <Route path="/report-status" element={<ReportStatus />} />
                     <Route path="/create" element={<CreateReport />} />
+                    <Route path="/settings" element={<Settings />} />
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   </Route>
                 </Route>

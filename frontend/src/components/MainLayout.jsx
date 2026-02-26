@@ -93,7 +93,7 @@ const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSid
 
                 <NavLink
                     to="/settings"
-                    className="nav-item"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                     onClick={isMobile ? closeMobileSidebar : undefined}
                     style={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
                     title={isCollapsed ? "Settings" : ""}

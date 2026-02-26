@@ -135,10 +135,10 @@ const CreateReport = () => {
     const getSeverityBg = (sev) => {
         const s = (sev || '').toLowerCase();
         switch (s) {
-            case 'critical': return 'rgba(142, 45, 226, 0.1)';
-            case 'high': return 'rgba(255, 77, 109, 0.1)';
-            case 'medium': return 'rgba(254, 228, 64, 0.1)';
-            case 'low': return 'rgba(0, 240, 255, 0.1)';
+            case 'critical': return 'var(--sev-critical-bg)';
+            case 'high': return 'var(--sev-high-bg)';
+            case 'medium': return 'var(--sev-medium-bg)';
+            case 'low': return 'var(--sev-low-bg)';
             default: return 'var(--glass-bg)';
         }
     };
