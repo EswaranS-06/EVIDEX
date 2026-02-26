@@ -138,7 +138,7 @@ const ReportPreview = () => {
 
     return (
         <div style={{
-            margin: '-24px',
+            margin: '-40px',
             height: 'calc(100vh - var(--navbar-height))',
             display: 'flex',
             flexDirection: 'column',

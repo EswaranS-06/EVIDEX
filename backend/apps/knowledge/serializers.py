@@ -176,6 +176,7 @@ class ReportFindingSerializer(serializers.ModelSerializer):
     final_remediation = serializers.ReadOnlyField()
     vulnerability_name = serializers.ReadOnlyField(source="vulnerability.title")
     category_name = serializers.ReadOnlyField(source="vulnerability.owasp_category.name")
+    source_type = serializers.ReadOnlyField(source="vulnerability.source_type")
 
     # Nested evidences (needed for API + PDF)
     evidences = FindingEvidenceSerializer(many=True, read_only=True)
@@ -204,6 +205,7 @@ class ReportFindingSerializer(serializers.ModelSerializer):
             "final_remediation",
             "vulnerability_name",
             "category_name",
+            "source_type",
 
             # Evidence
             "evidences",

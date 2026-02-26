@@ -226,7 +226,7 @@ const ReportDetails = () => {
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 marginRight: showSidebar && window.innerWidth > 1024 ? (window.innerWidth > 1400 ? '480px' : '400px') : '0'
             }}>
-                <div className="report-details-container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                <div className="report-details-container">
 
                     <div style={{
                         display: 'flex',

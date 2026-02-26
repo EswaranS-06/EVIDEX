@@ -102,7 +102,7 @@ const ReportStatus = () => {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: 'calc(100vh - 100px)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: 'calc(100vh - 120px)' }}>
             {/* Top Bar: Search */}
             <div className="top-bar glass-panel" style={{
                 padding: '16px 24px',
@@ -288,9 +288,40 @@ const ReportStatus = () => {
                                             {findings.map(finding => (
                                                 <tr key={finding.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }} className="table-row-hover">
                                                     <td style={{ padding: '16px 12px' }}>
-                                                        <div style={{ fontWeight: '500' }}>{finding.final_title}</div>
-                                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                                                            {finding.vulnerability_name || 'Custom Finding'}
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                                            <div style={{ fontWeight: '600', color: '#fff', fontSize: '1rem' }}>{finding.final_title}</div>
+                                                            <div style={{ display: 'flex', gap: '6px' }}>
+                                                                {finding.category_name && (
+                                                                    <span style={{
+                                                                        fontSize: '0.65rem',
+                                                                        padding: '2px 8px',
+                                                                        borderRadius: '4px',
+                                                                        background: 'rgba(0, 240, 255, 0.05)',
+                                                                        color: 'var(--color-primary)',
+                                                                        border: '1px solid rgba(0, 240, 255, 0.2)',
+                                                                        fontWeight: '700',
+                                                                        letterSpacing: '0.02em'
+                                                                    }}>
+                                                                        {finding.category_name}
+                                                                    </span>
+                                                                )}
+                                                                {finding.source_type && (
+                                                                    <span style={{
+                                                                        fontSize: '0.65rem',
+                                                                        padding: '2px 8px',
+                                                                        borderRadius: '4px',
+                                                                        background: 'rgba(255, 255, 255, 0.05)',
+                                                                        color: 'var(--color-text-muted)',
+                                                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                                        fontWeight: '600'
+                                                                    }}>
+                                                                        {finding.source_type}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '600px' }}>
+                                                            {finding.final_description || 'No description provided'}
                                                         </div>
                                                     </td>
                                                     <td style={{ padding: '16px 12px' }}>

@@ -36,7 +36,7 @@ const Signup = () => {
         });
 
         if (success) {
-            navigate('/login');
+            navigate('/intro');
         }
     };
 

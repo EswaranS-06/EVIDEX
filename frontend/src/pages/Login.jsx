@@ -17,7 +17,7 @@ const Login = () => {
         setLocalError('');
         const success = await login(email, password);
         if (success) {
-            navigate('/dashboard');
+            navigate('/intro');
         }
     };
 

@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Edit2, Trash2, Database, Shield, Layout, List, Layers, Tag, ChevronRight, ChevronDown } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 
+// Module-level cache to persist data across navigations in the current session
+let cachedVulnerabilities = null;
+let cachedCategories = null;
+
 const Vulnerabilities = () => {
     const navigate = useNavigate();
     const { confirm, alert } = useModal();
-    const [vulnerabilities, setVulnerabilities] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [vulnerabilities, setVulnerabilities] = useState(cachedVulnerabilities || []);
+    const [categories, setCategories] = useState(cachedCategories || []);
+    const [loading, setLoading] = useState(!cachedVulnerabilities);
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'categories'
     const [expandedCategories, setExpandedCategories] = useState(new Set());
@@ -18,15 +22,21 @@ const Vulnerabilities = () => {
         fetchData();
     }, []);
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = async (silent = false) => {
+        if (!silent) setLoading(true);
         try {
             const [vulnRes, catRes] = await Promise.all([
                 api.get('/api/vulnerabilities/'),
                 api.get('/api/owasp/categories/')
             ]);
+
+            // Update state
             setVulnerabilities(vulnRes.data);
             setCategories(catRes.data);
+
+            // Update global cache
+            cachedVulnerabilities = vulnRes.data;
+            cachedCategories = catRes.data;
         } catch (err) {
             console.error("Failed to fetch data:", err);
         } finally {
@@ -44,7 +54,9 @@ const Vulnerabilities = () => {
         if (isConfirmed) {
             try {
                 await api.delete(`/api/vulnerabilities/${id}/`);
-                setVulnerabilities(vulnerabilities.filter(v => v.id !== id));
+                const remaining = vulnerabilities.filter(v => v.id !== id);
+                setVulnerabilities(remaining);
+                cachedVulnerabilities = remaining; // Update cache after modification
             } catch (err) {
                 console.error("Delete failed:", err);
                 await alert("Failed to delete vulnerability definition.", "Error");
@@ -94,11 +106,15 @@ const Vulnerabilities = () => {
         }
     };
 
-    const filteredVulnerabilities = vulnerabilities.filter(v =>
-        v.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        v.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        v.source_type.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Memoize filtered results for better performance
+    const filteredVulnerabilities = useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return vulnerabilities.filter(v =>
+            v.title.toLowerCase().includes(lowerSearch) ||
+            v.description.toLowerCase().includes(lowerSearch) ||
+            v.source_type.toLowerCase().includes(lowerSearch)
+        );
+    }, [vulnerabilities, searchTerm]);
 
     const toggleCategory = (catId) => {
         const newExpanded = new Set(expandedCategories);
@@ -119,7 +135,7 @@ const Vulnerabilities = () => {
     }
 
     return (
-        <div className="vulnerabilities-page" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="vulnerabilities-page">
             {/* Header Section */}
             <div style={{ marginBottom: '40px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -256,7 +272,7 @@ const Vulnerabilities = () => {
                                 <button className="btn btn-icon" onClick={() => navigate(`/finding/${vuln.id}`)} title="Edit Definition">
                                     <Edit2 size={18} />
                                 </button>
-                                <button className="btn btn-icon" onClick={() => handleDelete(vuln.id)} title="Delete Definition" style={{ color: 'var(--color-error)' }}>
+                                <button className="btn btn-icon delete" onClick={() => handleDelete(vuln.id)} title="Delete Definition">
                                     <Trash2 size={18} />
                                 </button>
                             </div>
@@ -347,11 +363,17 @@ const Vulnerabilities = () => {
                     align-items: center;
                     justify-content: center;
                     transition: all 0.2s;
+                    padding: 0 !important;
+                    border: 1px solid var(--glass-border);
+                    color: var(--color-primary);
+                }
+                .btn-icon.delete {
+                    color: var(--color-error);
                 }
                 .btn-icon:hover {
                     background: rgba(255,255,255,0.1);
                     transform: translateY(-2px);
-                    color: var(--color-primary);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
                 }
             `}} />
         </div>

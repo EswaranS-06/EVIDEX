@@ -72,7 +72,7 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="dashboard-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="dashboard-container">
             <div style={{ marginBottom: '32px' }}>
                 {/* Header content removed per user request */}
             </div>

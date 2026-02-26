@@ -19,6 +19,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ModalProvider } from './context/ModalContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/MainLayout';
+import IntroSplash from './components/IntroSplash';
 
 function App() {
   return (
@@ -32,8 +33,9 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
 
-                {/* Protected Routes wrapped in ProtectedRoute and MainLayout */}
+                {/* Protected Routes wrapped in ProtectedRoute */}
                 <Route element={<ProtectedRoute />}>
+                  <Route path="/intro" element={<IntroSplash />} />
                   <Route element={<MainLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/reports" element={<Reports />} />

@@ -70,7 +70,7 @@ const Reports = () => {
     };
 
     return (
-        <div className="reports-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="reports-container">
             <div style={{ marginBottom: '30px' }}>
                 <h1 style={{ fontSize: '1.75rem', fontWeight: '600', color: '#fff' }}>All Reports</h1>
                 <p style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>View and manage all your security assessment reports.</p>
