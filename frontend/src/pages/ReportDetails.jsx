@@ -242,7 +242,7 @@ const ReportDetails = () => {
                         </button>
 
                         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', flex: 1 }}>
-                            <button className="btn btn-ghost" title="Preview" onClick={() => navigate(`/report/${id}/preview`)}>
+                            <button className="btn btn-ghost" title="Preview">
                                 <Eye size={18} style={{ marginRight: '8px' }} /> PREVIEW
                             </button>
 
