@@ -4,7 +4,7 @@ import api from '../api/axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useModal } from '../context/ModalContext';
 
-import { Calendar, Globe, CheckCircle, Edit2, Wrench, Eye, Plus, ArrowRight, ChevronLeft, ChevronRight, Save, Trash2, X } from 'lucide-react';
+import { Calendar, Globe, CheckCircle, Edit2, Wrench, Eye, Plus, ArrowRight, ChevronLeft, ChevronRight, Save, Trash2, X, Activity } from 'lucide-react';
 
 const ReportDetails = () => {
     const { id } = useParams();
@@ -69,10 +69,10 @@ const ReportDetails = () => {
     const getSeverityBg = (sev) => {
         const s = (sev || '').toLowerCase();
         switch (s) {
-            case 'critical': return 'rgba(142, 45, 226, 0.1)';
-            case 'high': return 'rgba(255, 77, 109, 0.1)';
-            case 'medium': return 'rgba(254, 228, 64, 0.1)';
-            case 'low': return 'rgba(0, 240, 255, 0.1)';
+            case 'critical': return 'var(--sev-critical-bg)';
+            case 'high': return 'var(--sev-high-bg)';
+            case 'medium': return 'var(--sev-medium-bg)';
+            case 'low': return 'var(--sev-low-bg)';
             default: return 'var(--glass-bg)';
         }
     };
@@ -100,7 +100,6 @@ const ReportDetails = () => {
                 start_date: report.start_date || report.startDate,
                 end_date: report.end_date || report.endDate,
                 report_type: report.report_type || 'Web Application',
-                status: report.status || 'Draft',
                 prepared_by: report.prepared_by || 'Pentester',
                 reviewed_by: report.reviewed_by,
                 approved_by: report.approved_by,
@@ -226,7 +225,7 @@ const ReportDetails = () => {
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 marginRight: showSidebar && window.innerWidth > 1024 ? (window.innerWidth > 1400 ? '480px' : '400px') : '0'
             }}>
-                <div className="report-details-container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                <div className="report-details-container">
 
                     <div style={{
                         display: 'flex',
@@ -242,7 +241,7 @@ const ReportDetails = () => {
                         </button>
 
                         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', flex: 1 }}>
-                            <button className="btn btn-ghost" title="Preview" onClick={() => navigate(`/report/${id}/preview`)}>
+                            <button className="btn btn-ghost" title="Preview">
                                 <Eye size={18} style={{ marginRight: '8px' }} /> PREVIEW
                             </button>
 
@@ -260,6 +259,14 @@ const ReportDetails = () => {
                             >
                                 <Edit2 size={18} style={{ marginRight: isEditing ? '8px' : '0' }} />
                                 {isEditing ? 'EDITING' : 'EDIT'}
+                            </button>
+
+                            <button
+                                className="btn btn-ghost"
+                                title="Track Status"
+                                onClick={() => navigate('/report-status', { state: { reportId: id } })}
+                            >
+                                <Activity size={18} style={{ marginRight: '8px' }} /> TRACK STATUS
                             </button>
 
                             {!showSidebar && (

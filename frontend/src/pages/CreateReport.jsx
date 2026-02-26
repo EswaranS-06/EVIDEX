@@ -27,6 +27,7 @@ const CreateReport = () => {
     const { alert } = useModal();
     const [step, setStep] = useState(1);
     const [organizations, setOrganizations] = useState([]);
+    const [fullReports, setFullReports] = useState([]); // Store raw reports for cloning
     const [isCreateNewOrg, setIsCreateNewOrg] = useState(false);
 
     // Form Data
@@ -55,6 +56,7 @@ const CreateReport = () => {
                 const response = await api.get('/api/reports/');
                 // Handle both paginated and non-paginated responses
                 const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
+                setFullReports(data); // Save raw reports
                 const uniqueClients = [...new Set(data.map(r => r.client_name))].filter(Boolean).sort();
                 setOrganizations(uniqueClients);
             } catch (err) {
@@ -80,6 +82,25 @@ const CreateReport = () => {
 
     const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+
+    const handleCloneReport = (reportId) => {
+        const sourceReport = fullReports.find(r => r.id === parseInt(reportId));
+        if (!sourceReport) return;
+
+        setFormData({
+            ...formData,
+            assessmentType: sourceReport.report_type || 'Internal',
+            organizationId: sourceReport.client_name,
+            applicationName: sourceReport.application_name,
+            targets: sourceReport.target ? sourceReport.target.split('\n') : [''],
+            toolsUsed: sourceReport.tools_used ? sourceReport.tools_used.split('\n') : [''],
+            testLocation: sourceReport.test_location || 'Off-site',
+            preparedBy: sourceReport.prepared_by || 'Pentester',
+            reviewedBy: sourceReport.reviewed_by || '',
+            approvedBy: sourceReport.approved_by || ''
+        });
+        setIsCreateNewOrg(false);
+    };
 
     const toggleVuln = (vulnId) => {
         const newSelected = new Set(formData.selectedVulnerabilityIds);
@@ -114,10 +135,10 @@ const CreateReport = () => {
     const getSeverityBg = (sev) => {
         const s = (sev || '').toLowerCase();
         switch (s) {
-            case 'critical': return 'rgba(142, 45, 226, 0.1)';
-            case 'high': return 'rgba(255, 77, 109, 0.1)';
-            case 'medium': return 'rgba(254, 228, 64, 0.1)';
-            case 'low': return 'rgba(0, 240, 255, 0.1)';
+            case 'critical': return 'var(--sev-critical-bg)';
+            case 'high': return 'var(--sev-high-bg)';
+            case 'medium': return 'var(--sev-medium-bg)';
+            case 'low': return 'var(--sev-low-bg)';
             default: return 'var(--glass-bg)';
         }
     };
@@ -262,6 +283,27 @@ const CreateReport = () => {
                 </div>
             </div>
 
+            {/* Clone from Existing Report - NEW OPTION */}
+            <div className="input-group" style={{ padding: '20px', background: 'rgba(0, 240, 255, 0.03)', borderRadius: '16px', border: '1px dashed var(--color-primary)', marginBottom: '30px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                    <Layout size={18} color="var(--color-primary)" />
+                    <label className="input-label" style={{ margin: 0, color: 'var(--color-primary)' }}>Pre-fill from Existing Report</label>
+                </div>
+                <select
+                    className="input-field"
+                    onChange={(e) => handleCloneReport(e.target.value)}
+                    style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(0, 240, 255, 0.2)' }}
+                    defaultValue=""
+                >
+                    <option value="">-- Choose a report to clone metadata --</option>
+                    {fullReports.map(report => (
+                        <option key={report.id} value={report.id}>
+                            {report.client_name} - {report.application_name} ({new Date(report.created_at || Date.now()).toLocaleDateString()})
+                        </option>
+                    ))}
+                </select>
+            </div>
+
             {/* Organization Selection */}
             <div className="input-group">
                 <label className="input-label">Organization</label>
@@ -296,7 +338,6 @@ const CreateReport = () => {
                             className="input-field"
                             value={formData.organizationId}
                             onChange={(e) => setFormData({ ...formData, organizationId: e.target.value })}
-                            style={{ background: 'rgba(0,0,0,0.3)' }}
                         >
                             <option value="">Select an existing organization</option>
                             {organizations.map(org => (
@@ -741,7 +782,7 @@ const CreateReport = () => {
     };
 
     return (
-        <div style={{ maxWidth: '1000px', margin: '40px auto', transition: 'max-width 0.4s ease' }}>
+        <div style={{ transition: 'max-width 0.4s ease' }}>
             <div className="glass-panel" style={{ padding: '40px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
                     <div style={{

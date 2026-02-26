@@ -190,7 +190,7 @@ const FindingDetail = () => {
     }
 
     return (
-        <div className="finding-detail-container" style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '40px' }}>
+        <div className="finding-detail-container" style={{ paddingBottom: '40px' }}>
 
             {/* Back Button */}
             <button onClick={() => navigate(-1)} className="btn btn-ghost" style={{ marginBottom: '20px', paddingLeft: 0 }}>

@@ -55,29 +55,9 @@ class ReportPDFView(APIView):
         build_report(tmp.name, data, report.id)
 
         with open(tmp.name, "rb") as f:
-            # Build a descriptive filename: VAPT_ClientName_AppName_Feb2026.pdf
-            safe_client = (report.client_name or "").replace(" ", "_").strip("_")
-            safe_app = (report.application_name or "").replace(" ", "_").strip("_")
-            date_part = report.created_at.strftime("%b%Y") if report.created_at else ""
-            
-            parts = ["VAPT"]
-            if safe_client:
-                parts.append(safe_client)
-            if safe_app:
-                parts.append(safe_app)
-            if date_part:
-                parts.append(date_part)
-            filename = "_".join(parts) + ".pdf" if len(parts) > 1 else "VAPT_Report.pdf"
-            
             response = HttpResponse(f.read(), content_type="application/pdf")
-            # Use 'attachment' for forced download, 'inline' for preview
-            if request.query_params.get("download") == "1":
-                response["Content-Disposition"] = f'attachment; filename="{filename}"'
-            else:
-                response["Content-Disposition"] = f'inline; filename="{filename}"'
+            response["Content-Disposition"] = f'inline; filename="VAPT_{report.client_name}.pdf"'
             response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
             response["Pragma"] = "no-cache"
             response["Expires"] = "0"
-            # Allow frontend to read the Content-Disposition header
-            response["Access-Control-Expose-Headers"] = "Content-Disposition"
             return response

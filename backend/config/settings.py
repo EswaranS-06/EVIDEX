@@ -58,6 +58,8 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # custom selective caching middleware for OWASP and Vulnerabilities APIs
+    'config.cache_middleware.SelectiveCacheMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -148,16 +150,47 @@ USE_TZ = True
 # ============================================
 
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    ]
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.getenv('MEDIA_ROOT', str(BASE_DIR / "media"))
+# simple in‑memory cache for development; Django will fall back to
+# ``LocMemCache`` when no other backend is configured.
+#
+# any POST request will flush the entire cache courtesy of
+# ``SimpleCacheMiddleware`` above, so a short timeout is acceptable.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        # optional: set a short default timeout (in seconds)
+        'TIMEOUT': 60 * 5,
+    }
+}
 
-# ============================================
-# REST FRAMEWORK CONFIGURATION
-# ============================================
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# load environment variables from .env (and .env.local if present)
+load_dotenv(BASE_DIR.parent / ".env")
+load_dotenv(BASE_DIR.parent / ".env.local")  # overrides .env values
+
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB"),
+        "USER": os.getenv("POSTGRES_USER"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "HOST": os.getenv("POSTGRES_HOST"),
+        "PORT": os.getenv("POSTGRES_PORT"),
+    }
+}
+# DISABLE_AUTH = DEBUG
+# REST Framework and JWT Configuration
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -213,20 +246,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-
-# Add production frontend URL from environment variable
-if os.getenv('CORS_ALLOWED_ORIGINS'):
-    CORS_ALLOWED_ORIGINS += [
-        url.strip() for url in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') 
-        if url.strip()
-    ]
-
-CORS_ALLOWED_ORIGINS = list(set(CORS_ALLOWED_ORIGINS))  # Remove duplicates
+# When running the test suite we don't want to depend on a running
+# PostgreSQL instance; switch the database to an in-memory SQLite
+# automatically.  Django adds "test" to ``sys.argv`` when invoking
+# ``manage.py test``.
+import sys
+if "test" in sys.argv:
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
+    }
 CORS_ALLOW_CREDENTIALS = True
-
-CORS_EXPOSE_HEADERS = [
-    "Content-Disposition",
-]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://evidex.netlify.app",
