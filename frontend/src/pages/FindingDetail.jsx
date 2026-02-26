@@ -80,7 +80,7 @@ const FindingDetail = () => {
         if (typeof path !== 'string') return ''; // Handle File objects if they slip through
         if (path.startsWith('http')) return path;
         // Prepend backend base URL if it's a relative path
-        const baseUrl = 'http://localhost:8000';
+        const baseUrl = import.meta.env.VITE_API_URL || '';
         return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
     };
 
