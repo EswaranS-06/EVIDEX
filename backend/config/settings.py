@@ -47,6 +47,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # custom selective caching middleware for OWASP and Vulnerabilities APIs
+    'config.cache_middleware.SelectiveCacheMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -123,13 +125,29 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
     ]
 
+# simple in‑memory cache for development; Django will fall back to
+# ``LocMemCache`` when no other backend is configured.
+#
+# any POST request will flush the entire cache courtesy of
+# ``SimpleCacheMiddleware`` above, so a short timeout is acceptable.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        # optional: set a short default timeout (in seconds)
+        'TIMEOUT': 60 * 5,
+    }
+}
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# load environment variables from .env (and .env.local if present)
 load_dotenv(BASE_DIR.parent / ".env")
+load_dotenv(BASE_DIR.parent / ".env.local")  # overrides .env values
 
 
 DATABASES = {
@@ -216,7 +234,16 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-
+# When running the test suite we don't want to depend on a running
+# PostgreSQL instance; switch the database to an in-memory SQLite
+# automatically.  Django adds "test" to ``sys.argv`` when invoking
+# ``manage.py test``.
+import sys
+if "test" in sys.argv:
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
+    }
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
