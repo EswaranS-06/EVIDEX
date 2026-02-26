@@ -1,28 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Download, Loader, ZoomIn, ZoomOut } from 'lucide-react';
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
-
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+import { ChevronLeft, Download, Loader } from 'lucide-react';
 
 const ReportPreview = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [numPages, setNumPages] = useState(null);
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
     const [error, setError] = useState(null);
-    const [pdfData, setPdfData] = useState(null);
-    const [scale, setScale] = useState(1.2);
+    const [blobUrl, setBlobUrl] = useState(null);
+    const iframeRef = useRef(null);
 
-    const pdfApiUrl = `${API_BASE_URL}/api/reports/${id}/pdf/`;
+    const pdfApiUrl = `/api/reports/${id}/pdf/`;
 
-    // Fetch PDF data as ArrayBuffer
+    // Fetch PDF as blob to bypass X-Frame-Options restrictions
     useEffect(() => {
         let cancelled = false;
 
@@ -40,9 +31,11 @@ const ReportPreview = () => {
                     throw new Error(`Failed to load PDF (status ${response.status})`);
                 }
 
-                const buffer = await response.arrayBuffer();
+                const blob = await response.blob();
                 if (!cancelled) {
-                    setPdfData({ data: new Uint8Array(buffer) });
+                    const url = URL.createObjectURL(blob);
+                    setBlobUrl(url);
+                    setLoading(false);
                 }
             } catch (err) {
                 console.error('Failed to fetch PDF:', err);
@@ -57,22 +50,11 @@ const ReportPreview = () => {
 
         return () => {
             cancelled = true;
+            if (blobUrl) {
+                URL.revokeObjectURL(blobUrl);
+            }
         };
     }, [id]);
-
-    const onDocumentLoadSuccess = useCallback(({ numPages }) => {
-        setNumPages(numPages);
-        setLoading(false);
-    }, []);
-
-    const onDocumentLoadError = useCallback((err) => {
-        console.error('PDF load error:', err);
-        setError('Failed to render PDF');
-        setLoading(false);
-    }, []);
-
-    const handleZoomIn = () => setScale(prev => Math.min(prev + 0.2, 3));
-    const handleZoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
 
     const handleExportPDF = async () => {
         try {
@@ -112,9 +94,11 @@ const ReportPreview = () => {
                     const writable = await handle.createWritable();
                     await writable.write(blob);
                     await writable.close();
-                    return;
+                    return; // done
                 } catch (pickerErr) {
+                    // User cancelled the save dialog — that's fine, do nothing
                     if (pickerErr.name === 'AbortError') return;
+                    // For any other error, fall through to the fallback
                     console.warn('showSaveFilePicker failed, using fallback:', pickerErr);
                 }
             }
@@ -138,6 +122,7 @@ const ReportPreview = () => {
 
     return (
         <div style={{
+            /* Break out of content-container padding/max-width constraints */
             margin: '-24px',
             height: 'calc(100vh - var(--navbar-height))',
             display: 'flex',
@@ -174,11 +159,11 @@ const ReportPreview = () => {
                     Back to Report
                 </button>
 
-                {/* Center: Title + Zoom + Page Info */}
+                {/* Center: Title */}
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '14px',
+                    gap: '10px',
                 }}>
                     <span style={{
                         fontSize: '1.1rem',
@@ -201,54 +186,6 @@ const ReportPreview = () => {
                     }}>
                         PDF
                     </span>
-
-                    {/* Zoom controls */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '4px 8px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--glass-border)',
-                    }}>
-                        <button
-                            onClick={handleZoomOut}
-                            className="btn btn-ghost"
-                            style={{ padding: '4px', minWidth: 'auto' }}
-                            title="Zoom out"
-                        >
-                            <ZoomOut size={16} />
-                        </button>
-                        <span style={{
-                            fontSize: '0.8rem',
-                            fontWeight: '600',
-                            color: 'var(--color-text-muted)',
-                            minWidth: '42px',
-                            textAlign: 'center',
-                        }}>
-                            {Math.round(scale * 100)}%
-                        </span>
-                        <button
-                            onClick={handleZoomIn}
-                            className="btn btn-ghost"
-                            style={{ padding: '4px', minWidth: 'auto' }}
-                            title="Zoom in"
-                        >
-                            <ZoomIn size={16} />
-                        </button>
-                    </div>
-
-                    {/* Page count */}
-                    {numPages && (
-                        <span style={{
-                            fontSize: '0.8rem',
-                            color: 'var(--color-text-muted)',
-                            fontWeight: '500',
-                        }}>
-                            {numPages} page{numPages !== 1 ? 's' : ''}
-                        </span>
-                    )}
                 </div>
 
                 {/* Right: Export */}
@@ -282,7 +219,6 @@ const ReportPreview = () => {
                 position: 'relative',
                 background: '#1a1a2e',
                 minHeight: 0,
-                overflow: 'auto',
             }}>
                 {loading && (
                     <div style={{
@@ -341,40 +277,18 @@ const ReportPreview = () => {
                     </div>
                 )}
 
-                {pdfData && (
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        padding: '24px 0',
-                        gap: '20px',
-                    }}>
-                        <Document
-                            file={pdfData}
-                            onLoadSuccess={onDocumentLoadSuccess}
-                            onLoadError={onDocumentLoadError}
-                            loading={null}
-                        >
-                            {Array.from(new Array(numPages), (_, index) => (
-                                <div
-                                    key={`page_${index + 1}`}
-                                    style={{
-                                        marginBottom: '20px',
-                                        boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
-                                        borderRadius: '4px',
-                                        overflow: 'hidden',
-                                    }}
-                                >
-                                    <Page
-                                        pageNumber={index + 1}
-                                        scale={scale}
-                                        renderTextLayer={true}
-                                        renderAnnotationLayer={true}
-                                    />
-                                </div>
-                            ))}
-                        </Document>
-                    </div>
+                {blobUrl && (
+                    <iframe
+                        ref={iframeRef}
+                        src={blobUrl}
+                        title="Report PDF Preview"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            border: 'none',
+                            display: 'block',
+                        }}
+                    />
                 )}
             </div>
 
@@ -385,12 +299,6 @@ const ReportPreview = () => {
                 }
                 .spin-animation {
                     animation: spin 1s linear infinite;
-                }
-                .react-pdf__Page__canvas {
-                    display: block !important;
-                }
-                .react-pdf__Page__textContent {
-                    user-select: text;
                 }
             `}</style>
         </div>
