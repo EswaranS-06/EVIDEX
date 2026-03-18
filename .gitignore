@@ -1,5 +1,6 @@
 !.gitignore
 access.token
 .env.production
+.env.local
 some.data
 .vscode
