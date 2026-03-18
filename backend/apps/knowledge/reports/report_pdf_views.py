@@ -36,20 +36,31 @@ class ReportPDFView(APIView):
             raise Http404("Report not found")
 
         data = {
-            "enterprise": report.application_name,
-            "pt_date": report.created_at.strftime("%b %Y") if report.created_at else "N/A",
-            "conducted_by": report.created_by if hasattr(report, "created_by") else "Cyber Team",
-            "version": report.version if hasattr(report, "version") else "1.0",
-            "assessee": report.client_name,
-            "assessor": report.created_by if hasattr(report, "created_by") else "John",
-            "reviewer": "Jane",
-            "approved": "CTO",
-            "total_pages": 8,
-            "start_date": report.start_date.strftime("%d-%b-%Y") if report.start_date else "",
-            "end_date": report.end_date.strftime("%d-%b-%Y") if report.end_date else "",
-            "application_name": report.application_name,
-            "created_by": report.created_by,
-        }
+        "enterprise": report.application_name,
+        "pt_date": report.created_at.strftime("%b %Y") if report.created_at else "N/A",
+        "conducted_by": str(report.created_by) if report.created_by else "Cyber Team",
+        "version": "1.0",
+
+        "assessee": report.client_name,
+        "assessor": str(report.created_by) if report.created_by else "John",
+
+        # ✅ FIXED KEYS
+        "reviewed_by": report.reviewed_by or "Jane",
+        "approved_by": report.approved_by or "CTO",
+
+        "total_pages": 8,
+
+        "start_date": report.start_date.strftime("%d-%b-%Y") if report.start_date else "",
+        "end_date": report.end_date.strftime("%d-%b-%Y") if report.end_date else "",
+
+        "application_name": report.application_name,
+        "created_by": str(report.created_by) if report.created_by else "",
+
+        # Scan Manifest Required Fields
+        "target": report.target or "",
+        "tools_used": report.tools_used or "",
+        "test_location": report.test_location or "",
+    }
 
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         build_report(tmp.name, data, report.id)
