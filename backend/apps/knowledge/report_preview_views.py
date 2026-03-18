@@ -4,8 +4,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-# from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
@@ -16,11 +15,8 @@ from apps.knowledge.models import Report, ReportFinding
 
 
 class ReportPreviewView(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    # Temporarily disable JWT authentication (allow anonymous access)
-    #authentication_classes = []
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         operation_id="preview_report",
