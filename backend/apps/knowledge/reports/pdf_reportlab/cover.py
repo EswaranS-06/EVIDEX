@@ -52,8 +52,8 @@ def draw_cover(c, d, page_no, total_pages=8):
         ("Document Type", "Penetration Testing Report", "Version ", s(d["version"])),
         ("Assessee", s(d["assessee"]), "Signature", ""),
         ("Assessor", s(d["assessor"]), "Signature", ""),
-        ("Reviewer", s(d["reviewer"]), "Signature", ""),
-        ("Approved by", s(d["approved"]), "Signature", ""),
+        ("Reviewer", s(d["reviewed_by"]), "Signature", ""),
+        ("Approved by", s(d["approved_by"]), "Signature", ""),
     ]
 
     for i, r in enumerate(rows):

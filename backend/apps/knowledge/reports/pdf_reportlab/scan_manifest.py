@@ -49,16 +49,32 @@ def draw_scan_manifest(c, data, page_no, total_pages):
     # -------------------------
     # Table data
     # -------------------------
+    
+    # -------------------------
+    # Process URLs (newline separated)
+    # -------------------------
+    raw_urls = data.get("target", "") or ""
+    url_list = [u.strip() for u in raw_urls.split("\n") if u.strip()]
+    url_count = len(url_list)
+    print (raw_urls,url_count,url_count)
+    # -------------------------
+    # Process Tools (comma separated string, keep as string)
+    # -------------------------
+    raw_tools = data.get("tools_used", "") or ""
+    tools_cleaned = ", ".join([t.strip() for t in raw_tools.split(",") if t.strip()])
+    print (raw_tools,tools_cleaned)
+    # -------------------------
+    # Table rows
+    # -------------------------
     rows = [
         ("a.", "Description", "Web Application Penetration Testing"),
         ("b.", "Test started on", data.get("start_date", "")),
         ("c.", "Test Completed on", data.get("end_date", "")),
-        ("d.", "No. of URL’s tested", "1 URL"),
+        ("d.", "No. of URL’s tested", url_count),
         ("e.", "Standard / Test Procedure reference", "OWASP TOP 10, SANS 25"),
-        ("f.", "Test performed at", "Off-site"),
-        ("g.", "Tool used for testing", "Burp Suite, Open-Source Tools"),
+        ("f.", "Test performed at", data.get("test_location", "")),
+        ("g.", "Tool used for testing", tools_cleaned),
     ]
-
     styles = getSampleStyleSheet()
 
     label_style = ParagraphStyle(

@@ -1,7 +1,7 @@
 from django.urls import path
 from .report_preview_views import ReportPreviewView
 from .reports.report_pdf_views import ReportPDFView
-
+from .report_docx_views import ReportDOCXView
 
 from .views import (
     OWASPCategoryListCreateView,
@@ -38,7 +38,8 @@ urlpatterns = [
         "owasp/vulnerabilities/<int:vuln_id>/variants/",
         VariantsByVulnerabilityView.as_view(),
     ),
-
+        
+    
     # -----------------------
     # Vulnerability Definitions
     # -----------------------
@@ -99,6 +100,8 @@ urlpatterns = [
     # ✅ Report Preview and PDF APIs with JWT Auth
     path("reports/<int:report_id>/preview/", ReportPreviewView.as_view(), name="report-preview"),
     path("reports/<int:report_id>/pdf/", ReportPDFView.as_view(), name="report-pdf"),
+    path("reports/<int:report_id>/docx/", ReportDOCXView.as_view(), name="report-docx"),
+
     
 ]
 
