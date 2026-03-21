@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Download, Loader, ZoomIn, ZoomOut } from 'lucide-react';
+import { ChevronLeft, Download, Loader, ZoomIn, ZoomOut, Mail, Send, Edit, X, CheckCircle, XCircle } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -23,6 +23,26 @@ const ReportPreview = () => {
     // Password Modal State
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [exportPassword, setExportPassword] = useState('');
+
+    // Email / Compose Modal State
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [showComposeModal, setShowComposeModal] = useState(false);
+    const [emailForm, setEmailForm] = useState({
+        email: '',
+        password: '',
+        subject: 'Security Assessment Report',
+        body: 'Hi,\n\nPlease find attached the security assessment report.\n\nRegards,\nEVIDEX Team'
+    });
+
+    // Toast Notification State
+    const [toastMeta, setToastMeta] = useState({ show: false, status: 'loading', message: '' });
+
+    const showToast = (status, message) => {
+        setToastMeta({ show: true, status, message });
+        if (status !== 'loading') {
+            setTimeout(() => setToastMeta({ show: false, status: '', message: '' }), 4000);
+        }
+    };
 
     const pdfApiUrl = `${API_BASE_URL}/api/reports/${id}/pdf/`;
 
@@ -151,6 +171,49 @@ const ReportPreview = () => {
         }
     };
 
+    const handleSendEmail = async () => {
+        try {
+            setShowEmailModal(false);
+            setShowComposeModal(false);
+            showToast('loading', 'Sending email...');
+
+            const token = localStorage.getItem('access_token');
+            const payload = {
+                report_id: id,
+                email: emailForm.email,
+                password: emailForm.password,
+                subject: emailForm.subject,
+                body: emailForm.body
+            };
+
+            const response = await fetch(`${API_BASE_URL}/api/send-report-email/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to send email');
+            }
+
+            showToast('success', 'Email sent successfully 📧');
+
+            // reset form after success
+            setEmailForm({
+                email: '', password: '',
+                subject: 'Security Assessment Report',
+                body: 'Hi,\n\nPlease find attached the security assessment report.\n\nRegards,\nEVIDEX Team'
+            });
+        } catch (err) {
+            console.error('Email send failed:', err);
+            showToast('error', err.message || 'Failed to send email ❌');
+        }
+    };
+
     return (
         <div style={{
             margin: '-40px',
@@ -266,32 +329,44 @@ const ReportPreview = () => {
                     )}
                 </div>
 
-                {/* Right: Export */}
-                <button
-                    className="btn btn-primary"
-                    onClick={() => {
-                        setExportPassword('');
-                        setShowPasswordModal(true);
-                    }}
-                    disabled={exporting}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '8px 20px',
-                        fontWeight: '700',
-                        fontSize: '0.9rem',
-                        opacity: exporting ? 0.7 : 1,
-                        cursor: exporting ? 'not-allowed' : 'pointer',
-                    }}
-                >
-                    {exporting ? (
-                        <Loader size={18} className="spin-animation" />
-                    ) : (
-                        <Download size={18} />
-                    )}
-                    {exporting ? 'Exporting...' : 'Export PDF'}
-                </button>
+                {/* Right: Export & Mail */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button
+                        className="btn btn-ghost"
+                        onClick={() => setShowEmailModal(true)}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            padding: '8px 20px', fontWeight: '600'
+                        }}
+                    >
+                        <Mail size={18} /> Mail
+                    </button>
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => {
+                            setExportPassword('');
+                            setShowPasswordModal(true);
+                        }}
+                        disabled={exporting}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '8px 20px',
+                            fontWeight: '700',
+                            fontSize: '0.9rem',
+                            opacity: exporting ? 0.7 : 1,
+                            cursor: exporting ? 'not-allowed' : 'pointer',
+                        }}
+                    >
+                        {exporting ? (
+                            <Loader size={18} className="spin-animation" />
+                        ) : (
+                            <Download size={18} />
+                        )}
+                        {exporting ? 'Exporting...' : 'Export PDF'}
+                    </button>
+                </div>
             </div>
 
             {/* PDF Viewer */}
@@ -425,6 +500,132 @@ const ReportPreview = () => {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Email Modal */}
+            {showEmailModal && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.8)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)'
+                }}>
+                    <div className="glass-panel animate-fade-in" style={{ padding: '30px', width: '450px', maxWidth: '90%', position: 'relative' }}>
+                        <button
+                            className="btn-icon"
+                            style={{ position: 'absolute', top: '15px', right: '15px' }}
+                            onClick={() => setShowEmailModal(false)}
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <h3 style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Mail size={22} className="text-primary" /> Send Report via Email
+                        </h3>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+                            Generated PDF report will be attached securely.
+                        </p>
+
+                        <div className="input-group" style={{ marginBottom: '15px' }}>
+                            <label className="input-label">Destination Email (Optional)</label>
+                            <input
+                                type="email"
+                                className="input-field"
+                                placeholder="Defaults to your registered email"
+                                value={emailForm.email}
+                                onChange={(e) => setEmailForm({ ...emailForm, email: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="input-group" style={{ marginBottom: '25px' }}>
+                            <label className="input-label">PDF Password (Optional)</label>
+                            <input
+                                type="password"
+                                className="input-field"
+                                placeholder="Encrypt attached PDF"
+                                value={emailForm.password}
+                                onChange={(e) => setEmailForm({ ...emailForm, password: e.target.value })}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button className="btn btn-ghost" onClick={() => { setShowEmailModal(false); setShowComposeModal(true); }} style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                                <Edit size={18} /> Compose
+                            </button>
+                            <button className="btn btn-primary" onClick={handleSendEmail} style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                                <Send size={18} /> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Compose Modal */}
+            {showComposeModal && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.8)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)'
+                }}>
+                    <div className="glass-panel animate-fade-in" style={{ padding: '30px', width: '600px', maxWidth: '95%' }}>
+                        <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Edit size={22} className="text-primary" /> Compose Custom Email
+                        </h3>
+
+                        <div className="input-group" style={{ marginBottom: '15px' }}>
+                            <label className="input-label">Subject</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                value={emailForm.subject}
+                                onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="input-group" style={{ marginBottom: '25px' }}>
+                            <label className="input-label">Body Template</label>
+                            <textarea
+                                className="input-field"
+                                rows="8"
+                                value={emailForm.body}
+                                onChange={(e) => setEmailForm({ ...emailForm, body: e.target.value })}
+                                style={{ lineHeight: '1.6' }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                            <button className="btn btn-ghost" onClick={() => { setShowComposeModal(false); setShowEmailModal(true); }} style={{ padding: '10px 24px' }}>
+                                Back
+                            </button>
+                            <button className="btn btn-primary" onClick={handleSendEmail} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}>
+                                <Send size={18} /> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast Notification Layer */}
+            {toastMeta.show && (
+                <div className="animate-fade-in" style={{
+                    position: 'fixed',
+                    bottom: '40px',
+                    right: '40px',
+                    zIndex: 10000,
+                    padding: '16px 24px',
+                    borderRadius: '8px',
+                    background: toastMeta.status === 'success' ? 'var(--color-success)' : toastMeta.status === 'error' ? 'var(--color-error)' : 'var(--glass-bg)',
+                    color: toastMeta.status === 'loading' ? 'var(--color-text-main)' : '#fff',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    fontWeight: '600'
+                }}>
+                    {toastMeta.status === 'loading' && <Loader size={20} className="spin-animation text-primary" />}
+                    {toastMeta.status === 'success' && <CheckCircle size={20} />}
+                    {toastMeta.status === 'error' && <XCircle size={20} />}
+                    {toastMeta.message}
                 </div>
             )}
 

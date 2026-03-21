@@ -1,6 +1,6 @@
 from django.urls import path
 from .report_preview_views import ReportPreviewView
-from .reports.report_pdf_views import ReportPDFView
+from .reports.report_pdf_views import ReportPDFView, SendReportEmailView
 from .report_docx_views import ReportDOCXView
 
 from .views import (
@@ -106,6 +106,7 @@ urlpatterns = [
     path("reports/<int:report_id>/preview/", ReportPreviewView.as_view(), name="report-preview"),
     path("reports/<int:report_id>/pdf/", ReportPDFView.as_view(), name="report-pdf"),
     path("reports/<int:report_id>/docx/", ReportDOCXView.as_view(), name="report-docx"),
+    path("send-report-email/", SendReportEmailView.as_view(), name="send-report-email"),
 
     
 ]
