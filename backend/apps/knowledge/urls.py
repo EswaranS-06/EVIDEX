@@ -22,6 +22,7 @@ from .report_views import (
     ReportFindingDetailView,
     EvidenceListCreateView,
     EvidenceDeleteView,
+    EvidenceReorderView,
 )
 
 urlpatterns = [
@@ -91,6 +92,10 @@ urlpatterns = [
     path(
         "findings/<int:finding_id>/evidences/",
         EvidenceListCreateView.as_view(),
+    ),
+    path(
+        "findings/<int:finding_id>/evidences/reorder/",
+        EvidenceReorderView.as_view(),
     ),
     path(
         "evidences/<int:pk>/",

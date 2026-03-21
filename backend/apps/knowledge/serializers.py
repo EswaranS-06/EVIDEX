@@ -25,7 +25,7 @@ class OWASPVulnerabilitySerializer(serializers.ModelSerializer):
 
 
 class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField(source="title")
+    name = serializers.CharField(source="title", required=False)
     default_severity = serializers.ReadOnlyField(source="severity")
     default_impact = serializers.ReadOnlyField(source="impact")
     default_remediation = serializers.ReadOnlyField(source="remediation")

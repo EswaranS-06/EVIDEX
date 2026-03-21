@@ -17,3 +17,8 @@ export const uploadEvidence = async (findingId, formData) => {
 export const deleteEvidence = async (evidenceId) => {
     await api.delete(`/api/evidences/${evidenceId}/`);
 };
+
+export const reorderEvidence = async (findingId, orderData) => {
+    const response = await api.put(`/api/findings/${findingId}/evidences/reorder/`, { order: orderData });
+    return response.data;
+};

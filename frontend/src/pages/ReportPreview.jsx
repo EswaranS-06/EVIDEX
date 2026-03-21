@@ -20,6 +20,10 @@ const ReportPreview = () => {
     const [pdfData, setPdfData] = useState(null);
     const [scale, setScale] = useState(1.2);
 
+    // Password Modal State
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [exportPassword, setExportPassword] = useState('');
+
     const pdfApiUrl = `${API_BASE_URL}/api/reports/${id}/pdf/`;
 
     // Fetch PDF data as ArrayBuffer
@@ -33,7 +37,12 @@ const ReportPreview = () => {
 
                 const token = localStorage.getItem('access_token');
                 const response = await fetch(pdfApiUrl, {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify({ password: '' }) // Empty password for preview
                 });
 
                 if (!response.ok) {
@@ -74,12 +83,18 @@ const ReportPreview = () => {
     const handleZoomIn = () => setScale(prev => Math.min(prev + 0.2, 3));
     const handleZoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
 
-    const handleExportPDF = async () => {
+    const executeExport = async () => {
         try {
             setExporting(true);
+            setShowPasswordModal(false);
             const token = localStorage.getItem('access_token');
             const response = await fetch(`${pdfApiUrl}?download=1`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({ password: exportPassword })
             });
 
             if (!response.ok) {
@@ -254,7 +269,10 @@ const ReportPreview = () => {
                 {/* Right: Export */}
                 <button
                     className="btn btn-primary"
-                    onClick={handleExportPDF}
+                    onClick={() => {
+                        setExportPassword('');
+                        setShowPasswordModal(true);
+                    }}
                     disabled={exporting}
                     style={{
                         display: 'flex',
@@ -377,6 +395,38 @@ const ReportPreview = () => {
                     </div>
                 )}
             </div>
+
+            {/* Password Modal */}
+            {showPasswordModal && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.8)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)'
+                }}>
+                    <div className="glass-panel animate-fade-in" style={{ padding: '30px', width: '400px', maxWidth: '90%' }}>
+                        <h3 style={{ marginBottom: '15px' }}>Export to PDF</h3>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+                            Optional: Enter a password to encrypt the PDF. Leave blank to export without a password.
+                        </p>
+                        <input
+                            type="password"
+                            className="input-field"
+                            placeholder="Password (optional)"
+                            value={exportPassword}
+                            onChange={(e) => setExportPassword(e.target.value)}
+                            style={{ marginBottom: '20px' }}
+                            autoFocus
+                        />
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button className="btn btn-primary" onClick={executeExport} style={{ flex: 1 }}>
+                                Confirm Export
+                            </button>
+                            <button className="btn btn-ghost" onClick={() => setShowPasswordModal(false)} style={{ flex: 1 }}>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Inline keyframes for spinner */}
             <style>{`

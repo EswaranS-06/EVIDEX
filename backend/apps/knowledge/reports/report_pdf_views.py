@@ -21,54 +21,76 @@ class ReportPDFView(APIView):
     @extend_schema(
         operation_id="download_report_pdf",
         summary="Export Report as PDF",
-        description="Generates and exports a complete security assessment report as a PDF file.",
+        description="Generates and exports a complete security assessment report as a PDF file. Accepts optional password in request body.",
         tags=["Reports"],
+        request=OpenApiTypes.OBJECT,
         responses={
             200: OpenApiTypes.BINARY,
             401: {"description": "Unauthorized - No valid JWT token"},
             404: {"description": "Report not found"},
         },
     )
-    def get(self, request, report_id):
+    def post(self, request, report_id):
         try:
             report = Report.objects.get(id=report_id)
         except Report.DoesNotExist:
             raise Http404("Report not found")
 
+        # Extract password from POST payload
+        password = request.data.get("password", "").strip()
+
         data = {
-        "enterprise": report.application_name,
-        "pt_date": report.created_at.strftime("%b %Y") if report.created_at else "N/A",
-        "conducted_by": str(report.created_by) if report.created_by else "Cyber Team",
-        "version": "1.0",
+            "enterprise": report.application_name,
+            "pt_date": report.created_at.strftime("%b %Y") if report.created_at else "N/A",
+            "conducted_by": str(report.created_by) if report.created_by else "Cyber Team",
+            "version": "1.0",
+            "assessee": report.client_name,
+            "assessor": str(report.created_by) if report.created_by else "John",
+            "reviewed_by": report.reviewed_by or "Jane",
+            "approved_by": report.approved_by or "CTO",
+            "total_pages": 8,
+            "start_date": report.start_date.strftime("%d-%b-%Y") if report.start_date else "",
+            "end_date": report.end_date.strftime("%d-%b-%Y") if report.end_date else "",
+            "application_name": report.application_name,
+            "created_by": str(report.created_by) if report.created_by else "",
+            "target": report.target or "",
+            "tools_used": report.tools_used or "",
+            "test_location": report.test_location or "",
+        }
 
-        "assessee": report.client_name,
-        "assessor": str(report.created_by) if report.created_by else "John",
-
-        # ✅ FIXED KEYS
-        "reviewed_by": report.reviewed_by or "Jane",
-        "approved_by": report.approved_by or "CTO",
-
-        "total_pages": 8,
-
-        "start_date": report.start_date.strftime("%d-%b-%Y") if report.start_date else "",
-        "end_date": report.end_date.strftime("%d-%b-%Y") if report.end_date else "",
-
-        "application_name": report.application_name,
-        "created_by": str(report.created_by) if report.created_by else "",
-
-        # Scan Manifest Required Fields
-        "target": report.target or "",
-        "tools_used": report.tools_used or "",
-        "test_location": report.test_location or "",
-    }
-
+        # Step A: Generate raw PDF to a temp file
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         build_report(tmp.name, data, report.id)
 
-        with open(tmp.name, "rb") as f:
-            response = HttpResponse(f.read(), content_type="application/pdf")
-            response["Content-Disposition"] = f'inline; filename="VAPT_{report.client_name}.pdf"'
-            response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-            response["Pragma"] = "no-cache"
-            response["Expires"] = "0"
-            return response
+        # Step B & C: Check password and encrypt if necessary
+        if password:
+            import io
+            from PyPDF2 import PdfReader, PdfWriter
+            
+            # Read the raw PDF
+            reader = PdfReader(tmp.name)
+            writer = PdfWriter()
+            
+            # Copy all pages
+            for page in reader.pages:
+                writer.add_page(page)
+                
+            # Encrypt with password
+            writer.encrypt(password)
+            
+            # Output to memory
+            output_buffer = io.BytesIO()
+            writer.write(output_buffer)
+            pdf_bytes = output_buffer.getvalue()
+        else:
+            # If no password, just read the raw file
+            with open(tmp.name, "rb") as f:
+                pdf_bytes = f.read()
+
+        # Step D: Return response
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="VAPT_{report.client_name}.pdf"'
+        response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response["Pragma"] = "no-cache"
+        response["Expires"] = "0"
+        return response

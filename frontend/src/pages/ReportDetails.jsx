@@ -485,7 +485,7 @@ const ReportDetails = () => {
                         <div style={{ marginTop: '30px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                                 <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Findings</h2>
-                                <button className="btn btn-primary" onClick={() => navigate(`/report/${id}/finding/new`)}>
+                                <button className="btn btn-primary" onClick={() => navigate(`/report/${id}/finding/new/edit`)}>
                                     <Plus size={18} style={{ marginRight: '8px' }} /> Add Custom Finding
                                 </button>
                             </div>

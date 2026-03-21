@@ -293,3 +293,27 @@ class EvidenceDeleteView(APIView):
         evidence = get_object_or_404(FindingEvidence, id=pk)
         evidence.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class EvidenceReorderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=OpenApiTypes.OBJECT,
+        responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+        description="Reorder evidence items for a finding",
+    )
+    def put(self, request, finding_id):
+        order_list = request.data.get("order", [])
+        if not isinstance(order_list, list):
+            return Response({"error": "order must be a list of IDs"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        evidences = FindingEvidence.objects.filter(finding_id=finding_id)
+        evidence_dict = {str(e.id): e for e in evidences}
+        
+        for index, ev_id in enumerate(order_list):
+            if str(ev_id) in evidence_dict:
+                evidence = evidence_dict[str(ev_id)]
+                evidence.order = index
+                evidence.save(update_fields=['order'])
+                
+        return Response({"message": "Reordered successfully"}, status=status.HTTP_200_OK)
