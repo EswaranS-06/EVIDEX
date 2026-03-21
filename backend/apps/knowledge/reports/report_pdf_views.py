@@ -7,10 +7,10 @@ import io
 
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-# from rest_framework.permissions import IsAuthenticated    <------- Enable JWT auth later
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
+from apps.knowledge.models import Notification
 
 
 class ReportPDFView(APIView):
@@ -98,7 +98,7 @@ class ReportPDFView(APIView):
         return response
 
 class SendReportEmailView(APIView):
-    authentication_classes = []
+    authentication_classes = [JWTAuthentication]
     permission_classes = [AllowAny]
 
     @extend_schema(
@@ -187,6 +187,26 @@ class SendReportEmailView(APIView):
             email_msg.attach(f"VAPT_{report.client_name}.pdf", pdf_bytes, "application/pdf")
             email_msg.send(fail_silently=False)
             
+            # Create success notification
+            if request.user.is_authenticated:
+                Notification.objects.create(
+                    user=request.user,
+                    title="Report Emailed",
+                    message=f"Successfully sent report for {report.client_name} to {email}.",
+                    type="success",
+                    link=f"/report/{report.id}"
+                )
+            
             return JsonResponse({"status": "success", "message": "Email sent successfully"}, status=200)
         except Exception as e:
+            # Create error notification
+            if request.user.is_authenticated:
+                Notification.objects.create(
+                    user=request.user,
+                    title="Email Failed",
+                    message=f"Could not send report for {report.client_name} to {email}.",
+                    type="error",
+                    link=f"/report/{report.id}"
+                )
+                
             return JsonResponse({"status": "error", "message": f"Failed to send email: {str(e)}"}, status=500)

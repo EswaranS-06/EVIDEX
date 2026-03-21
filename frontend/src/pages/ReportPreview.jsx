@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Download, Loader, ZoomIn, ZoomOut, Mail, Send, Edit, X, CheckCircle, XCircle } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import { useNotification } from '../context/NotificationContext';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
@@ -19,6 +20,8 @@ const ReportPreview = () => {
     const [error, setError] = useState(null);
     const [pdfData, setPdfData] = useState(null);
     const [scale, setScale] = useState(1.2);
+
+    const { fetchNotifications } = useNotification();
 
     // Password Modal State
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -208,6 +211,9 @@ const ReportPreview = () => {
                 subject: 'Security Assessment Report',
                 body: 'Hi,\n\nPlease find attached the security assessment report.\n\nRegards,\nEVIDEX Team'
             });
+
+            // Refresh notifications stack
+            fetchNotifications();
         } catch (err) {
             console.error('Email send failed:', err);
             showToast('error', err.message || 'Failed to send email ❌');

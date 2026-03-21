@@ -13,6 +13,9 @@ from .views import (
     VariantsByVulnerabilityView,
     VulnerabilityDefinitionListCreateView,
     VulnerabilityDefinitionDetailView,
+    NotificationListView,
+    NotificationReadView,
+    NotificationClearView,
 )
 
 from .report_views import (
@@ -101,6 +104,14 @@ urlpatterns = [
         "evidences/<int:pk>/",
         EvidenceDeleteView.as_view(),
     ),
+
+    # -----------------------
+    # NOTIFICATION APIs
+    # -----------------------
+    path("notifications/", NotificationListView.as_view(), name="notification-list"),
+    path("notifications/clear/", NotificationClearView.as_view(), name="notification-clear"),
+    path("notifications/<int:pk>/read/", NotificationReadView.as_view(), name="notification-read"),
+    
     
     # ✅ Report Preview and PDF APIs with JWT Auth
     path("reports/<int:report_id>/preview/", ReportPreviewView.as_view(), name="report-preview"),

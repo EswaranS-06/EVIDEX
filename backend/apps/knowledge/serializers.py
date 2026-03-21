@@ -7,6 +7,7 @@ from .models import (
     Report,
     ReportFinding,
     FindingEvidence,
+    Notification,
 )
 from drf_spectacular.utils import extend_schema_field
 from drf_spectacular.types import OpenApiTypes
@@ -92,6 +93,7 @@ class VulnerabilityVariantSerializer(serializers.ModelSerializer):
 class ReportSerializer(serializers.ModelSerializer):
     findings_count = serializers.SerializerMethodField()
     severity_counts = serializers.SerializerMethodField()
+    updated_by_name = serializers.ReadOnlyField(source="updated_by.username")
 
     class Meta:
         model = Report
@@ -112,9 +114,12 @@ class ReportSerializer(serializers.ModelSerializer):
             "severity_counts",
             "status", # Added status field
             "created_at",
-            "created_by"
+            "updated_at",
+            "created_by",
+            "updated_by",
+            "updated_by_name"
         ]
-        read_only_fields = ["id", "created_by", "created_at"]
+        read_only_fields = ["id", "created_by", "created_at", "updated_at", "updated_by_name"]
 
     def validate(self, data):
         start = data.get("start_date")
@@ -150,6 +155,8 @@ class ReportSerializer(serializers.ModelSerializer):
 # -------------------------
 
 class FindingEvidenceSerializer(serializers.ModelSerializer):
+    updated_by_name = serializers.ReadOnlyField(source="updated_by.username")
+
     class Meta:
         model = FindingEvidence
         fields = [
@@ -159,8 +166,44 @@ class FindingEvidenceSerializer(serializers.ModelSerializer):
             "file",
             "description",
             "created_at",
+            "updated_at",
+            "updated_by",
+            "updated_by_name",
         ]
-        read_only_fields = ["id", "created_at", "finding"]
+        read_only_fields = ["id", "created_at", "updated_at", "updated_by_name", "finding"]
+
+    def validate_file(self, value):
+        from rest_framework.exceptions import ValidationError
+        import os
+        import uuid
+        from PIL import Image
+
+        # 1. Size Validation (Max 2MB)
+        max_size = 2 * 1024 * 1024 # 2MB
+        if value.size > max_size:
+            raise ValidationError("File size must be less than or equal to 2MB")
+
+        # 2. Extension Validation
+        ext = os.path.splitext(value.name)[1].lower()
+        if ext not in ['.png', '.jpg', '.jpeg']:
+            raise ValidationError("Only PNG, JPG, JPEG formats are allowed")
+
+        # 3. Content Validation (MIME / Image check)
+        if value.content_type not in ['image/png', 'image/jpeg']:
+            raise ValidationError("Only PNG, JPG, JPEG formats are allowed")
+
+        # Validate that it is actually a valid image using PIL
+        try:
+            img = Image.open(value)
+            img.verify() # verifies it's a valid image without decoding the whole thing
+            value.seek(0) # reset file pointer
+        except Exception:
+            raise ValidationError("Only PNG, JPG, JPEG formats are allowed")
+
+        # Normalize filename
+        value.name = f"{uuid.uuid4().hex}{ext}"
+
+        return value
 
 
 # -------------------------
@@ -177,6 +220,7 @@ class ReportFindingSerializer(serializers.ModelSerializer):
     vulnerability_name = serializers.ReadOnlyField(source="vulnerability.title")
     category_name = serializers.ReadOnlyField(source="vulnerability.owasp_category.name")
     source_type = serializers.ReadOnlyField(source="vulnerability.source_type")
+    updated_by_name = serializers.ReadOnlyField(source="updated_by.username")
 
     # Nested evidences (needed for API + PDF)
     evidences = FindingEvidenceSerializer(many=True, read_only=True)
@@ -212,10 +256,14 @@ class ReportFindingSerializer(serializers.ModelSerializer):
 
             "status",
             "created_at",
+            "updated_at",
+            "updated_by",
+            "updated_by_name",
         ]
         read_only_fields = [
             "id",
             "created_at",
+            "updated_at",
             "final_title",
             "final_severity",
             "final_description",
@@ -229,3 +277,13 @@ class ReportFindingSerializer(serializers.ModelSerializer):
                 "tester_severity must be CRITICAL, HIGH, MEDIUM, or LOW"
             )
         return value
+
+# -------------------------
+# NOTIFICATIONS
+# -------------------------
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ["id", "user", "title", "message", "type", "is_read", "link", "created_at", "updated_at"]
+        read_only_fields = ["id", "user", "created_at", "updated_at"]

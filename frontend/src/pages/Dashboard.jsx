@@ -257,6 +257,11 @@ const Dashboard = () => {
                                         <div style={{ display: 'flex', gap: '15px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 <Calendar size={14} /> {new Date(report.created_at || report.start_date || Date.now()).toLocaleDateString()}
+                                                {report.updated_at && report.updated_at !== report.created_at && (
+                                                    <span style={{ marginLeft: '6px', fontSize: '0.8em', opacity: 0.8 }}>
+                                                        (Mod: {new Date(report.updated_at).toLocaleDateString()}{report.updated_by_name ? ` by ${report.updated_by_name}` : ''})
+                                                    </span>
+                                                )}
                                             </span>
                                             <span style={{
                                                 color: report.status === 'Completed' ? 'var(--color-success)' : 'var(--color-primary)',
