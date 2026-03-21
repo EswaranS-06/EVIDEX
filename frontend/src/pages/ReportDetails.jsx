@@ -49,22 +49,8 @@ const ReportDetails = () => {
                 }
             };
             fetchReport();
-        } else {
-            // Reset for new report
-            setReport({
-                client_name: '',
-                application_name: '',
-                target: '',
-                start_date: '',
-                end_date: '',
-                report_type: 'Web Application',
-                test_location: 'Off-site',
-                tools_used: '',
-                status: 'Draft'
-            });
-            setFindings([]);
         }
-    }, [id, isNew]);
+    }, [id, isNew, alert]);
 
     const getSeverityBg = (sev) => {
         const s = (sev || '').toLowerCase();
@@ -141,7 +127,7 @@ const ReportDetails = () => {
 
     // OWASP Data State
     const [owaspCategories, setOwaspCategories] = useState([]);
-    const [selectedVulns, setSelectedVulns] = useState(new Set());
+    const [selectedVulns, setSelectedVulns] = useState(new Set()); // eslint-disable-line no-unused-vars
     const [expandedCategories, setExpandedCategories] = useState(new Set());
 
     useEffect(() => {
@@ -485,7 +471,7 @@ const ReportDetails = () => {
                         <div style={{ marginTop: '30px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                                 <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Findings</h2>
-                                <button className="btn btn-primary" onClick={() => navigate(`/report/${id}/finding/new`)}>
+                                <button className="btn btn-primary" onClick={() => navigate(`/report/${id}/finding/new/edit`)}>
                                     <Plus size={18} style={{ marginRight: '8px' }} /> Add Custom Finding
                                 </button>
                             </div>

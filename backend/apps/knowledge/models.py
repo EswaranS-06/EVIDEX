@@ -164,6 +164,14 @@ class Report(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="updated_reports"
+    )
 
     def __str__(self):
         return f"{self.client_name} - {self.application_name}"
@@ -221,6 +229,14 @@ class ReportFinding(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="updated_report_findings"
+    )
 
 # -----------------------
 # FINAL (COMPUTED) VALUES
@@ -296,8 +312,45 @@ class FindingEvidence(models.Model):
     title = models.CharField(max_length=200, blank=True)
     file = models.FileField(upload_to="evidence/")
     description = models.TextField(blank=True)
+    order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="updated_finding_evidences"
+    )
+
+    class Meta:
+        ordering = ['order', 'created_at']
 
 
     def __str__(self):
-        return self.title or f"Evidence for {self.finding.title}" 
+        return self.title or f"Evidence for {self.finding.title}"
+
+class Notification(models.Model):
+    TYPE_CHOICES = [
+        ("success", "Success"),
+        ("error", "Error"),
+        ("info", "Info"),
+    ]
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications"
+    )
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="info")
+    is_read = models.BooleanField(default=False)
+    link = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.type.upper()}] {self.user.username} - {self.title}" 

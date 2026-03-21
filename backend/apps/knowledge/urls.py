@@ -1,6 +1,6 @@
 from django.urls import path
 from .report_preview_views import ReportPreviewView
-from .reports.report_pdf_views import ReportPDFView
+from .reports.report_pdf_views import ReportPDFView, SendReportEmailView
 from .report_docx_views import ReportDOCXView
 
 from .views import (
@@ -13,6 +13,9 @@ from .views import (
     VariantsByVulnerabilityView,
     VulnerabilityDefinitionListCreateView,
     VulnerabilityDefinitionDetailView,
+    NotificationListView,
+    NotificationReadView,
+    NotificationClearView,
 )
 
 from .report_views import (
@@ -22,6 +25,7 @@ from .report_views import (
     ReportFindingDetailView,
     EvidenceListCreateView,
     EvidenceDeleteView,
+    EvidenceReorderView,
 )
 
 urlpatterns = [
@@ -93,14 +97,27 @@ urlpatterns = [
         EvidenceListCreateView.as_view(),
     ),
     path(
+        "findings/<int:finding_id>/evidences/reorder/",
+        EvidenceReorderView.as_view(),
+    ),
+    path(
         "evidences/<int:pk>/",
         EvidenceDeleteView.as_view(),
     ),
+
+    # -----------------------
+    # NOTIFICATION APIs
+    # -----------------------
+    path("notifications/", NotificationListView.as_view(), name="notification-list"),
+    path("notifications/clear/", NotificationClearView.as_view(), name="notification-clear"),
+    path("notifications/<int:pk>/read/", NotificationReadView.as_view(), name="notification-read"),
+    
     
     # ✅ Report Preview and PDF APIs with JWT Auth
     path("reports/<int:report_id>/preview/", ReportPreviewView.as_view(), name="report-preview"),
     path("reports/<int:report_id>/pdf/", ReportPDFView.as_view(), name="report-pdf"),
     path("reports/<int:report_id>/docx/", ReportDOCXView.as_view(), name="report-docx"),
+    path("send-report-email/", SendReportEmailView.as_view(), name="send-report-email"),
 
     
 ]

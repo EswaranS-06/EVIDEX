@@ -72,3 +72,38 @@ class VulnerabilityDefinitionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = VulnerabilityDefinition.objects.all()
     serializer_class = VulnerabilityDefinitionSerializer
     permission_classes = [IsAuthenticated]
+
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Notification
+from .serializers import NotificationSerializer
+
+class NotificationListView(generics.ListCreateAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user)[:50]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class NotificationReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            notification = Notification.objects.get(pk=pk, user=request.user)
+            notification.is_read = True
+            notification.save()
+            return Response({"status": "success"})
+        except Notification.DoesNotExist:
+            return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class NotificationClearView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        Notification.objects.filter(user=request.user).delete()
+        return Response({"status": "success", "message": "All notifications cleared"})

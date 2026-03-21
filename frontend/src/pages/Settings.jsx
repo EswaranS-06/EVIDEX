@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useModal } from '../context/ModalContext';
+import { useNotification } from '../context/NotificationContext';
 import api from '../api/axios';
 import {
     User,
@@ -19,6 +20,7 @@ import {
 const Settings = () => {
     const { user, checkAuth } = useAuth();
     const { alert } = useModal();
+    const { clearNotifications } = useNotification();
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileData, setProfileData] = useState({
@@ -260,6 +262,34 @@ const Settings = () => {
                                         top: '2px'
                                     }} />
                                 </div>
+                            </div>
+
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '16px',
+                                background: 'var(--table-hover-bg)',
+                                borderRadius: '12px',
+                                border: '1px solid var(--glass-border)'
+                            }}>
+                                <div>
+                                    <div style={{ fontWeight: '600' }}>Notification History</div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Clear all recent alerts & notifications</div>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="btn btn-ghost"
+                                    style={{ color: 'var(--color-error)' }}
+                                    onClick={async () => {
+                                        if (window.confirm('Are you sure you want to clear all notifications?')) {
+                                            await clearNotifications();
+                                            await alert('Notification history cleared.', 'Success');
+                                        }
+                                    }}
+                                >
+                                    Clear All
+                                </button>
                             </div>
                         </div>
                     </div>

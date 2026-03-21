@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 import {
     Search,
@@ -43,9 +43,9 @@ const ReportStatus = () => {
 
     useEffect(() => {
         fetchReports();
-    }, []);
+    }, [fetchReports]);
 
-    const fetchReports = async () => {
+    const fetchReports = useCallback(async () => {
         try {
             const response = await api.get('/api/reports/');
             setReports(response.data);
@@ -67,7 +67,7 @@ const ReportStatus = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [location.state?.reportId]);
 
     const handleSelectReport = async (report) => {
         setSelectedReport(report);
@@ -190,6 +190,11 @@ const ReportStatus = () => {
                                         <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                                             <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>
                                                 {new Date(report.created_at).toLocaleDateString()}
+                                                {report.updated_at && report.updated_at !== report.created_at && (
+                                                    <div style={{ fontSize: '0.85em', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                                                        Mod: {new Date(report.updated_at).toLocaleDateString()}{report.updated_by_name ? ` by ${report.updated_by_name}` : ''}
+                                                    </div>
+                                                )}
                                             </span>
                                             <span style={{
                                                 fontSize: '0.65rem',

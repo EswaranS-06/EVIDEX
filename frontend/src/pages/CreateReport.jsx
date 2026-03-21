@@ -299,6 +299,7 @@ const CreateReport = () => {
                     {fullReports.map(report => (
                         <option key={report.id} value={report.id}>
                             {report.client_name} - {report.application_name} ({new Date(report.created_at || Date.now()).toLocaleDateString()})
+                            {report.updated_at && report.updated_at !== report.created_at ? ` [Mod: ${new Date(report.updated_at).toLocaleDateString()}${report.updated_by_name ? ` by ${report.updated_by_name}` : ''}]` : ''}
                         </option>
                     ))}
                 </select>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, Suspense, memo } from 'react';
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
 import { LayoutDashboard, FileText, FilePlus, Settings, LogOut, Shield, Menu, X, Plus, Database, Activity } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import LoadingSkeleton from './LoadingSkeleton';
 import Navbar from './Navbar';
 
@@ -148,7 +147,7 @@ const MainLayout = () => {
     return (
         <div className="layout-container" style={{ display: 'block' }}>
             {/* Navbar (Fixed Top) */}
-            <Navbar toggleSidebar={toggleSidebar} isSidebarCollapsed={isCollapsed} />
+            <Navbar toggleSidebar={toggleSidebar} />
 
             {/* Sidebar (Fixed Left) */}
             <Sidebar

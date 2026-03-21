@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Shield, LogOut, Menu, User, Bell } from 'lucide-react';
+import { Shield, LogOut, Menu, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import NotificationStack from './NotificationStack';
 
-const Navbar = ({ toggleSidebar, isSidebarCollapsed }) => {
+const Navbar = ({ toggleSidebar }) => {
     const { user, logout } = useAuth();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -38,11 +39,7 @@ const Navbar = ({ toggleSidebar, isSidebarCollapsed }) => {
 
             {/* Right: User & Actions */}
             <div className="navbar-right">
-                {/* Notifications (Mock) */}
-                <button className="btn-icon" style={{ marginRight: '10px' }}>
-                    <Bell size={20} />
-                    <span className="notification-dot"></span>
-                </button>
+                <NotificationStack />
 
                 <div className="user-profile" ref={dropdownRef} onClick={() => setIsDropdownOpen(!isDropdownOpen)} style={{ cursor: 'pointer', position: 'relative' }}>
                     <div className="user-info">
