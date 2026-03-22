@@ -24,9 +24,14 @@ def draw_cover(doc, d):
     def s(x):
         return "" if x is None else str(x)
 
-    enterprise = s(d.get("enterprise"))
-    pt_date = s(d.get("pt_date"))
-    conducted_by = s(d.get("conducted_by"))
+        
+    enterprise = d.get("enterprise")
+    application_name = d.get("application_name")
+    pt_date = d.get("pt_date")
+
+    # what you display in UI
+    pt_date = d.get("pt_date")
+    conducted_by = application_name
     version = s(d.get("version"))
     assessee = s(d.get("assessee"))
     assessor = s(d.get("assessor"))
@@ -38,7 +43,6 @@ def draw_cover(doc, d):
     # -------------------------
     # PAGE MARGINS
     # -------------------------
-
     section.top_margin = Inches(0.5)
     section.bottom_margin = Inches(0.5)
     section.left_margin = Inches(0.5)
@@ -50,7 +54,6 @@ def draw_cover(doc, d):
     # -------------------------
     # PAGE BORDER
     # -------------------------
-
     sectPr = section._sectPr
     pgBorders = OxmlElement('w:pgBorders')
 
@@ -67,127 +70,112 @@ def draw_cover(doc, d):
     # -------------------------
     # HEADER
     # -------------------------
-
     header = section.header
 
-    header_table = header.add_table(
-        rows=1,
-        cols=2,
-        width=Inches(7.27)
-    )
-
+    header_table = header.add_table(rows=1, cols=2, width=Inches(7.27))
     header_table.autofit = False
     remove_table_cell_margins(header_table)
 
     left = header_table.rows[0].cells[0].paragraphs[0]
-    left.paragraph_format.space_before = Pt(0)
-    left.paragraph_format.space_after = Pt(0)
-
     run = left.add_run(enterprise)
     run.bold = True
-    run.font.name = "Arial"
     run.font.size = Pt(10)
 
     right = header_table.rows[0].cells[1].paragraphs[0]
-    right.paragraph_format.space_before = Pt(0)
-    right.paragraph_format.space_after = Pt(0)
     right.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-
     run = right.add_run("Penetration Testing Report")
     run.bold = True
-    run.font.name = "Arial"
     run.font.size = Pt(10)
-
     # -------------------------
-    # FOOTER
+    # FOOTER (DYNAMIC FIX)
     # -------------------------
-
     footer = section.footer
 
-    footer_table = footer.add_table(
-        rows=1,
-        cols=3,
-        width=Inches(7.27)
-    )
-
+    footer_table = footer.add_table(rows=1, cols=3, width=Inches(7.27))
     footer_table.autofit = False
     remove_table_cell_margins(footer_table)
 
-    left = footer_table.rows[0].cells[0].paragraphs[0]
-    left.paragraph_format.space_before = Pt(0)
-    left.paragraph_format.space_after = Pt(0)
+    # LEFT
+    footer_table.rows[0].cells[0].text = "Confidential"
 
-    run = left.add_run("Confidential")
-    run.bold = True
-    run.font.name = "Arial"
-    run.font.size = Pt(10)
+    # CENTER
+    footer_table.rows[0].cells[1].text = f"V {version}"
+    footer_table.rows[0].cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    center = footer_table.rows[0].cells[1].paragraphs[0]
-    center.paragraph_format.space_before = Pt(0)
-    center.paragraph_format.space_after = Pt(0)
-    center.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    # RIGHT (🔥 DYNAMIC PAGE NUMBER)
+    cell = footer_table.rows[0].cells[2]
+    p = cell.paragraphs[0]
+    p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
-    run = center.add_run(f"V {version}")
-    run.bold = True
-    run.font.name = "Arial"
-    run.font.size = Pt(10)
+    run = p.add_run("Page ")
 
-    right = footer_table.rows[0].cells[2].paragraphs[0]
-    right.paragraph_format.space_before = Pt(0)
-    right.paragraph_format.space_after = Pt(0)
-    right.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    # PAGE FIELD
+    fldChar1 = OxmlElement('w:fldChar')
+    fldChar1.set(qn('w:fldCharType'), 'begin')
 
-    run = right.add_run("Page 1")
-    run.bold = True
-    run.font.name = "Arial"
-    run.font.size = Pt(10)
+    instrText = OxmlElement('w:instrText')
+    instrText.text = "PAGE"
 
+    fldChar2 = OxmlElement('w:fldChar')
+    fldChar2.set(qn('w:fldCharType'), 'end')
+
+    run._r.append(fldChar1)
+    run._r.append(instrText)
+    run._r.append(fldChar2)
+    
     # -------------------------
-    # TITLE SECTION
+    # TITLE
     # -------------------------
-
     doc.add_paragraph("")
     doc.add_paragraph("")
     doc.add_paragraph("")
 
-    p = doc.add_paragraph()
-    run = p.add_run("PENETRATION TESTING REPORT")
-    run.bold = True
-    run.font.name = "Arial"
-    run.font.size = Pt(14)
+    p = doc.add_paragraph("PENETRATION TESTING REPORT")
+    p.runs[0].bold = True
+    p.runs[0].font.size = Pt(14)
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    p = doc.add_paragraph("FOR")
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    p = doc.add_paragraph(enterprise)
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_paragraph("FOR").alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_paragraph(enterprise).alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     doc.add_paragraph("")
 
-    p = doc.add_paragraph(f"PT Conducted on {pt_date}")
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    p = doc.add_paragraph(f"Conducted by {conducted_by}")
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_paragraph(f"PT Conducted on {pt_date}").alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_paragraph(f"Conducted by {conducted_by}").alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     doc.add_paragraph("")
     doc.add_paragraph("")
 
     # -------------------------
-    # COVER TABLE
+    # TABLE (FINAL FIX)
     # -------------------------
-
     table = doc.add_table(rows=5, cols=4)
     table.style = "Table Grid"
     table.autofit = False
     table.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    table.columns[0].width = Inches(1.8)
-    table.columns[1].width = Inches(2.6)
-    table.columns[2].width = Inches(1.4)
-    table.columns[3].width = Inches(1.47)
+    # 🔥 TOTAL WIDTH CONTROL (ONLY ONCE)
+    tbl = table._element
+    tblPr = tbl.tblPr
 
+    tblLayout = OxmlElement('w:tblLayout')
+    tblLayout.set(qn('w:type'), 'fixed')
+    tblPr.append(tblLayout)
+
+    tblW = OxmlElement('w:tblW')
+    tblW.set(qn('w:w'), str(int(6.5 * 1440)))  # wider table
+    tblW.set(qn('w:type'), 'dxa')
+    tblPr.append(tblW)
+
+    # 🔥 COLUMN WIDTHS (balanced properly)
+    col_widths = [1.4, 2.4, 1.2, 0.9]
+
+    for i, width in enumerate(col_widths):
+        table.columns[i].width = Inches(width)
+
+    # -------------------------
+    # DATA
+    # -------------------------
     rows = [
         ("Document Type", "Penetration Testing Report", "Version", version),
         ("Assessee", assessee, "Signature", ""),
@@ -197,11 +185,19 @@ def draw_cover(doc, d):
     ]
 
     for i, r in enumerate(rows):
-        cells = table.rows[i].cells
+        row = table.rows[i]
+
         for j in range(4):
-            p = cells[j].paragraphs[0]
+            cell = row.cells[j]
+            cell.width = Inches(col_widths[j])  # 🔥 FORCE WIDTH
+
+            p = cell.paragraphs[0]
+
+            # spacing (clean look)
+            p.paragraph_format.space_before = Pt(2)
+            p.paragraph_format.space_after = Pt(2)
+
             run = p.add_run(s(r[j]))
-            run.font.name = "Arial"
             run.font.size = Pt(9)
 
     doc.add_page_break()

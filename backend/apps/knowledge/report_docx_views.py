@@ -33,7 +33,17 @@ class ReportDOCXView(APIView):
             "application_name": report.application_name,
             "start_date": report.start_date.strftime("%d-%b-%Y") if report.start_date else "",
             "end_date": report.end_date.strftime("%d-%b-%Y") if report.end_date else "",
-        }
+            "conducted_by": str(report.created_by) if report.created_by else "Cyber Team",
+            "assessee": report.client_name,
+            "assessor": str(report.created_by) if report.created_by else "John",
+            "reviewed_by": report.reviewed_by,
+            "approved_by": report.approved_by,
+            "version": "1.0",
+            "pt_date": report.created_at.strftime("%b %Y") if report.created_at else "N/A",
+            "target": report.target or "",
+            "tools_used": report.tools_used or "",
+            "test_location": report.test_location or "",
+            }
 
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
 
