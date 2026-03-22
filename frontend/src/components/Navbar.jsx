@@ -3,7 +3,7 @@ import { Shield, LogOut, Menu, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import NotificationStack from './NotificationStack';
 
-const Navbar = ({ toggleSidebar }) => {
+const Navbar = ({ toggleSidebar, isSidebarCollapsed }) => {
     const { user, logout } = useAuth();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);

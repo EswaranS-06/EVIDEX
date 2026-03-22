@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle2, Info, X, HelpCircle } from 'lucide-react';
 
 const ModalContext = createContext(null);
 
-export const useModal = () => { // eslint-disable-line react-refresh/only-export-components
+export const useModal = () => {
     const context = useContext(ModalContext);
     if (!context) throw new Error('useModal must be used within a ModalProvider');
     return context;

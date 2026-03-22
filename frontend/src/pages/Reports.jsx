@@ -8,6 +8,11 @@ const Reports = () => {
     const navigate = useNavigate();
     const { confirm } = useModal();
     const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchReports();
+    }, []);
 
     const fetchReports = async () => {
         try {
@@ -15,13 +20,30 @@ const Reports = () => {
             setReports(response.data);
         } catch (err) {
             console.error("Failed to fetch reports:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchReports();
-    }, []);
+    const getSeverityBg = (sev) => {
+        switch (sev) {
+            case 'Critical': return 'rgba(142, 45, 226, 0.1)';
+            case 'High': return 'rgba(255, 77, 109, 0.1)';
+            case 'Medium': return 'rgba(254, 228, 64, 0.1)';
+            case 'Low': return 'rgba(0, 240, 255, 0.1)';
+            default: return 'var(--glass-bg)';
+        }
+    };
+
+    const getSeverityColor = (sev) => {
+        switch (sev) {
+            case 'Critical': return 'var(--color-secondary)';
+            case 'High': return 'var(--color-error)';
+            case 'Medium': return 'var(--color-warning)';
+            case 'Low': return 'var(--color-primary)';
+            default: return 'var(--color-border)';
+        }
+    };
 
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -124,7 +146,7 @@ const Reports = () => {
                                     <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{report.client_name} - {report.application_name}</h3>
                                     <div style={{ display: 'flex', gap: '15px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <Calendar size={14} /> {new Date(report.created_at || new Date().toISOString()).toLocaleDateString()}
+                                            <Calendar size={14} /> {new Date(report.created_at || Date.now()).toLocaleDateString()}
                                             {report.updated_at && report.updated_at !== report.created_at && (
                                                 <span style={{ marginLeft: '6px', fontSize: '0.8em', opacity: 0.8 }}>
                                                     (Mod: {new Date(report.updated_at).toLocaleDateString()}{report.updated_by_name ? ` by ${report.updated_by_name}` : ''})

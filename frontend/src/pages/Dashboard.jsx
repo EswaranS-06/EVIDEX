@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { Search, Plus, Edit2, Trash2, CheckCircle, Lock, Calendar, FileText, User as UserIcon } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 const Dashboard = () => {
     const navigate = useNavigate();
+    const { setIsCollapsed } = useOutletContext();
 
     const [statusFilter, setStatusFilter] = useState('All');
 
     // Real Data State
     const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [stats, setStats] = useState({
         'Draft': 0,
         'In Progress': 0,
@@ -17,6 +21,10 @@ const Dashboard = () => {
         'Verified': 0,
         'Total': 0
     });
+
+    useEffect(() => {
+        fetchReports();
+    }, []);
 
     const fetchReports = async () => {
         try {
@@ -35,15 +43,34 @@ const Dashboard = () => {
             setStats(newStats);
         } catch (err) {
             console.error("Failed to fetch reports:", err);
+            setError("Failed to load reports.");
+        } finally {
+            setLoading(false);
         }
     };
 
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchReports();
-    }, []);
-
     const filteredReports = reports.filter(r => statusFilter === 'All' || r.status === statusFilter);
+
+    const getSeverityBg = (sev) => {
+        const s = (sev || '').toLowerCase();
+        switch (s) {
+            case 'critical': return 'var(--sev-critical-bg)';
+            case 'high': return 'var(--sev-high-bg)';
+            case 'medium': return 'var(--sev-medium-bg)';
+            case 'low': return 'var(--sev-low-bg)';
+            default: return 'var(--glass-bg)';
+        }
+    };
+
+    const getSeverityColor = (sev) => {
+        switch (sev) {
+            case 'Critical': return 'var(--color-secondary)';
+            case 'High': return 'var(--color-error)';
+            case 'Medium': return 'var(--color-warning)';
+            case 'Low': return 'var(--color-primary)';
+            default: return 'var(--color-border)';
+        }
+    };
 
     return (
         <div className="dashboard-container">
@@ -229,7 +256,7 @@ const Dashboard = () => {
                                         <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{report.client_name} - {report.application_name}</h3>
                                         <div style={{ display: 'flex', gap: '15px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <Calendar size={14} /> {new Date(report.created_at || report.start_date || new Date().toISOString()).toLocaleDateString()}
+                                                <Calendar size={14} /> {new Date(report.created_at || report.start_date || Date.now()).toLocaleDateString()}
                                                 {report.updated_at && report.updated_at !== report.created_at && (
                                                     <span style={{ marginLeft: '6px', fontSize: '0.8em', opacity: 0.8 }}>
                                                         (Mod: {new Date(report.updated_at).toLocaleDateString()}{report.updated_by_name ? ` by ${report.updated_by_name}` : ''})

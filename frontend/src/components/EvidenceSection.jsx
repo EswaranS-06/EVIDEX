@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getEvidence, uploadEvidence, deleteEvidence, reorderEvidence } from '../api/evidence';
 import { Plus, Upload, File, Eye, Trash2, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
@@ -140,7 +140,7 @@ const EvidenceSection = ({ findingId, isNew }) => {
         })
     );
 
-    const loadEvidence = useCallback(async () => {
+    const loadEvidence = async () => {
         if (!findingId || isNew) return;
         try {
             const data = await getEvidence(findingId);
@@ -148,12 +148,11 @@ const EvidenceSection = ({ findingId, isNew }) => {
         } catch (error) {
             console.error('Failed to fetch evidence', error);
         }
-    }, [findingId, isNew]);
+    };
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadEvidence();
-    }, [findingId, isNew, loadEvidence]);
+    }, [findingId, isNew]);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];

@@ -49,8 +49,22 @@ const ReportDetails = () => {
                 }
             };
             fetchReport();
+        } else {
+            // Reset for new report
+            setReport({
+                client_name: '',
+                application_name: '',
+                target: '',
+                start_date: '',
+                end_date: '',
+                report_type: 'Web Application',
+                test_location: 'Off-site',
+                tools_used: '',
+                status: 'Draft'
+            });
+            setFindings([]);
         }
-    }, [id, isNew, alert]);
+    }, [id, isNew]);
 
     const getSeverityBg = (sev) => {
         const s = (sev || '').toLowerCase();
@@ -127,7 +141,7 @@ const ReportDetails = () => {
 
     // OWASP Data State
     const [owaspCategories, setOwaspCategories] = useState([]);
-    const [selectedVulns, setSelectedVulns] = useState(new Set()); // eslint-disable-line no-unused-vars
+    const [selectedVulns, setSelectedVulns] = useState(new Set());
     const [expandedCategories, setExpandedCategories] = useState(new Set());
 
     useEffect(() => {

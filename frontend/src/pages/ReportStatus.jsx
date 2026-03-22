@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import {
     Search,
@@ -43,9 +43,9 @@ const ReportStatus = () => {
 
     useEffect(() => {
         fetchReports();
-    }, [fetchReports]);
+    }, []);
 
-    const fetchReports = useCallback(async () => {
+    const fetchReports = async () => {
         try {
             const response = await api.get('/api/reports/');
             setReports(response.data);
@@ -67,7 +67,7 @@ const ReportStatus = () => {
         } finally {
             setLoading(false);
         }
-    }, [location.state?.reportId]);
+    };
 
     const handleSelectReport = async (report) => {
         setSelectedReport(report);

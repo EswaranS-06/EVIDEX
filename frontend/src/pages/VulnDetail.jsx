@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import EvidenceSection from '../components/EvidenceSection';
@@ -99,6 +99,14 @@ const VulnDetail = () => {
 
     const currentStyle = getSeverityStyle(severity);
 
+    const getFullImageUrl = (path) => {
+        if (!path) return '';
+        if (typeof path !== 'string') return '';
+        if (path.startsWith('http')) return path;
+        const baseUrl = import.meta.env.VITE_API_URL || '';
+        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
+
     const handleEdit = (field, value) => {
         setHasUnsavedChanges(true);
         if (field === 'description') setDescription(value);
@@ -132,7 +140,7 @@ const VulnDetail = () => {
     };
 
     // Auto-save logic
-    const saveChanges = useCallback(async (isManual = false) => {
+    const saveChanges = async (isManual = false) => {
         if (!hasUnsavedChanges && !isManual) return; // Prevent unnecessary saves, but still allow manual click
 
         const payload = reportId ? {
@@ -182,7 +190,7 @@ const VulnDetail = () => {
         } finally {
             setSaving(false);
         }
-    }, [hasUnsavedChanges, title, severity, description, impact, remediation, sourceType, references, owaspCategory, reportId, id, isNew, navigate, alert]);
+    };
 
     // Call save whenever relevant form fields change, after 2 seconds (debounce)
     useEffect(() => {
@@ -195,7 +203,7 @@ const VulnDetail = () => {
                 clearTimeout(timer);
             };
         }
-    }, [title, severity, description, impact, remediation, sourceType, owaspCategory, references, hasUnsavedChanges, saveChanges]);
+    }, [title, severity, description, impact, remediation, sourceType, owaspCategory, references, hasUnsavedChanges]);
 
     // Handle exiting with unsaved changes
     useEffect(() => {
@@ -205,7 +213,7 @@ const VulnDetail = () => {
                 saveChanges();
             }
         };
-    }, [hasUnsavedChanges, title, severity, description, impact, remediation, id, reportId, isNew, saveChanges]);
+    }, [hasUnsavedChanges, title, severity, description, impact, remediation, id, reportId, isNew]);
 
     const handleManualSave = async () => {
         await saveChanges(true);

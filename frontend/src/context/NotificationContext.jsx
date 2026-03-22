@@ -25,7 +25,6 @@ export const NotificationProvider = ({ children }) => {
     }, [user]);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchNotifications();
     }, [fetchNotifications]);
 
@@ -62,4 +61,4 @@ export const NotificationProvider = ({ children }) => {
     );
 };
 
-export const useNotification = () => useContext(NotificationContext); // eslint-disable-line react-refresh/only-export-components
+export const useNotification = () => useContext(NotificationContext);

@@ -33,11 +33,11 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
-    const login = async (username, password) => {
+    const login = async (email, password) => {
         setError(null);
         try {
             const response = await api.post('/api/auth/login/', {
-                username: username,
+                username: email, // Backend might expect 'username' even if we use email
                 password: password,
             });
 
@@ -49,8 +49,7 @@ export const AuthProvider = ({ children }) => {
             await checkAuth();
             return true;
         } catch (err) {
-            console.error('Login error:', err.response?.data || err);
-            setError(err.response?.data?.error || err.response?.data?.detail || 'Login failed. Please check your credentials.');
+            setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
             return false;
         }
     };
@@ -87,7 +86,7 @@ export const AuthProvider = ({ children }) => {
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => { // eslint-disable-line react-refresh/only-export-components
+export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
         throw new Error('useAuth must be used within an AuthProvider');

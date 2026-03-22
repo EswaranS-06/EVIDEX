@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -39,7 +39,7 @@ api.interceptors.response.use(
                     throw new Error('No refresh token available');
                 }
 
-                const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/refresh/`, {
+                const response = await axios.post(`${API_BASE_URL}/api/auth/refresh/`, {
                     refresh: refreshToken,
                 });
 

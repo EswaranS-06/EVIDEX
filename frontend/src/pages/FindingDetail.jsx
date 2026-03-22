@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import EvidenceSection from '../components/EvidenceSection';
@@ -9,7 +9,7 @@ import { useModal } from '../context/ModalContext';
 const FindingDetail = () => {
     const { reportId, id } = useParams();
     const navigate = useNavigate();
-    const { alert } = useModal();
+    const { alert, confirm } = useModal();
     const isNew = id === 'new';
 
     // State
@@ -55,6 +55,15 @@ const FindingDetail = () => {
     };
 
     const currentStyle = getSeverityStyle(finding?.final_severity);
+
+    // Helper to get full URL for images/files
+    const getFullImageUrl = (path) => {
+        if (!path) return '';
+        if (typeof path !== 'string') return '';
+        if (path.startsWith('http')) return path;
+        const baseUrl = import.meta.env.VITE_API_URL || '';
+        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
 
 
 

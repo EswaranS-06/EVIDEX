@@ -6,14 +6,14 @@ class ErrorBoundary extends Component {
         this.state = { hasError: false };
     }
 
-    static getDerivedStateFromError() {
+    static getDerivedStateFromError(error) {
         // Update state so the next render will show the fallback UI.
         return { hasError: true };
     }
 
-    componentDidCatch(errorInfo) {
+    componentDidCatch(error, errorInfo) {
         // You can also log the error to an error reporting service
-        console.error("Uncaught error:", errorInfo);
+        console.error("Uncaught error:", error, errorInfo);
     }
 
     render() {
