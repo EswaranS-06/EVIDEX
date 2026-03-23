@@ -10,53 +10,72 @@ from .results import draw_results
 from .detailed_findings import draw_detailed_findings
 from .conclusion import draw_conclusion
 
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+
+
+
+
+
 def build_docx(path, data, report_id):
-    page = 1
 
     doc = Document()
 
-    # Cover
+    # -------------------------
+    # 1. COVER
+    # -------------------------
     draw_cover(doc, data)
-    page += 1
 
-    # Legal
+    # -------------------------
+    # 2. LEGAL
+    # -------------------------
     draw_legal(doc, data)
-    page += 1
 
-    # TOC - Generate early, bookmarks will be created later
-    section_pages = {
-        "executive_summary": 5,
-        "methodology": 6,
-        "scope": 7,
-        "results": 8,
-        "conclusion": 10,
-    }
+    # -------------------------
+    # 3. TOC (STATIC + PAGEREF)
+    # -------------------------
+    # ⚠️ section_pages NOT needed anymore
+    draw_toc(doc, section_pages={})
 
-    draw_toc(doc, section_pages)
-    page += 1
-
-    # Scan Manifest
+    # -------------------------
+    # 4. SCAN MANIFEST
+    # -------------------------
     draw_scan_manifest(doc, data)
-    page += 1
 
-    # Executive Summary (with bookmark)
-    draw_executive_summary(doc, data, page_no=1, total_pages=1)
-    page += 1
+    # -------------------------
+    # 5. EXECUTIVE SUMMARY
+    # -------------------------
+    draw_executive_summary(doc, data)
 
-    # Methodology (with bookmark)
-    draw_methodology(doc, data, page_no=1, total_pages=1)
-    page += 1
+    # -------------------------
+    # 6. METHODOLOGY
+    # -------------------------
+    draw_methodology(doc, data)
 
-    # Results (with bookmarks for scope and results)
+    # -------------------------
+    # 7. RESULTS (THIS MUST HAVE BOOKMARKS)
+    # -------------------------
     draw_results(doc, data, report_id)
-    page += 1
 
-    # Detailed Findings
+    # -------------------------
+    # 8. DETAILED FINDINGS (THIS MUST HAVE BOOKMARK)
+    # -------------------------
     draw_detailed_findings(doc, data, report_id)
-    page += 1
 
-    # Conclusion (with bookmark)
+    # -------------------------
+    # 9. CONCLUSION (THIS MUST HAVE BOOKMARK)
+    # -------------------------
     draw_conclusion(doc, data)
-    page += 1
 
+    # -------------------------
+    # AUTO UPDATE FIELDS (CRITICAL)
+    # -------------------------
+    settings = doc.settings.element
+    update_fields = OxmlElement('w:updateFields')
+    update_fields.set(qn('w:val'), 'true')
+    settings.append(update_fields)
+
+    # -------------------------
+    # SAVE
+    # -------------------------
     doc.save(path)

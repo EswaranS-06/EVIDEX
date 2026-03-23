@@ -55,13 +55,14 @@ def draw_detailed_findings(doc, data, report_id):
         return
 
     # TITLE
+    # from .toc import add_bookmark
+
     p = doc.add_paragraph()
-    run = p.add_run("3. Detailed Findings")
+    # add_bookmark(p, "results")
+
+    run = p.add_run("4. Penetration Testing Results")
     run.bold = True
     run.font.size = Pt(14)
- 
-    run = p.add_run("4. Penetration Testing Results")
-
 
     doc.add_paragraph("")
     for idx, f in enumerate(findings, start=1):

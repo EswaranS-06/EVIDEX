@@ -7,14 +7,17 @@ def draw_conclusion(doc, data):
     doc.add_page_break()
 
     # Title
+        
+    # from .toc import add_bookmark
+    
     p = doc.add_paragraph()
     p.paragraph_format.left_indent = Inches(0.3)
 
- 
+    # add_bookmark(p, "conclusion")
+
     run = p.add_run("5. Conclusion")
     run.bold = True
     run.font.size = Pt(14)
-
     # Paragraph
     conclusion_text = (
         f"Nevertheless, we suggest that the application allocated to "

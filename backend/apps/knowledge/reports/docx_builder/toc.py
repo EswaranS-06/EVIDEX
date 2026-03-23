@@ -1,6 +1,15 @@
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT, WD_TAB_LEADER
 from docx.shared import Pt, RGBColor, Inches
 
+# =========================
+# FORMAT SECTION NUMBER
+# =========================
+def format_section(section):
+    return section.rjust(4)   # key for last-digit alignment
+
+# =========================
+# TOC
+# =========================
 def draw_toc(doc, section_pages):
 
     doc.add_paragraph("")
@@ -17,34 +26,40 @@ def draw_toc(doc, section_pages):
     doc.add_paragraph("")
 
     entries = [
-        ("1. Executive Summary", section_pages.get("exec_summary")),
-        ("1.1 Overview", section_pages.get("exec_summary")),
-        ("1.2 Risk Model", section_pages.get("exec_summary")),
-        ("2. Web Application Penetration Testing Methodology", section_pages.get("methodology")),
-        ("3. Project Scope", section_pages.get("scope")),
-        ("4. Penetration Testing Results", section_pages.get("results")),
-        ("5. Conclusion", section_pages.get("conclusion")),
+        ("Executive Summary", "1"),
+        ("Overview", "1.1"),
+        ("Risk Model", "1.2"),
+        ("Web Application Penetration Testing Methodology", "2"),
+        ("Project Scope", "3"),
+        ("Penetration Testing Results", "4"),
+        ("Conclusion", "5"),
     ]
 
-    for title, page in entries:
+    for title, section in entries:
 
         p = doc.add_paragraph()
+
+        # SAME LEFT ALIGNMENT
         p.paragraph_format.left_indent = Inches(0.5)
 
+        # ADD TAB STOP (DO NOT CLEAR)
         tab_stops = p.paragraph_format.tab_stops
         tab_stops.add_tab_stop(
-            Pt(480),
+            Inches(6.5),
             WD_TAB_ALIGNMENT.RIGHT,
             WD_TAB_LEADER.DOTS
         )
 
+        # LEFT TEXT
         run = p.add_run(title)
         run.bold = True
         run.font.size = Pt(10)
 
+        # TAB
         p.add_run("\t")
 
-        run = p.add_run(str(page or ""))
+        # RIGHT NUMBER (aligned by last digit)
+        run = p.add_run(format_section(section))
         run.bold = True
         run.font.size = Pt(10)
 
