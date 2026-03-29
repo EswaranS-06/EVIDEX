@@ -100,9 +100,18 @@ const FindingDetail = () => {
     const [newEvidence, setNewEvidence] = useState({ title: '', file: null, notes: '' });
     const fileInputRef = useRef(null);
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+            if (!validTypes.includes(file.type)) {
+                await alert('Only PNG, JPG, and JPEG images are allowed.', 'Invalid File Type');
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                await alert('Image size must be below 2MB.', 'File Too Large');
+                return;
+            }
             setNewEvidence({ ...newEvidence, file: file });
         }
     };
@@ -374,7 +383,7 @@ const FindingDetail = () => {
                                 ref={fileInputRef}
                                 onChange={handleFileChange}
                                 style={{ display: 'none' }}
-                                accept="image/*"
+                                accept="image/png, image/jpeg, image/jpg"
                             />
                             <div
                                 onClick={() => fileInputRef.current.click()}

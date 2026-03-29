@@ -18,7 +18,7 @@ lerna-debug.log*
 access.token
 .env.production
 some.data
-
+.env
 # Node.js
 node_modules/
 **/node_modules/
