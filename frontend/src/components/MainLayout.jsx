@@ -1,7 +1,6 @@
 import React, { useState, useEffect, Suspense, memo } from 'react';
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
-import { LayoutDashboard, FileText, FilePlus, Settings, LogOut, Shield, Menu, X, Plus, Database, Activity } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { LayoutDashboard, FileText, FilePlus, Settings, Database, Activity } from 'lucide-react';
 import LoadingSkeleton from './LoadingSkeleton';
 import Navbar from './Navbar';
 

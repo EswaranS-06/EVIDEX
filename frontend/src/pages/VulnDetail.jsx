@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { ChevronLeft, Save } from 'lucide-react';
+import { useModal } from '../context/ModalContext';
 import EvidenceSection from '../components/EvidenceSection';
 
-import { ChevronLeft, Plus, Upload, File, Eye, Save } from 'lucide-react';
-import { useModal } from '../context/ModalContext';
-
 const VulnDetail = () => {
-    const { reportId, id } = useParams();
+    const { id, reportId } = useParams();
     const navigate = useNavigate();
     const { alert } = useModal();
     const isNew = id === 'new';
@@ -22,8 +21,17 @@ const VulnDetail = () => {
     const [references, setReferences] = useState('');
     const [owaspCategory, setOwaspCategory] = useState('');
     const [categories, setCategories] = useState([]);
+    const [owaspVulnerability, setOwaspVulnerability] = useState('');
+    const [owaspVulnerabilities, setOwaspVulnerabilities] = useState([]);
+    const [owaspVariant, setOwaspVariant] = useState('');
+    const [variants, setVariants] = useState([]);
+    const [cveId, setCveId] = useState('');
+    const [cvssScore, setCvssScore] = useState('');
+    const [cvssVector, setCvssVector] = useState('');
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
+    const [isCreateNewCategory, setIsCreateNewCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
 
     // Auto-save tracker
     const isInitialMount = useRef(true);
@@ -34,15 +42,49 @@ const VulnDetail = () => {
         const fetchCategories = async () => {
             try {
                 const response = await api.get('/api/owasp/categories/');
-                setCategories(response.data);
+                setCategories(response.data || []);
             } catch (err) {
-                console.error("Failed to fetch OWASP categories:", err);
+                console.error("Failed to fetch OWASP categories", err);
             }
         };
         fetchCategories();
     }, []);
 
-    // Load data from Backend
+    // Fetch Vulnerabilities for Category
+    useEffect(() => {
+        if (owaspCategory && !isCreateNewCategory) {
+            const fetchVulnerabilities = async () => {
+                try {
+                    const response = await api.get(`/api/owasp/categories/${owaspCategory}/`);
+                    setOwaspVulnerabilities(response.data.vulnerabilities || []);
+                } catch (err) {
+                    console.error("Failed to fetch OWASP vulnerabilities", err);
+                }
+            };
+            fetchVulnerabilities();
+        } else {
+            setOwaspVulnerabilities([]);
+        }
+    }, [owaspCategory, isCreateNewCategory]);
+
+    // Fetch Variants for Vulnerability
+    useEffect(() => {
+        if (owaspVulnerability) {
+            const fetchVariants = async () => {
+                try {
+                    const response = await api.get(`/api/owasp/vulnerabilities/${owaspVulnerability}/variants/`);
+                    setVariants(response.data || []);
+                } catch (err) {
+                    console.error("Failed to fetch OWASP variants", err);
+                }
+            };
+            fetchVariants();
+        } else {
+            setVariants([]);
+        }
+    }, [owaspVulnerability]);
+
+    // Fetch Initial Data
     useEffect(() => {
         if (!isNew) {
             const fetchData = async () => {
@@ -57,7 +99,22 @@ const VulnDetail = () => {
                         setDescription(f.tester_description || '');
                         setImpact(f.tester_impact || '');
                         setRemediation(f.tester_remediation || '');
-
+                        setSourceType(f.source_type || 'CUSTOM');
+                        setCveId(f.cve_id || '');
+                        setCvssScore(f.cvss_score || '');
+                        setCvssVector(f.cvss_vector || '');
+                        setOwaspVulnerability(f.vulnerability || '');
+                        
+                        if (f.vulnerability) {
+                            try {
+                                const resVuln = await api.get(`/api/vulnerabilities/${f.vulnerability}/`);
+                                const v = resVuln.data;
+                                setOwaspCategory(v.owasp_category || '');
+                                setOwaspVariant(v.variant || '');
+                            } catch (err) {
+                                console.error("Failed to fetch base vulnerability", err);
+                            }
+                        }
                     } else {
                         response = await api.get(`/api/vulnerabilities/${id}/`);
                         const v = response.data;
@@ -69,49 +126,43 @@ const VulnDetail = () => {
                         setSourceType(v.source_type || 'CUSTOM');
                         setReferences(v.references || '');
                         setOwaspCategory(v.owasp_category || '');
+                        setOwaspVulnerability(v.owasp_vulnerability || '');
+                        setOwaspVariant(v.variant || '');
+                        setCveId(v.cve_id || '');
+                        setCvssScore(v.cvss_score || '');
+                        setCvssVector(v.cvss_vector || '');
                     }
                 } catch (err) {
                     console.error("Failed to fetch data", err);
                 } finally {
                     setLoading(false);
-                    // Reset initial mount to false after loading the data so we can detect real changes
                     setTimeout(() => { isInitialMount.current = false; }, 0);
                 }
             };
             fetchData();
         } else {
-            isInitialMount.current = false;
+            setTimeout(() => { isInitialMount.current = false; }, 0);
         }
     }, [id, reportId, isNew]);
 
-    const severityColors = {
-        'low': { bg: 'rgba(0, 240, 255, 0.1)', text: 'var(--color-primary)', border: 'var(--color-primary)' },
-        'medium': { bg: 'rgba(254, 228, 64, 0.1)', text: 'var(--color-warning)', border: 'var(--color-warning)' },
-        'high': { bg: 'rgba(255, 77, 109, 0.1)', text: 'var(--color-error)', border: 'var(--color-error)' },
-        'critical': { bg: 'rgba(142, 45, 226, 0.2)', text: 'var(--color-secondary)', border: 'var(--color-secondary)' },
-        'default': { bg: 'rgba(255,255,255,0.05)', text: 'var(--color-text-muted)', border: 'var(--color-border)' }
-    };
-
+    // Severity Helpers
     const getSeverityStyle = (sev) => {
-        const s = (sev || 'medium').toLowerCase();
-        return severityColors[s] || severityColors['default'];
+        switch (sev.toLowerCase()) {
+            case 'critical': return { bg: 'rgba(255, 0, 0, 0.1)', text: '#ff4d4d' };
+            case 'high': return { bg: 'rgba(255, 121, 63, 0.1)', text: '#ff793f' };
+            case 'medium': return { bg: 'rgba(255, 177, 66, 0.1)', text: '#ffb142' };
+            case 'low': return { bg: 'rgba(51, 217, 178, 0.1)', text: '#33d9b2' };
+            default: return { bg: 'rgba(255, 255, 255, 0.05)', text: 'var(--color-text-muted)' };
+        }
     };
-
     const currentStyle = getSeverityStyle(severity);
 
-    const getFullImageUrl = (path) => {
-        if (!path) return '';
-        if (typeof path !== 'string') return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = import.meta.env.VITE_API_URL || '';
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
-
+    // Handlers
     const handleEdit = (field, value) => {
-        setHasUnsavedChanges(true);
         if (field === 'description') setDescription(value);
-        else if (field === 'impact') setImpact(value);
-        else if (field === 'remediation') setRemediation(value);
+        if (field === 'impact') setImpact(value);
+        if (field === 'remediation') setRemediation(value);
+        setHasUnsavedChanges(true);
     };
 
     const handleSeverityChange = (level) => {
@@ -131,7 +182,34 @@ const VulnDetail = () => {
 
     const handleCategoryChange = (e) => {
         setOwaspCategory(e.target.value);
+        setOwaspVulnerability('');
         setHasUnsavedChanges(true);
+    };
+
+    const handleVulnerabilityChange = (e) => {
+        const vulnId = e.target.value;
+        setOwaspVulnerability(vulnId);
+        setHasUnsavedChanges(true);
+
+        const v = owaspVulnerabilities.find(item => item.id.toString() === vulnId);
+        if (v) {
+            setTitle(v.title || v.name || '');
+            setSeverity(v.severity || v.default_severity || 'Medium');
+            setDescription(v.description || '');
+            setImpact(v.impact || '');
+            setRemediation(v.remediation || '');
+        }
+    };
+
+    const handleVariantChange = (e) => {
+        const variantId = e.target.value;
+        setOwaspVariant(variantId);
+        setHasUnsavedChanges(true);
+
+        const v = variants.find(item => item.id.toString() === variantId);
+        if (v && v.description) {
+            setDescription(prev => prev ? `${prev}\n\nVariant: ${v.description}` : v.description);
+        }
     };
 
     const handleReferencesChange = (e) => {
@@ -139,29 +217,70 @@ const VulnDetail = () => {
         setHasUnsavedChanges(true);
     };
 
-    // Auto-save logic
-    const saveChanges = async (isManual = false) => {
-        if (!hasUnsavedChanges && !isManual) return; // Prevent unnecessary saves, but still allow manual click
+    const handleNewCategoryNameChange = (e) => {
+        setNewCategoryName(e.target.value);
+        setHasUnsavedChanges(true);
+    };
 
-        const payload = reportId ? {
-            tester_title: title,
-            tester_severity: severity.toUpperCase(),
-            tester_description: description,
-            tester_impact: impact,
-            tester_remediation: remediation
-        } : {
-            title: title,
-            severity: severity.toUpperCase(),
-            description: description,
-            impact: impact,
-            remediation: remediation,
-            source_type: sourceType,
-            references: references,
-            owasp_category: owaspCategory || null
-        };
+    const handleCveIdChange = (e) => {
+        setCveId(e.target.value);
+        setHasUnsavedChanges(true);
+    };
+
+    const handleCvssScoreChange = (e) => {
+        setCvssScore(e.target.value);
+        setHasUnsavedChanges(true);
+    };
+
+    const handleCvssVectorChange = (e) => {
+        setCvssVector(e.target.value);
+        setHasUnsavedChanges(true);
+    };
+
+    // Save Logic
+    const saveChanges = async (isManual = false) => {
+        if (!hasUnsavedChanges && !isManual) return;
 
         setSaving(true);
         try {
+            let categoryId = owaspCategory;
+            if (isCreateNewCategory && newCategoryName.trim()) {
+                const existing = categories.find(c => c.name.toLowerCase() === newCategoryName.trim().toLowerCase());
+                if (existing) {
+                    categoryId = existing.id;
+                } else {
+                    const catRes = await api.post('/api/owasp/categories/', { name: newCategoryName.trim() });
+                    categoryId = catRes.data.id;
+                    setCategories(prev => [...prev, catRes.data]);
+                }
+                setIsCreateNewCategory(false);
+                setNewCategoryName('');
+                setOwaspCategory(categoryId.toString());
+            }
+
+            const payload = reportId ? {
+                vulnerability: owaspVulnerability || null,
+                tester_title: title,
+                tester_severity: severity.toUpperCase(),
+                tester_description: description,
+                tester_impact: impact,
+                tester_remediation: remediation
+            } : {
+                title: title,
+                severity: severity.toUpperCase(),
+                description: description,
+                impact: impact,
+                remediation: remediation,
+                source_type: sourceType,
+                owasp_category: categoryId || null,
+                owasp_vulnerability: owaspVulnerability || null,
+                variant: owaspVariant || null,
+                cve_id: cveId || null,
+                cvss_score: cvssScore || null,
+                cvss_vector: cvssVector || null,
+                references: references
+            };
+
             if (reportId) {
                 if (isNew) {
                     const res = await api.post(`/api/reports/${reportId}/findings/`, payload);
@@ -192,35 +311,18 @@ const VulnDetail = () => {
         }
     };
 
-    // Call save whenever relevant form fields change, after 2 seconds (debounce)
+    // Auto-save useEffect
     useEffect(() => {
-        // Skip first render and only save if there are unsaved changes
         if (!isInitialMount.current && hasUnsavedChanges) {
-            const timer = setTimeout(() => {
-                saveChanges();
-            }, 2000);
-            return () => {
-                clearTimeout(timer);
-            };
+            const timer = setTimeout(() => { saveChanges(); }, 2000);
+            return () => clearTimeout(timer);
         }
-    }, [title, severity, description, impact, remediation, sourceType, owaspCategory, references, hasUnsavedChanges]);
-
-    // Handle exiting with unsaved changes
-    useEffect(() => {
-        return () => {
-            if (hasUnsavedChanges && !isNew) {
-                // If the user unmounts with unsaved changes (e.g., clicking Back or another route), try to save cleanly
-                saveChanges();
-            }
-        };
-    }, [hasUnsavedChanges, title, severity, description, impact, remediation, id, reportId, isNew]);
+    }, [title, severity, description, impact, remediation, sourceType, owaspCategory, owaspVulnerability, owaspVariant, references, cveId, cvssScore, cvssVector, hasUnsavedChanges]);
 
     const handleManualSave = async () => {
         await saveChanges(true);
         navigate(-1);
     };
-
-
 
     if (loading) {
         return <div style={{ padding: '40px', textAlign: 'center' }}>Loading Finding Editor...</div>;
@@ -228,12 +330,10 @@ const VulnDetail = () => {
 
     return (
         <div className="finding-detail-container" style={{ paddingBottom: '40px' }}>
-            {/* Back Button */}
             <button onClick={() => navigate(-1)} className="btn btn-ghost" style={{ marginBottom: '20px', paddingLeft: 0 }}>
                 <ChevronLeft size={20} style={{ marginRight: '5px' }} /> Back
             </button>
 
-            {/* Header */}
             <div className="glass-panel" style={{
                 padding: '24px',
                 marginBottom: '24px',
@@ -244,34 +344,21 @@ const VulnDetail = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <label className="input-label" style={{ marginBottom: '12px', display: 'block' }}>Tester Severity Level</label>
                         {hasUnsavedChanges && <span style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontStyle: 'italic' }}>Unsaved Changes...</span>}
-                        {saving && <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Auto-saving...</span>}
+                        {saving && <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Saving...</span>}
                     </div>
                     <div style={{ display: 'flex', gap: '10px' }}>
                         {['Low', 'Medium', 'High', 'Critical'].map((level) => {
                             const style = getSeverityStyle(level);
                             const isActive = severity.toLowerCase() === level.toLowerCase();
                             return (
-                                <button
-                                    key={level}
-                                    onClick={() => handleSeverityChange(level)}
-                                    style={{
-                                        flex: 1,
-                                        padding: '8px',
-                                        borderRadius: '8px',
-                                        border: '1px solid',
-                                        borderColor: isActive ? style.text : 'var(--color-border)',
-                                        background: isActive ? style.bg : 'transparent',
-                                        color: isActive ? style.text : 'var(--color-text-muted)',
-                                        cursor: 'pointer',
-                                        fontWeight: '600',
-                                        fontSize: '0.8rem',
-                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '6px'
-                                    }}
-                                >
+                                <button key={level} onClick={() => handleSeverityChange(level)} style={{
+                                    flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid',
+                                    borderColor: isActive ? style.text : 'var(--color-border)',
+                                    background: isActive ? style.bg : 'transparent',
+                                    color: isActive ? style.text : 'var(--color-text-muted)',
+                                    cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem',
+                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                                }}>
                                     {level}
                                 </button>
                             );
@@ -279,126 +366,125 @@ const VulnDetail = () => {
                     </div>
                 </div>
 
-                <div className="input-group" style={{ marginBottom: 0 }}>
-                    <label className="input-label">{reportId ? "Tester Vulnerability Name" : "Name of OWASP VULNERABILITY"}</label>
+                <div className="input-group" style={{ marginBottom: 20 }}>
+                    <label className="input-label">{reportId ? "Tester Vulnerability Name" : "Name of VULNERABILITY"}</label>
                     <input
-                        type="text"
-                        className="input-field"
-                        placeholder="Enter vulnerability name"
-                        value={title}
-                        onChange={handleTitleChange}
-                        style={{ fontSize: '1.5rem', fontWeight: 'bold' }}
+                        type="text" className="input-field" placeholder="Enter vulnerability name"
+                        value={title} onChange={handleTitleChange} style={{ fontSize: '1.5rem', fontWeight: 'bold' }} maxLength={200} required
                     />
                 </div>
 
-                {!reportId && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    <div className="input-group" style={{ marginBottom: 0 }}>
+                        <label className="input-label">Source Type</label>
+                        <select className="input-field" value={sourceType} onChange={handleSourceTypeChange}>
+                            <option value="OWASP">OWASP</option>
+                            <option value="CVE">CVE</option>
+                            <option value="CUSTOM">Custom</option>
+                        </select>
+                    </div>
+
+                    {(sourceType === 'OWASP' || sourceType === 'CUSTOM') && (
                         <div className="input-group" style={{ marginBottom: 0 }}>
-                            <label className="input-label">Source Type</label>
-                            <select
-                                className="input-field"
-                                value={sourceType}
-                                onChange={handleSourceTypeChange}
-                            >
-                                <option value="OWASP">OWASP</option>
-                                <option value="CVE">CVE</option>
-                                <option value="CUSTOM">Custom</option>
-                            </select>
-                        </div>
-                        {sourceType === 'OWASP' && (
-                            <div className="input-group" style={{ marginBottom: 0 }}>
-                                <label className="input-label">OWASP Category</label>
-                                <select
-                                    className="input-field"
-                                    value={owaspCategory}
-                                    onChange={handleCategoryChange}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                <label className="input-label" style={{ marginBottom: 0 }}>OWASP Category</label>
+                                <button
+                                    type="button" onClick={() => setIsCreateNewCategory(!isCreateNewCategory)}
+                                    className="btn btn-ghost" style={{ fontSize: '0.75rem', padding: '2px 8px' }}
                                 >
+                                    {isCreateNewCategory ? "Back to Select" : "+ Add Category"}
+                                </button>
+                            </div>
+                            {isCreateNewCategory ? (
+                                <input
+                                    type="text" className="input-field" placeholder="Enter new category name..."
+                                    value={newCategoryName} onChange={handleNewCategoryNameChange} autoFocus
+                                />
+                            ) : (
+                                <select className="input-field" value={owaspCategory} onChange={handleCategoryChange}>
                                     <option value="">Select Category...</option>
                                     {categories.map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {sourceType === 'OWASP' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+                        <div className="input-group" style={{ marginBottom: 0 }}>
+                            <label className="input-label">OWASP Vulnerability</label>
+                            <select className="input-field" value={owaspVulnerability} onChange={handleVulnerabilityChange} disabled={!owaspCategory}>
+                                <option value="">Select Vulnerability...</option>
+                                {owaspVulnerabilities.map(v => (
+                                    <option key={v.id} value={v.id}>{v.title || v.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        {variants.length > 0 && (
+                            <div className="input-group" style={{ marginBottom: 0 }}>
+                                <label className="input-label">Vulnerability Variant</label>
+                                <select className="input-field" value={owaspVariant} onChange={handleVariantChange}>
+                                    <option value="">Select Variant...</option>
+                                    {variants.map(v => (
+                                        <option key={v.id} value={v.id}>{v.name}</option>
                                     ))}
                                 </select>
                             </div>
                         )}
                     </div>
                 )}
+
+                {sourceType === 'CVE' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginTop: '20px' }}>
+                        <div className="input-group" style={{ marginBottom: 0 }}>
+                            <label className="input-label">CVE ID</label>
+                            <input type="text" className="input-field" placeholder="CVE-YYYY-NNNNN" value={cveId} onChange={handleCveIdChange} />
+                        </div>
+                        <div className="input-group" style={{ marginBottom: 0 }}>
+                            <label className="input-label">CVSS Score</label>
+                            <input type="number" step="0.1" min="0" max="10" className="input-field" placeholder="0.0" value={cvssScore} onChange={handleCvssScoreChange} />
+                        </div>
+                        <div className="input-group" style={{ marginBottom: 0 }}>
+                            <label className="input-label">CVSS Vector</label>
+                            <input type="text" className="input-field" placeholder="CVSS:..." value={cvssVector} onChange={handleCvssVectorChange} />
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* Description Field */}
             <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>Tester Description</label>
-                </div>
-                <textarea
-                    className="input-field"
-                    style={{ width: '100%', minHeight: '120px', resize: 'vertical' }}
-                    value={description}
-                    onChange={(e) => handleEdit('description', e.target.value)}
-                    placeholder="Enter customized tester description for this finding..."
-                />
+                <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>Description</label>
+                <textarea className="input-field" style={{ width: '100%', minHeight: '120px', marginTop: '10px' }} value={description} onChange={(e) => handleEdit('description', e.target.value)} required />
             </div>
 
-            {/* Impact Field */}
             <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>Tester Impact</label>
-                </div>
-                <textarea
-                    className="input-field"
-                    style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
-                    value={impact}
-                    onChange={(e) => handleEdit('impact', e.target.value)}
-                    placeholder="Enter customized tester impact..."
-                />
+                <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>Impact</label>
+                <textarea className="input-field" style={{ width: '100%', minHeight: '100px', marginTop: '10px' }} value={impact} onChange={(e) => handleEdit('impact', e.target.value)} required />
             </div>
 
-            {/* Remediation Field */}
             <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>Tester Remediation</label>
-                </div>
-                <textarea
-                    className="input-field"
-                    style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
-                    value={remediation}
-                    onChange={(e) => handleEdit('remediation', e.target.value)}
-                    placeholder="Enter customized tester remediation..."
-                />
+                <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>Remediation</label>
+                <textarea className="input-field" style={{ width: '100%', minHeight: '100px', marginTop: '10px' }} value={remediation} onChange={(e) => handleEdit('remediation', e.target.value)} required />
             </div>
 
-            {/* References Field */}
             {!reportId && (
                 <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                        <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>References</label>
-                    </div>
-                    <textarea
-                        className="input-field"
-                        style={{ width: '100%', minHeight: '80px', resize: 'vertical' }}
-                        value={references}
-                        onChange={handleReferencesChange}
-                        placeholder="Enter vulnerability references..."
-                    />
+                    <label className="input-label" style={{ fontSize: '1.1rem', color: 'var(--color-text-main)' }}>References</label>
+                    <textarea className="input-field" style={{ width: '100%', minHeight: '80px', marginTop: '10px' }} value={references} onChange={handleReferencesChange} />
                 </div>
             )}
 
-            {/* Evidence Section */}
-            {reportId && (
-                <EvidenceSection findingId={id} isNew={isNew} />
-            )}
+            {reportId && <EvidenceSection findingId={id} isNew={isNew} />}
 
             <div style={{ textAlign: 'right', marginTop: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                    {hasUnsavedChanges ? 'You have unsaved changes' : 'All changes saved automatically'}
+                    {hasUnsavedChanges ? 'You have unsaved changes' : 'All changes saved auto'}
                 </span>
-                <button
-                    className={`btn btn-primary ${saving ? 'saving' : ''}`}
-                    onClick={handleManualSave}
-                    disabled={saving && !hasUnsavedChanges}
-                    style={{ padding: '12px 30px', fontSize: '1rem' }}
-                >
-                    {!saving && <Save size={20} style={{ marginRight: '8px' }} />}
-                    {saving ? 'Saving...' : 'Save & Exit'}
+                <button className="btn btn-primary" onClick={handleManualSave} disabled={saving && !hasUnsavedChanges} style={{ padding: '12px 30px' }}>
+                    <Save size={20} style={{ marginRight: '8px' }} /> {saving ? 'Saving...' : 'Save & Exit'}
                 </button>
             </div>
         </div>

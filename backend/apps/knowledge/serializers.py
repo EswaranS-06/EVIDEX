@@ -254,6 +254,9 @@ class ReportFindingSerializer(serializers.ModelSerializer):
     vulnerability_name = serializers.ReadOnlyField(source="vulnerability.title")
     category_name = serializers.ReadOnlyField(source="vulnerability.owasp_category.name")
     source_type = serializers.ReadOnlyField(source="vulnerability.source_type")
+    cve_id = serializers.ReadOnlyField(source="vulnerability.cve_id")
+    cvss_score = serializers.ReadOnlyField(source="vulnerability.cvss_score")
+    cvss_vector = serializers.ReadOnlyField(source="vulnerability.cvss_vector")
     updated_by_name = serializers.ReadOnlyField(source="updated_by.username")
 
     # Nested evidences (needed for API + PDF)
@@ -284,6 +287,9 @@ class ReportFindingSerializer(serializers.ModelSerializer):
             "vulnerability_name",
             "category_name",
             "source_type",
+            "cve_id",
+            "cvss_score",
+            "cvss_vector",
 
             # Evidence
             "evidences",

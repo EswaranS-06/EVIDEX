@@ -221,6 +221,7 @@ class ReportFinding(models.Model):
     STATUS_CHOICES = [
         ("Pending", "Pending"),
         ("Patched", "Patched"),
+        ("False Positive", "False Positive"),
     ]
     status = models.CharField(
         max_length=20,
