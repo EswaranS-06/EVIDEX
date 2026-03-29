@@ -26,6 +26,7 @@ const ReportPreview = () => {
     // Password Modal State
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [exportPassword, setExportPassword] = useState('');
+    const [exportFormat, setExportFormat] = useState('pdf');
 
     // Email / Compose Modal State
     const [showEmailModal, setShowEmailModal] = useState(false);
@@ -33,6 +34,8 @@ const ReportPreview = () => {
     const [emailForm, setEmailForm] = useState({
         email: '',
         cc: '',
+        attachPDF: true,
+        attachDOCX: false,
         password: '',
         subject: 'Security Assessment Report',
         body: 'Hi,\n\nPlease find attached the security assessment report.\n\nRegards,\nEVIDEX Team'
@@ -111,8 +114,11 @@ const ReportPreview = () => {
         try {
             setExporting(true);
             setShowPasswordModal(false);
+            const isPdf = exportFormat === 'pdf';
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`${pdfApiUrl}?download=1`, {
+            const apiUrl = isPdf ? `${pdfApiUrl}?download=1` : `${API_BASE_URL}/api/reports/${id}/docx/`;
+            
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -126,7 +132,7 @@ const ReportPreview = () => {
             }
 
             // Extract filename from Content-Disposition header
-            let filename = 'VAPT_Report.pdf';
+            let filename = `VAPT_Report.${exportFormat}`;
             const disposition = response.headers.get('Content-Disposition');
             if (disposition) {
                 const match = disposition.match(/filename="?([^";\n]+)"?/);
@@ -144,8 +150,8 @@ const ReportPreview = () => {
                     const handle = await window.showSaveFilePicker({
                         suggestedName: filename,
                         types: [{
-                            description: 'PDF Document',
-                            accept: { 'application/pdf': ['.pdf'] },
+                            description: isPdf ? 'PDF Document' : 'Word Document',
+                            accept: isPdf ? { 'application/pdf': ['.pdf'] } : { 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] },
                         }],
                     });
                     const writable = await handle.createWritable();
@@ -186,6 +192,8 @@ const ReportPreview = () => {
                 report_id: id,
                 email: emailForm.email,
                 cc: emailForm.cc,
+                attach_pdf: emailForm.attachPDF,
+                attach_docx: emailForm.attachDOCX,
                 password: emailForm.password,
                 subject: emailForm.subject,
                 body: emailForm.body
@@ -210,6 +218,7 @@ const ReportPreview = () => {
             // reset form after success
             setEmailForm({
                 email: '', cc: '', password: '',
+                attachPDF: true, attachDOCX: false,
                 subject: 'Security Assessment Report',
                 body: 'Hi,\n\nPlease find attached the security assessment report.\n\nRegards,\nEVIDEX Team'
             });
@@ -372,7 +381,7 @@ const ReportPreview = () => {
                         ) : (
                             <Download size={18} />
                         )}
-                        {exporting ? 'Exporting...' : 'Export PDF'}
+                        {exporting ? 'Exporting...' : 'Export Report'}
                     </button>
                 </div>
             </div>
@@ -479,17 +488,51 @@ const ReportPreview = () => {
                 )}
             </div>
 
-            {/* Password Modal */}
+            {/* Export Modal */}
             {showPasswordModal && (
                 <div style={{
                     position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.8)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)'
                 }}>
                     <div className="glass-panel animate-fade-in" style={{ padding: '30px', width: '400px', maxWidth: '90%' }}>
-                        <h3 style={{ marginBottom: '15px' }}>Export to PDF</h3>
-                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
-                            Optional: Enter a password to encrypt the PDF. Leave blank to export without a password.
-                        </p>
+                        <h3 style={{ marginBottom: '15px' }}>Export Report</h3>
+                        
+                        <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+                            <div 
+                                onClick={() => setExportFormat('pdf')}
+                                style={{
+                                    flex: 1, padding: '12px', borderRadius: '8px', cursor: 'pointer',
+                                    textAlign: 'center', border: `2px solid ${exportFormat === 'pdf' ? 'var(--color-primary)' : 'var(--glass-border)'}`,
+                                    background: exportFormat === 'pdf' ? 'rgba(0, 240, 255, 0.1)' : 'transparent',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <span style={{ fontWeight: '700', color: exportFormat === 'pdf' ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>PDF</span>
+                            </div>
+                            <div 
+                                onClick={() => setExportFormat('docx')}
+                                style={{
+                                    flex: 1, padding: '12px', borderRadius: '8px', cursor: 'pointer',
+                                    textAlign: 'center', border: `2px solid ${exportFormat === 'docx' ? 'var(--color-primary)' : 'var(--glass-border)'}`,
+                                    background: exportFormat === 'docx' ? 'rgba(0, 240, 255, 0.1)' : 'transparent',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <span style={{ fontWeight: '700', color: exportFormat === 'docx' ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>WORD</span>
+                            </div>
+                        </div>
+
+                        {exportFormat === 'pdf' && (
+                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+                                Optional: Enter a password to encrypt the PDF. Leave blank for no password.
+                            </p>
+                        )}
+                        {exportFormat === 'docx' && (
+                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+                                Optional: Enter a password to encrypt the DOCX. Leave blank for no password.
+                            </p>
+                        )}
+
                         <input
                             type="password"
                             className="input-field"
@@ -499,9 +542,10 @@ const ReportPreview = () => {
                             style={{ marginBottom: '20px' }}
                             autoFocus
                         />
+
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <button className="btn btn-primary" onClick={executeExport} style={{ flex: 1 }}>
-                                Confirm Export
+                                Confirm Download
                             </button>
                             <button className="btn btn-ghost" onClick={() => setShowPasswordModal(false)} style={{ flex: 1 }}>
                                 Cancel
@@ -555,14 +599,39 @@ const ReportPreview = () => {
                             />
                         </div>
 
+                        <div className="input-group" style={{ marginBottom: '20px' }}>
+                            <label className="input-label" style={{ marginBottom: '12px' }}>Attachment Format</label>
+                            <div style={{ display: 'flex', gap: '20px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--color-text-main)' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={emailForm.attachPDF} 
+                                        onChange={(e) => setEmailForm({ ...emailForm, attachPDF: e.target.checked })}
+                                        style={{ accentColor: 'var(--color-primary)', width: '18px', height: '18px' }}
+                                    />
+                                    PDF Report
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--color-text-main)' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={emailForm.attachDOCX} 
+                                        onChange={(e) => setEmailForm({ ...emailForm, attachDOCX: e.target.checked })}
+                                        style={{ accentColor: 'var(--color-primary)', width: '18px', height: '18px' }}
+                                    />
+                                    Word (DOCX)
+                                </label>
+                            </div>
+                        </div>
+
                         <div className="input-group" style={{ marginBottom: '25px' }}>
-                            <label className="input-label">PDF Password (Optional)</label>
+                            <label className="input-label">Password (Optional)</label>
                             <input
                                 type="password"
                                 className="input-field"
-                                placeholder="Encrypt attached PDF"
+                                placeholder="Encrypt attached files"
                                 value={emailForm.password}
                                 onChange={(e) => setEmailForm({ ...emailForm, password: e.target.value })}
+                                disabled={!emailForm.attachPDF && !emailForm.attachDOCX}
                             />
                         </div>
 

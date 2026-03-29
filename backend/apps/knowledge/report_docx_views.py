@@ -5,23 +5,27 @@ import tempfile
 
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
 
 
 class ReportDOCXView(APIView):
-
+    # authentication_classes = [JWTAuthentication]     <------- Enable JWT auth later
+    # permission_classes = [IsAuthenticated]    <------- Enable JWT auth later
+    # Temporarily disable JWT authentication (allow anonymous access)
     authentication_classes = []
     permission_classes = [AllowAny]
 
     @extend_schema(
         operation_id="download_report_docx",
         summary="Export Report as DOCX",
-        description="Generates and exports the security assessment report as a DOCX file.",
+        description="Generates and exports the security assessment report as a DOCX file, optionally encrypted with a password.",
         tags=["Reports"],
+        request=OpenApiTypes.OBJECT,
         responses={200: OpenApiTypes.BINARY},
     )
-    def get(self, request, report_id):
+    def post(self, request, report_id):
 
         try:
             report = Report.objects.get(id=report_id)
@@ -49,10 +53,24 @@ class ReportDOCXView(APIView):
 
         build_docx(tmp.name, data, report.id)
 
-        with open(tmp.name, "rb") as f:
-            response = HttpResponse(
-                f.read(),
-                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
-            response["Content-Disposition"] = f'attachment; filename="VAPT_{report.client_name}.docx"'
-            return response
+        password = request.data.get("password", "").strip()
+
+        if password:
+            import io
+            from msoffcrypto.format.ooxml import OOXMLFile
+            
+            with open(tmp.name, "rb") as f:
+                ooxml_file = OOXMLFile(f)
+                encrypted_io = io.BytesIO()
+                ooxml_file.encrypt(password, encrypted_io)
+                docx_bytes = encrypted_io.getvalue()
+        else:
+            with open(tmp.name, "rb") as f:
+                docx_bytes = f.read()
+
+        response = HttpResponse(
+            docx_bytes,
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+        response["Content-Disposition"] = f'attachment; filename="VAPT_{report.client_name}.docx"'
+        return response

@@ -2,6 +2,7 @@ from django.http import HttpResponse, Http404, JsonResponse
 from django.core.mail import EmailMessage
 from apps.knowledge.models import Report
 from .pdf_reportlab.build import build_report
+from .docx_builder.build_docx import build_docx
 import tempfile
 import io
 
@@ -154,28 +155,8 @@ class SendReportEmailView(APIView):
             "test_location": report.test_location or "",
         }
 
-        # Step A: Generate raw PDF to a temp file
-        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-        build_report(tmp.name, data, report.id)
-
-        # Step B & C: Check password and encrypt if necessary
-        if password:
-            from PyPDF2 import PdfReader, PdfWriter
-            
-            reader = PdfReader(tmp.name)
-            writer = PdfWriter()
-            
-            for page in reader.pages:
-                writer.add_page(page)
-                
-            writer.encrypt(password)
-            
-            output_buffer = io.BytesIO()
-            writer.write(output_buffer)
-            pdf_bytes = output_buffer.getvalue()
-        else:
-            with open(tmp.name, "rb") as f:
-                pdf_bytes = f.read()
+        attach_pdf = request.data.get("attach_pdf", True)
+        attach_docx = request.data.get("attach_docx", False)
 
         cc = request.data.get("cc", "").strip()
         cc_list = [c.strip() for c in cc.split(",") if c.strip()] if cc else []
@@ -188,7 +169,55 @@ class SendReportEmailView(APIView):
                 to=[email],
                 cc=cc_list,
             )
-            email_msg.attach(f"VAPT_{report.client_name}.pdf", pdf_bytes, "application/pdf")
+
+            # --- PDF Attachment ---
+            if attach_pdf:
+                # Step A: Generate raw PDF to a temp file
+                tmp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+                build_report(tmp_pdf.name, data, report.id)
+
+                if password:
+                    from PyPDF2 import PdfReader, PdfWriter
+                    reader = PdfReader(tmp_pdf.name)
+                    writer = PdfWriter()
+                    for page in reader.pages:
+                        writer.add_page(page)
+                    writer.encrypt(password)
+                    output_buffer = io.BytesIO()
+                    writer.write(output_buffer)
+                    pdf_bytes = output_buffer.getvalue()
+                else:
+                    with open(tmp_pdf.name, "rb") as f:
+                        pdf_bytes = f.read()
+                
+                email_msg.attach(f"VAPT_{report.client_name}.pdf", pdf_bytes, "application/pdf")
+
+            # --- DOCX Attachment ---
+            if attach_docx:
+                tmp_docx = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+                # Unified DOCX data needs
+                docx_data = data.copy()
+                docx_data["enterprise"] = report.client_name # Ensure DOCX uses client_name for enterprise field
+                build_docx(tmp_docx.name, docx_data, report.id)
+
+                if password:
+                    import io
+                    from msoffcrypto.format.ooxml import OOXMLFile
+                    
+                    with open(tmp_docx.name, "rb") as f:
+                        ooxml_file = OOXMLFile(f)
+                        encrypted_io = io.BytesIO()
+                        ooxml_file.encrypt(password, encrypted_io)
+                        docx_bytes = encrypted_io.getvalue()
+                else:
+                    with open(tmp_docx.name, "rb") as f:
+                        docx_bytes = f.read()
+
+                email_msg.attach(f"VAPT_{report.client_name}.docx", docx_bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+            if not attach_pdf and not attach_docx:
+                return JsonResponse({"status": "error", "message": "At least one attachment (PDF or DOCX) must be selected."}, status=400)
+
             email_msg.send(fail_silently=False)
             
             # Create success notification

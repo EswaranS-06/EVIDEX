@@ -3,7 +3,7 @@ name = "backend"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "dj-rest-auth>=5.0.2",
     "django>=5.2.9",
@@ -14,10 +14,13 @@ dependencies = [
     "djongo>=1.2.31",
     "drf-spectacular>=0.29.0",
     "drf-yasg>=1.21.11",
+    "matplotlib>=3.10.8",
     "mongoengine>=0.29.1",
+    "msoffcrypto-tool>=6.0.0",
     "pillow>=12.0.0",
     "psycopg2-binary>=2.9.11",
     "pymongo>=4.15.5",
+    "pypdf2==3.0.1",
     "python-docx>=1.2.0",
     "python-dotenv>=1.2.1",
     "pyyaml>=6.0.3",
