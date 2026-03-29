@@ -64,6 +64,7 @@ const ReportDetails = () => {
             });
             setFindings([]);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, isNew]);
 
     const getSeverityBg = (sev) => {
@@ -141,7 +142,7 @@ const ReportDetails = () => {
 
     // OWASP Data State
     const [owaspCategories, setOwaspCategories] = useState([]);
-    const [selectedVulns, setSelectedVulns] = useState(new Set());
+    const [selectedVulns] = useState(new Set());
     const [expandedCategories, setExpandedCategories] = useState(new Set());
 
     useEffect(() => {
@@ -344,6 +345,8 @@ const ReportDetails = () => {
                                         value={report.client_name || ''}
                                         onChange={(e) => setReport({ ...report, client_name: e.target.value })}
                                         style={{ fontSize: '1.25rem', fontWeight: 'bold' }}
+                                        maxLength={200}
+                                        required
                                     />
                                 </div>
 
@@ -355,6 +358,8 @@ const ReportDetails = () => {
                                         className="input-field"
                                         value={report.application_name || ''}
                                         onChange={(e) => setReport({ ...report, application_name: e.target.value })}
+                                        maxLength={200}
+                                        required
                                     />
                                 </div>
 
@@ -367,6 +372,8 @@ const ReportDetails = () => {
                                         value={report.target || ''}
                                         onChange={(e) => setReport({ ...report, target: e.target.value })}
                                         style={{ minHeight: '80px', paddingTop: '12px' }}
+                                        maxLength={1000}
+                                        required
                                     />
                                 </div>
 
@@ -381,6 +388,7 @@ const ReportDetails = () => {
                                             value={report.start_date || ''}
                                             onChange={(e) => setReport({ ...report, start_date: e.target.value })}
                                             style={{ paddingLeft: '40px' }}
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -394,6 +402,7 @@ const ReportDetails = () => {
                                             value={report.end_date || ''}
                                             onChange={(e) => setReport({ ...report, end_date: e.target.value })}
                                             style={{ paddingLeft: '40px' }}
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -417,6 +426,7 @@ const ReportDetails = () => {
                                         className="input-field"
                                         value={report.report_type || ''}
                                         onChange={(e) => setReport({ ...report, report_type: e.target.value })}
+                                        maxLength={100}
                                     />
                                 </div>
 
@@ -444,6 +454,8 @@ const ReportDetails = () => {
                                         value={report.tools_used || ''}
                                         onChange={(e) => setReport({ ...report, tools_used: e.target.value })}
                                         style={{ minHeight: '80px', paddingTop: '12px' }}
+                                        maxLength={1000}
+                                        required
                                     />
                                 </div>
 
@@ -455,6 +467,8 @@ const ReportDetails = () => {
                                         className="input-field"
                                         value={report.prepared_by || ''}
                                         onChange={(e) => setReport({ ...report, prepared_by: e.target.value })}
+                                        maxLength={150}
+                                        required
                                     />
                                 </div>
                                 <div className="input-group">
@@ -464,6 +478,7 @@ const ReportDetails = () => {
                                         className="input-field"
                                         value={report.reviewed_by || ''}
                                         onChange={(e) => setReport({ ...report, reviewed_by: e.target.value })}
+                                        maxLength={150}
                                     />
                                 </div>
                                 <div className="input-group">
@@ -473,6 +488,7 @@ const ReportDetails = () => {
                                         className="input-field"
                                         value={report.approved_by || ''}
                                         onChange={(e) => setReport({ ...report, approved_by: e.target.value })}
+                                        maxLength={150}
                                     />
                                 </div>
                             </div>

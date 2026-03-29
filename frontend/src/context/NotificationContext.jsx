@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from './AuthContext';
@@ -25,7 +26,8 @@ export const NotificationProvider = ({ children }) => {
     }, [user]);
 
     useEffect(() => {
-        fetchNotifications();
+        const initFetch = async () => { await fetchNotifications(); };
+        initFetch();
     }, [fetchNotifications]);
 
     const markAsRead = async (id) => {

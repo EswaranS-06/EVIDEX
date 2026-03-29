@@ -151,7 +151,9 @@ const EvidenceSection = ({ findingId, isNew }) => {
     };
 
     useEffect(() => {
-        loadEvidence();
+        const initLoad = async () => { await loadEvidence(); };
+        initLoad();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [findingId, isNew]);
 
     const handleFileChange = (e) => {

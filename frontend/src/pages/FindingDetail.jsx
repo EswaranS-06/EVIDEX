@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import EvidenceSection from '../components/EvidenceSection';
@@ -9,7 +9,7 @@ import { useModal } from '../context/ModalContext';
 const FindingDetail = () => {
     const { reportId, id } = useParams();
     const navigate = useNavigate();
-    const { alert, confirm } = useModal();
+    const { alert } = useModal();
     const isNew = id === 'new';
 
     // State
@@ -56,14 +56,7 @@ const FindingDetail = () => {
 
     const currentStyle = getSeverityStyle(finding?.final_severity);
 
-    // Helper to get full URL for images/files
-    const getFullImageUrl = (path) => {
-        if (!path) return '';
-        if (typeof path !== 'string') return '';
-        if (path.startsWith('http')) return path;
-        const baseUrl = import.meta.env.VITE_API_URL || '';
-        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-    };
+    // URL helper removed since it's unused
 
 
 
@@ -123,7 +116,7 @@ const FindingDetail = () => {
                                 {(finding.final_severity || 'MEDIUM').toUpperCase()}
                             </span>
                         </h1>
-                        <div style={{ display: 'flex', gap: '15px', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                        <div style={{ display: 'flex', gap: '15px', fontSize: '0.85rem', color: 'var(--color-text-muted)', flexWrap: 'wrap' }}>
                             <span style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '4px' }}>
                                 Source: <strong style={{ color: 'var(--color-text-main)' }}>{finding.source_type}</strong>
                             </span>
@@ -132,11 +125,24 @@ const FindingDetail = () => {
                                     Category: <strong style={{ color: 'var(--color-primary)' }}>{finding.category_name}</strong>
                                 </span>
                             )}
-                            {finding.vulnerability_name && finding.vulnerability_name !== finding.final_title && (
+                            {finding.cve_id && (
                                 <span style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '4px' }}>
-                                    Base Vuln: <strong style={{ color: 'var(--color-text-main)' }}>{finding.vulnerability_name}</strong>
+                                    CVE: <strong style={{ color: 'var(--color-secondary)' }}>{finding.cve_id}</strong>
                                 </span>
                             )}
+                            {finding.cvss_score && (
+                                <span style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '4px' }}>
+                                    CVSS: <strong style={{ color: 'var(--color-error)' }}>{finding.cvss_score}</strong>
+                                </span>
+                            )}
+                            {finding.cvss_vector && (
+                                <span style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem' }}>
+                                    Vector: <span style={{ opacity: 0.8 }}>{finding.cvss_vector}</span>
+                                </span>
+                            )}
+                        </div>
+                        <div style={{ marginTop: '10px', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                            Last updated {finding.updated_at ? new Date(finding.updated_at).toLocaleString() : 'N/A'} {finding.updated_by_name && `by ${finding.updated_by_name}`}
                         </div>
                     </div>
 
@@ -146,14 +152,10 @@ const FindingDetail = () => {
                             className="input-field"
                             value={status}
                             onChange={(e) => handleSaveStatus(e.target.value)}
-                            style={{
-                                borderColor: status === 'Patched' ? 'var(--color-primary)' : 'var(--color-warning)',
-                                color: status === 'Patched' ? 'var(--color-primary)' : 'var(--color-warning)',
-                                fontWeight: 'bold'
-                            }}
                         >
                             <option value="Pending">Pending</option>
                             <option value="Patched">Patched</option>
+                            <option value="False Positive">False Positive</option>
                         </select>
                         {saving && <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '4px', textAlign: 'right' }}>Saving...</div>}
                     </div>

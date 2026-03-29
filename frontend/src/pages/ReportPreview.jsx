@@ -94,6 +94,7 @@ const ReportPreview = () => {
         return () => {
             cancelled = true;
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const onDocumentLoadSuccess = useCallback(({ numPages }) => {

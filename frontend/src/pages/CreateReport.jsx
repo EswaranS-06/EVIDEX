@@ -50,6 +50,8 @@ const CreateReport = () => {
     const [vulnSearchTerm, setVulnSearchTerm] = useState('');
     const [expandedCategories, setExpandedCategories] = useState(new Set());
 
+
+
     useEffect(() => {
         const fetchOrgs = async () => {
             try {
@@ -354,6 +356,8 @@ const CreateReport = () => {
                                 value={formData.newOrganizationName}
                                 onChange={(e) => setFormData({ ...formData, newOrganizationName: e.target.value })}
                                 style={{ borderColor: formData.newOrganizationName.length > 200 ? 'var(--color-error)' : undefined }}
+                                maxLength={200}
+                                required
                                 autoFocus
                             />
                             <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.newOrganizationName.length > 200 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
@@ -396,6 +400,8 @@ const CreateReport = () => {
                     value={formData.applicationName}
                     onChange={(e) => setFormData({ ...formData, applicationName: e.target.value })}
                     style={{ borderColor: formData.applicationName.length > 200 ? 'var(--color-error)' : undefined }}
+                    maxLength={200}
+                    required
                 />
                 <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.applicationName.length > 200 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
                     {formData.applicationName.length}/200
@@ -437,6 +443,8 @@ const CreateReport = () => {
                                         setFormData({ ...formData, targets: newTargets });
                                     }}
                                     style={{ paddingLeft: '40px' }}
+                                    maxLength={500}
+                                    required
                                 />
                             </div>
                             {formData.targets.length > 1 && (
@@ -492,6 +500,8 @@ const CreateReport = () => {
                                         setFormData({ ...formData, toolsUsed: newTools });
                                     }}
                                     style={{ paddingLeft: '40px' }}
+                                    maxLength={100}
+                                    required
                                 />
                             </div>
                             {formData.toolsUsed.length > 1 && (
@@ -544,6 +554,7 @@ const CreateReport = () => {
                         value={formData.startDate}
                         max={new Date().toISOString().split('T')[0]}
                         onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                        required
                     />
                 </div>
                 <div className="input-group">
@@ -554,6 +565,7 @@ const CreateReport = () => {
                         value={formData.endDate}
                         max={new Date().toISOString().split('T')[0]}
                         onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        required
                     />
                 </div>
             </div>
@@ -567,6 +579,8 @@ const CreateReport = () => {
                         value={formData.preparedBy}
                         onChange={(e) => setFormData({ ...formData, preparedBy: e.target.value })}
                         style={{ borderColor: formData.preparedBy.length > 150 ? 'var(--color-error)' : undefined }}
+                        maxLength={150}
+                        required
                     />
                     <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.preparedBy.length > 150 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
                         {formData.preparedBy.length}/150
@@ -581,25 +595,37 @@ const CreateReport = () => {
                         value={formData.reviewedBy}
                         onChange={(e) => setFormData({ ...formData, reviewedBy: e.target.value })}
                         style={{ borderColor: formData.reviewedBy.length > 150 ? 'var(--color-error)' : undefined }}
+                        maxLength={150}
                     />
                     <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.reviewedBy.length > 150 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
                         {formData.reviewedBy.length}/150
                     </div>
                 </div>
-            </div>
-
-            <div className="input-group">
-                <label className="input-label">Approved By</label>
-                <input
-                    type="text"
-                    className="input-field"
-                    placeholder="Name of approver"
-                    value={formData.approvedBy}
-                    onChange={(e) => setFormData({ ...formData, approvedBy: e.target.value })}
-                    style={{ borderColor: formData.approvedBy.length > 150 ? 'var(--color-error)' : undefined }}
-                />
-                <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.approvedBy.length > 150 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
-                    {formData.approvedBy.length}/150
+                <div className="input-group">
+                    <label className="input-label">Test Performed</label>
+                    <select
+                        className="input-field"
+                        value={formData.testLocation}
+                        onChange={(e) => setFormData({ ...formData, testLocation: e.target.value })}
+                    >
+                        <option value="Off-site">Off-site</option>
+                        <option value="On-site">On-site</option>
+                    </select>
+                </div>
+                <div className="input-group">
+                    <label className="input-label">Approved By</label>
+                    <input
+                        type="text"
+                        className="input-field"
+                        placeholder="Name of approver"
+                        value={formData.approvedBy}
+                        onChange={(e) => setFormData({ ...formData, approvedBy: e.target.value })}
+                        style={{ borderColor: formData.approvedBy.length > 150 ? 'var(--color-error)' : undefined }}
+                        maxLength={150}
+                    />
+                    <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.approvedBy.length > 150 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
+                        {formData.approvedBy.length}/150
+                    </div>
                 </div>
             </div>
 
