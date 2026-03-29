@@ -39,8 +39,8 @@ const CreateReport = () => {
         targets: [''], // Array of strings for multiple URLs
         toolsUsed: [''], // Array of strings for multiple tools
         testLocation: 'Off-site', // On-site, Off-site
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: '',
+        startDate: '',
+        endDate: new Date().toISOString().split('T')[0],
         preparedBy: 'Pentester',
         reviewedBy: '',
         approvedBy: '',
@@ -353,8 +353,12 @@ const CreateReport = () => {
                                 placeholder="Enter new organization name"
                                 value={formData.newOrganizationName}
                                 onChange={(e) => setFormData({ ...formData, newOrganizationName: e.target.value })}
+                                style={{ borderColor: formData.newOrganizationName.length > 200 ? 'var(--color-error)' : undefined }}
                                 autoFocus
                             />
+                            <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.newOrganizationName.length > 200 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
+                                {formData.newOrganizationName.length}/200
+                            </div>
                         </div>
                     )}
                 </div>
@@ -368,7 +372,7 @@ const CreateReport = () => {
                     onClick={nextStep}
                     className="btn btn-primary"
                     style={{ padding: '12px 32px' }}
-                    disabled={isCreateNewOrg ? !formData.newOrganizationName.trim() : !formData.organizationId}
+                    disabled={isCreateNewOrg ? (!formData.newOrganizationName.trim() || formData.newOrganizationName.length > 200) : !formData.organizationId}
                 >
                     Next <ChevronRight size={18} style={{ marginLeft: '8px' }} />
                 </button>
@@ -391,17 +395,27 @@ const CreateReport = () => {
                     placeholder="e.g. Finance Portal"
                     value={formData.applicationName}
                     onChange={(e) => setFormData({ ...formData, applicationName: e.target.value })}
+                    style={{ borderColor: formData.applicationName.length > 200 ? 'var(--color-error)' : undefined }}
                 />
+                <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.applicationName.length > 200 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
+                    {formData.applicationName.length}/200
+                </div>
             </div>
 
             <div className="input-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <label className="input-label" style={{ margin: 0 }}>Target URLs / IP Ranges</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <label className="input-label" style={{ margin: 0 }}>Target URLs / IP Ranges</label>
+                        <span style={{ fontSize: '0.75rem', color: formData.targets.length >= 50 ? 'var(--color-error)' : 'var(--color-text-muted)' }}>
+                            ({formData.targets.length}/50)
+                        </span>
+                    </div>
                     <button
                         type="button"
                         onClick={() => setFormData({ ...formData, targets: [...formData.targets, ''] })}
                         className="btn btn-ghost"
-                        style={{ padding: '4px 12px', fontSize: '0.8rem', color: 'var(--color-primary)' }}
+                        style={{ padding: '4px 12px', fontSize: '0.8rem', color: formData.targets.length >= 50 ? 'var(--color-text-muted)' : 'var(--color-primary)' }}
+                        disabled={formData.targets.length >= 50}
                     >
                         <Plus size={14} style={{ marginRight: '4px' }} /> Add URL
                     </button>
@@ -445,12 +459,18 @@ const CreateReport = () => {
 
             <div className="input-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <label className="input-label" style={{ margin: 0 }}>Tools used for testing</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <label className="input-label" style={{ margin: 0 }}>Tools used for testing</label>
+                        <span style={{ fontSize: '0.75rem', color: formData.toolsUsed.length >= 50 ? 'var(--color-error)' : 'var(--color-text-muted)' }}>
+                            ({formData.toolsUsed.length}/50)
+                        </span>
+                    </div>
                     <button
                         type="button"
                         onClick={() => setFormData({ ...formData, toolsUsed: [...formData.toolsUsed, ''] })}
                         className="btn btn-ghost"
-                        style={{ padding: '4px 12px', fontSize: '0.8rem', color: 'var(--color-primary)' }}
+                        style={{ padding: '4px 12px', fontSize: '0.8rem', color: formData.toolsUsed.length >= 50 ? 'var(--color-text-muted)' : 'var(--color-primary)' }}
+                        disabled={formData.toolsUsed.length >= 50}
                     >
                         <Plus size={14} style={{ marginRight: '4px' }} /> Add Tool
                     </button>
@@ -500,7 +520,7 @@ const CreateReport = () => {
                     onClick={nextStep}
                     className="btn btn-primary"
                     style={{ padding: '12px 32px' }}
-                    disabled={!formData.applicationName.trim()}
+                    disabled={!formData.applicationName.trim() || formData.applicationName.length > 200}
                 >
                     Next <ChevronRight size={18} style={{ marginLeft: '8px' }} />
                 </button>
@@ -522,6 +542,7 @@ const CreateReport = () => {
                         type="date"
                         className="input-field"
                         value={formData.startDate}
+                        max={new Date().toISOString().split('T')[0]}
                         onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                     />
                 </div>
@@ -531,6 +552,7 @@ const CreateReport = () => {
                         type="date"
                         className="input-field"
                         value={formData.endDate}
+                        max={new Date().toISOString().split('T')[0]}
                         onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                     />
                 </div>
@@ -544,7 +566,11 @@ const CreateReport = () => {
                         className="input-field"
                         value={formData.preparedBy}
                         onChange={(e) => setFormData({ ...formData, preparedBy: e.target.value })}
+                        style={{ borderColor: formData.preparedBy.length > 150 ? 'var(--color-error)' : undefined }}
                     />
+                    <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.preparedBy.length > 150 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
+                        {formData.preparedBy.length}/150
+                    </div>
                 </div>
                 <div className="input-group">
                     <label className="input-label">Reviewed By</label>
@@ -554,7 +580,11 @@ const CreateReport = () => {
                         placeholder="Name of reviewer"
                         value={formData.reviewedBy}
                         onChange={(e) => setFormData({ ...formData, reviewedBy: e.target.value })}
+                        style={{ borderColor: formData.reviewedBy.length > 150 ? 'var(--color-error)' : undefined }}
                     />
+                    <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.reviewedBy.length > 150 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
+                        {formData.reviewedBy.length}/150
+                    </div>
                 </div>
             </div>
 
@@ -566,7 +596,11 @@ const CreateReport = () => {
                     placeholder="Name of approver"
                     value={formData.approvedBy}
                     onChange={(e) => setFormData({ ...formData, approvedBy: e.target.value })}
+                    style={{ borderColor: formData.approvedBy.length > 150 ? 'var(--color-error)' : undefined }}
                 />
+                <div style={{ textAlign: 'right', fontSize: '0.75rem', color: formData.approvedBy.length > 150 ? 'var(--color-error)' : 'var(--color-text-muted)', marginTop: '4px' }}>
+                    {formData.approvedBy.length}/150
+                </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
@@ -577,7 +611,7 @@ const CreateReport = () => {
                     onClick={nextStep}
                     className="btn btn-primary"
                     style={{ padding: '12px 32px' }}
-                    disabled={!formData.startDate || !formData.endDate}
+                    disabled={!formData.startDate || !formData.endDate || (formData.preparedBy || '').length > 150 || (formData.reviewedBy || '').length > 150 || (formData.approvedBy || '').length > 150}
                 >
                     Next <ChevronRight size={18} style={{ marginLeft: '8px' }} />
                 </button>

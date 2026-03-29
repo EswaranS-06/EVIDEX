@@ -129,6 +129,19 @@ class ReportSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Start date cannot be after end date."
             )
+
+        target = data.get("target")
+        if target:
+            urls = [line for line in target.split("\n") if line.strip()]
+            if len(urls) > 50:
+                raise serializers.ValidationError({"target": "Cannot add more than 50 URLs."})
+
+        tools_used = data.get("tools_used")
+        if tools_used:
+            tools = [line for line in tools_used.split("\n") if line.strip()]
+            if len(tools) > 50:
+                raise serializers.ValidationError({"tools_used": "Cannot add more than 50 Tools."})
+
         return data
 
     @extend_schema_field(OpenApiTypes.INT)
@@ -202,6 +215,27 @@ class FindingEvidenceSerializer(serializers.ModelSerializer):
 
         # Normalize filename
         value.name = f"{uuid.uuid4().hex}{ext}"
+
+        return value
+
+    def validate_file(self, value):
+        if value:
+            # Check file size (2MB max)
+            if value.size > 2 * 1024 * 1024:
+                raise serializers.ValidationError("Image file size must be under 2MB.")
+
+            # Check file extension
+            import os
+            ext = os.path.splitext(value.name)[1].lower()
+            valid_extensions = ['.jpg', '.jpeg', '.png']
+            if ext not in valid_extensions:
+                raise serializers.ValidationError("Only PNG, JPG, and JPEG files are allowed.")
+            
+            # Check content_type
+            if hasattr(value, 'content_type'):
+                valid_content_types = ['image/jpeg', 'image/png']
+                if value.content_type not in valid_content_types:
+                    raise serializers.ValidationError("Only PNG, JPG, and JPEG files are allowed.")
 
         return value
 
