@@ -65,7 +65,7 @@ def build_docx(path, data, report_id):
     # -------------------------
     # 9. CONCLUSION (THIS MUST HAVE BOOKMARK)
     # -------------------------
-    draw_conclusion(doc, data)
+    draw_conclusion(doc, data, report_id)
 
     # -------------------------
     # AUTO UPDATE FIELDS (CRITICAL)

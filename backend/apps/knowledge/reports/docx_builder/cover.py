@@ -2,6 +2,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, Inches
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from django.conf import settings
+import os
 
 
 def remove_table_cell_margins(table):
@@ -24,14 +26,10 @@ def draw_cover(doc, d):
     def s(x):
         return "" if x is None else str(x)
 
-        
     enterprise = d.get("enterprise")
-    application_name = d.get("application_name")
     pt_date = d.get("pt_date")
+    conducted_by = d.get("application_name")
 
-    # what you display in UI
-    pt_date = d.get("pt_date")
-    conducted_by = application_name
     version = s(d.get("version"))
     assessee = s(d.get("assessee"))
     assessor = s(d.get("assessor"))
@@ -47,9 +45,6 @@ def draw_cover(doc, d):
     section.bottom_margin = Inches(0.5)
     section.left_margin = Inches(0.5)
     section.right_margin = Inches(0.5)
-
-    section.header_distance = Inches(0.1)
-    section.footer_distance = Inches(0.1)
 
     # -------------------------
     # PAGE BORDER
@@ -71,45 +66,31 @@ def draw_cover(doc, d):
     # HEADER
     # -------------------------
     header = section.header
-
     header_table = header.add_table(rows=1, cols=2, width=Inches(7.27))
     header_table.autofit = False
     remove_table_cell_margins(header_table)
-
-    left = header_table.rows[0].cells[0].paragraphs[0]
-    run = left.add_run(enterprise)
-    run.bold = True
-    run.font.size = Pt(10)
-
-    right = header_table.rows[0].cells[1].paragraphs[0]
-    right.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    run = right.add_run("Penetration Testing Report")
-    run.bold = True
-    run.font.size = Pt(10)
+    
+    client_name_spacing = 7
+    
+    header_table.rows[0].cells[0].text = " "*client_name_spacing + enterprise
+    header_table.rows[0].cells[1].text = "Penetration Testing Report"
+    header_table.rows[0].cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
     # -------------------------
-    # FOOTER (DYNAMIC FIX)
+    # FOOTER
     # -------------------------
     footer = section.footer
-
     footer_table = footer.add_table(rows=1, cols=3, width=Inches(7.27))
     footer_table.autofit = False
     remove_table_cell_margins(footer_table)
 
-    # LEFT
     footer_table.rows[0].cells[0].text = "Confidential"
-
-    # CENTER
     footer_table.rows[0].cells[1].text = f"V {version}"
     footer_table.rows[0].cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    # RIGHT (🔥 DYNAMIC PAGE NUMBER)
-    cell = footer_table.rows[0].cells[2]
-    p = cell.paragraphs[0]
+    p = footer_table.rows[0].cells[2].paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-
     run = p.add_run("Page ")
 
-    # PAGE FIELD
     fldChar1 = OxmlElement('w:fldChar')
     fldChar1.set(qn('w:fldCharType'), 'begin')
 
@@ -122,21 +103,56 @@ def draw_cover(doc, d):
     run._r.append(fldChar1)
     run._r.append(instrText)
     run._r.append(fldChar2)
-    
-    # -------------------------
-    # TITLE
-    # -------------------------
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    doc.add_paragraph("")
 
+    # =========================
+    # LOGOS (BIG + CLEAN)
+    # =========================
+    logo_table = doc.add_table(rows=1, cols=2)
+    logo_table.autofit = False
+    remove_table_cell_margins(logo_table)
+
+    left_path = os.path.join(
+        settings.BASE_DIR,
+        "apps", "knowledge", "reports", "assets", "evidex.png"
+    )
+
+    right_path = os.path.join(
+        settings.BASE_DIR,
+        "apps", "knowledge", "reports", "assets", "evidex_client.png"
+    )
+
+    # LEFT LOGO
+    p_left = logo_table.cell(0, 0).paragraphs[0]
+    p_left.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    run = p_left.add_run()
+    run.add_picture(left_path, width=Inches(2.2))   # 🔥 BIG LOGO
+
+    # RIGHT LOGO
+    p_right = logo_table.cell(0, 1).paragraphs[0]
+    p_right.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    run = p_right.add_run()
+    run.add_picture(right_path, width=Inches(2.2))  # 🔥 BIG LOGO
+
+    # =========================
+    # PUSH CONTENT DOWN
+    # =========================
+    for _ in range(1):   # 🔥 controls vertical shift
+        doc.add_paragraph("")
+
+    # =========================
+    # TITLE
+    # =========================
     p = doc.add_paragraph("PENETRATION TESTING REPORT")
-    p.runs[0].bold = True
-    p.runs[0].font.size = Pt(14)
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p.runs[0]
+    run.bold = True
+    run.font.size = Pt(14)
 
     doc.add_paragraph("FOR").alignment = WD_ALIGN_PARAGRAPH.CENTER
-    doc.add_paragraph(enterprise).alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    p = doc.add_paragraph(enterprise)
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.runs[0].bold = True
 
     doc.add_paragraph("")
 
@@ -146,36 +162,19 @@ def draw_cover(doc, d):
     doc.add_paragraph("")
     doc.add_paragraph("")
 
-    # -------------------------
-    # TABLE (FINAL FIX)
-    # -------------------------
+    # =========================
+    # TABLE
+    # =========================
     table = doc.add_table(rows=5, cols=4)
     table.style = "Table Grid"
     table.autofit = False
     table.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    # 🔥 TOTAL WIDTH CONTROL (ONLY ONCE)
-    tbl = table._element
-    tblPr = tbl.tblPr
-
-    tblLayout = OxmlElement('w:tblLayout')
-    tblLayout.set(qn('w:type'), 'fixed')
-    tblPr.append(tblLayout)
-
-    tblW = OxmlElement('w:tblW')
-    tblW.set(qn('w:w'), str(int(6.5 * 1440)))  # wider table
-    tblW.set(qn('w:type'), 'dxa')
-    tblPr.append(tblW)
-
-    # 🔥 COLUMN WIDTHS (balanced properly)
     col_widths = [1.4, 2.4, 1.2, 0.9]
 
     for i, width in enumerate(col_widths):
         table.columns[i].width = Inches(width)
 
-    # -------------------------
-    # DATA
-    # -------------------------
     rows = [
         ("Document Type", "Penetration Testing Report", "Version", version),
         ("Assessee", assessee, "Signature", ""),
@@ -189,15 +188,12 @@ def draw_cover(doc, d):
 
         for j in range(4):
             cell = row.cells[j]
-            cell.width = Inches(col_widths[j])  # 🔥 FORCE WIDTH
-
             p = cell.paragraphs[0]
 
-            # spacing (clean look)
             p.paragraph_format.space_before = Pt(2)
             p.paragraph_format.space_after = Pt(2)
 
             run = p.add_run(s(r[j]))
             run.font.size = Pt(9)
 
-    doc.add_page_break()
+    doc.add_page_break()        
