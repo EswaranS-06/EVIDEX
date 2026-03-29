@@ -65,7 +65,7 @@ def build_report(path, data, report_id):
     )
 
     section_pages["conclusion"] = page_no
-    draw_conclusion(c, data, page_no, 0)
+    draw_conclusion(c, data, report_id, page_no, 0)
     c.showPage()
     page_no += 1
 
@@ -112,7 +112,7 @@ def build_report(path, data, report_id):
         c, data, report_id, start_page_no=page_no, total_pages=total_pages
     )
 
-    draw_conclusion(c, data, page_no, total_pages)
+    draw_conclusion(c, data, page_no, report_id, total_pages)
     c.showPage()
 
     c.save()
