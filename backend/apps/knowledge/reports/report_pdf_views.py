@@ -177,12 +177,16 @@ class SendReportEmailView(APIView):
             with open(tmp.name, "rb") as f:
                 pdf_bytes = f.read()
 
+        cc = request.data.get("cc", "").strip()
+        cc_list = [c.strip() for c in cc.split(",") if c.strip()] if cc else []
+
         # Step D: Send Email
         try:
             email_msg = EmailMessage(
                 subject=subject,
                 body=body,
                 to=[email],
+                cc=cc_list,
             )
             email_msg.attach(f"VAPT_{report.client_name}.pdf", pdf_bytes, "application/pdf")
             email_msg.send(fail_silently=False)

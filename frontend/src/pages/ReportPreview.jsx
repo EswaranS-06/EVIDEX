@@ -32,6 +32,7 @@ const ReportPreview = () => {
     const [showComposeModal, setShowComposeModal] = useState(false);
     const [emailForm, setEmailForm] = useState({
         email: '',
+        cc: '',
         password: '',
         subject: 'Security Assessment Report',
         body: 'Hi,\n\nPlease find attached the security assessment report.\n\nRegards,\nEVIDEX Team'
@@ -184,6 +185,7 @@ const ReportPreview = () => {
             const payload = {
                 report_id: id,
                 email: emailForm.email,
+                cc: emailForm.cc,
                 password: emailForm.password,
                 subject: emailForm.subject,
                 body: emailForm.body
@@ -207,7 +209,7 @@ const ReportPreview = () => {
 
             // reset form after success
             setEmailForm({
-                email: '', password: '',
+                email: '', cc: '', password: '',
                 subject: 'Security Assessment Report',
                 body: 'Hi,\n\nPlease find attached the security assessment report.\n\nRegards,\nEVIDEX Team'
             });
@@ -542,6 +544,17 @@ const ReportPreview = () => {
                             />
                         </div>
 
+                        <div className="input-group" style={{ marginBottom: '15px' }}>
+                            <label className="input-label">Cc (Optional)</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                placeholder="E.g. manager@example.com"
+                                value={emailForm.cc}
+                                onChange={(e) => setEmailForm({ ...emailForm, cc: e.target.value })}
+                            />
+                        </div>
+
                         <div className="input-group" style={{ marginBottom: '25px' }}>
                             <label className="input-label">PDF Password (Optional)</label>
                             <input
@@ -575,6 +588,17 @@ const ReportPreview = () => {
                         <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Edit size={22} className="text-primary" /> Compose Custom Email
                         </h3>
+
+                        <div className="input-group" style={{ marginBottom: '15px' }}>
+                            <label className="input-label">Cc (comma-separated)</label>
+                            <input
+                                type="text"
+                                className="input-field"
+                                value={emailForm.cc}
+                                onChange={(e) => setEmailForm({ ...emailForm, cc: e.target.value })}
+                                placeholder="E.g. admin@example.com, manager@example.com"
+                            />
+                        </div>
 
                         <div className="input-group" style={{ marginBottom: '15px' }}>
                             <label className="input-label">Subject</label>
