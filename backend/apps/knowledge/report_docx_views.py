@@ -5,18 +5,18 @@ import tempfile
 import io
 
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
-
+from apps.knowledge.permissions.export_permissions import CanExportReport
+from apps.knowledge.throttles import ReportExportThrottle
+from django.shortcuts import get_object_or_404
 
 class ReportDOCXView(APIView):
-    # authentication_classes = [JWTAuthentication]     <------- Enable JWT auth later
-    # permission_classes = [IsAuthenticated]    <------- Enable JWT auth later
-    # Temporarily disable JWT authentication (allow anonymous access)
-    authentication_classes = []
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, CanExportReport]
+    throttle_classes = [ReportExportThrottle]
 
     @extend_schema(
         operation_id="download_report_docx",
@@ -28,10 +28,8 @@ class ReportDOCXView(APIView):
     )
     def post(self, request, report_id):
 
-        try:
-            report = Report.objects.get(id=report_id)
-        except Report.DoesNotExist:
-            raise Http404("Report not found")
+        report = get_object_or_404(Report, id=report_id)
+        self.check_object_permissions(request, report)
 
         data = {
             "enterprise": report.client_name,

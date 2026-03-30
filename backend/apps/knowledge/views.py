@@ -3,6 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from .permissions.knowledge_permissions import KnowledgePermission
 
 from .models import (
     OWASPCategory,
@@ -21,26 +22,26 @@ from .serializers import (
 class OWASPCategoryListCreateView(generics.ListCreateAPIView):
     queryset = OWASPCategory.objects.all()
     serializer_class = OWASPCategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, KnowledgePermission]
 class OWASPVulnerabilityListCreateView(generics.ListCreateAPIView):
     queryset = OWASPVulnerability.objects.all()
     serializer_class = OWASPVulnerabilitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, KnowledgePermission]
 
 
 class OWASPVulnerabilityDetailView(generics.RetrieveAPIView):
     queryset = OWASPVulnerability.objects.all()
     serializer_class = OWASPVulnerabilitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, KnowledgePermission]
 class VulnerabilityVariantListCreateView(generics.ListCreateAPIView):
     queryset = VulnerabilityVariant.objects.all()
     serializer_class = VulnerabilityVariantSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, KnowledgePermission]
 
 
 class VariantsByVulnerabilityView(generics.ListAPIView):
     serializer_class = VulnerabilityVariantSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, KnowledgePermission]
 
     def get_queryset(self):
         vuln_id = self.kwargs["vuln_id"]
@@ -50,19 +51,19 @@ class VariantsByVulnerabilityView(generics.ListAPIView):
 class OWASPCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OWASPCategory.objects.all()
     serializer_class = OWASPCategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, KnowledgePermission]
 
 
 class VulnerabilityVariantDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = VulnerabilityVariant.objects.all()
     serializer_class = VulnerabilityVariantSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, KnowledgePermission]
 
 
 class VulnerabilityDefinitionListCreateView(generics.ListCreateAPIView):
     queryset = VulnerabilityDefinition.objects.all()
     serializer_class = VulnerabilityDefinitionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, KnowledgePermission]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -71,7 +72,7 @@ class VulnerabilityDefinitionListCreateView(generics.ListCreateAPIView):
 class VulnerabilityDefinitionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = VulnerabilityDefinition.objects.all()
     serializer_class = VulnerabilityDefinitionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, KnowledgePermission]
 
 from rest_framework import status
 from rest_framework.response import Response

@@ -3,13 +3,14 @@ from django.core.management.base import BaseCommand
 from apps.accounts.models import Role
 
 class Command(BaseCommand):
-    help = "Seed default roles (Admin, Pentester, Viewer)"
+    help = "Seed default roles (Tester, Reviewer, Approver, User)"
 
     def handle(self, *args, **options):
         roles = [
-            ("Admin", "System administrator"),
-            ("Pentester", "Security tester"),
-            ("Viewer", "Read-only user"),
+            ("Tester", "Security tester"),
+            ("Reviewer", "Report reviewer"),
+            ("Approver", "Report approver"),
+            ("User", "System user"),
         ]
 
         for name, description in roles:

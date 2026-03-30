@@ -130,10 +130,10 @@ from django.contrib.auth.models import User
 
 class Report(models.Model):
     STATUS_CHOICES = [
-        ("Draft", "Draft"),
-        ("In Progress", "In Progress"),
-        ("Completed", "Completed"),
-        ("Verified", "Verified"),
+        ('draft', 'Draft'),
+        ('in_progress', 'In Progress'),
+        ('verified', 'Verified'),
+        ('completed', 'Completed'),
     ]
 
     client_name = models.CharField(max_length=200)
@@ -153,14 +153,21 @@ class Report(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default="Draft",
+        default='draft'
     )
 
     created_by = models.ForeignKey(
         User,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
+        related_name="created_reports"
+    )
+
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="assigned_reports",
         null=True,
-        related_name="reports"
+        blank=True
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -354,4 +361,28 @@ class Notification(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"[{self.type.upper()}] {self.user.username} - {self.title}" 
+        return f"[{self.type.upper()}] {self.user.username} - {self.title}"
+
+class AuditLog(models.Model):
+
+    ACTION_CHOICES = [
+        ("STATUS_CHANGE", "Status Change"),
+        ("EXPORT_PDF", "Export PDF"),
+        ("EXPORT_DOCX", "Export DOCX"),
+        ("EMAIL_SENT", "Email Sent"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    report_id = models.IntegerField()
+
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+
+    old_value = models.CharField(max_length=100, null=True, blank=True)
+    new_value = models.CharField(max_length=100, null=True, blank=True)
+
+    metadata = models.JSONField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.action} - Report {self.report_id}" 

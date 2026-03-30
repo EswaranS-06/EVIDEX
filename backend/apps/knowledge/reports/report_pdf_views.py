@@ -12,14 +12,16 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
 from apps.knowledge.models import Notification
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from apps.knowledge.permissions.export_permissions import CanExportReport, CanEmailReport
+from apps.knowledge.throttles import ReportExportThrottle
+from django.shortcuts import get_object_or_404
 
 class ReportPDFView(APIView):
-    # authentication_classes = [JWTAuthentication]     <------- Enable JWT auth later
-    # permission_classes = [IsAuthenticated]    <------- Enable JWT auth later
-    # Temporarily disable JWT authentication (allow anonymous access)
-    authentication_classes = []
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, CanExportReport]
+    throttle_classes = [ReportExportThrottle]
 
     @extend_schema(
         operation_id="download_report_pdf",
@@ -34,10 +36,15 @@ class ReportPDFView(APIView):
         },
     )
     def post(self, request, report_id):
-        try:
-            report = Report.objects.get(id=report_id)
-        except Report.DoesNotExist:
-            raise Http404("Report not found")
+        report = get_object_or_404(Report, id=report_id)
+        self.check_object_permissions(request, report)
+
+        from apps.knowledge.utils.audit_logger import log_audit
+        log_audit(
+            user=request.user,
+            report_id=report.id,
+            action="EXPORT_PDF"
+        )
 
         # Extract password from POST payload
         password = request.data.get("password", "").strip()
@@ -99,7 +106,8 @@ class ReportPDFView(APIView):
 
 class SendReportEmailView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, CanEmailReport]
+    throttle_classes = [ReportExportThrottle]
 
     @extend_schema(
         operation_id="send_report_email",
@@ -119,10 +127,8 @@ class SendReportEmailView(APIView):
         if not report_id:
             return JsonResponse({"status": "error", "message": "report_id is required"}, status=400)
             
-        try:
-            report = Report.objects.get(id=report_id)
-        except Report.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "Report not found"}, status=404)
+        report = get_object_or_404(Report, id=report_id)
+        self.check_object_permissions(request, report)
 
         email = request.data.get("email", "").strip()
         if not email and request.user.is_authenticated:
@@ -228,6 +234,21 @@ class SendReportEmailView(APIView):
                     link=f"/report/{report.id}"
                 )
             
+            from apps.knowledge.utils.audit_logger import log_audit
+            log_audit(
+                user=request.user,
+                report_id=report.id,
+                action="EMAIL_SENT",
+                metadata={
+                    "email": email,
+                    "cc": cc_list,
+                    "attachments": {
+                        "pdf": attach_pdf,
+                        "docx": attach_docx
+                    }
+                }
+            )
+
             return JsonResponse({"status": "success", "message": "Email sent successfully"}, status=200)
         except Exception as e:
             # Create error notification

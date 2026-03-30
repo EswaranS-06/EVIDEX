@@ -49,16 +49,40 @@ def test_pdf(request):
 # -------------------------
 # REPORT CRUD
 # -------------------------
+from .permissions.report_permissions import (
+    ReportPermission,
+    ReportObjectPermission,
+    ReportStatusPermission
+)
+
 class ReportViewSet(ModelViewSet):
     queryset = Report.objects.all().order_by("-created_at").prefetch_related("findings__vulnerability")
     serializer_class = ReportSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated,
+        ReportPermission,
+        ReportObjectPermission,
+        ReportStatusPermission
+    ]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
     def perform_update(self, serializer):
+        from apps.knowledge.utils.audit_logger import log_audit
+        old_status = self.get_object().status
         instance = serializer.save(updated_by=self.request.user)
+        new_status = instance.status
+
+        if old_status != new_status:
+            log_audit(
+                user=self.request.user,
+                report_id=instance.id,
+                action="STATUS_CHANGE",
+                old_value=old_status,
+                new_value=new_status
+            )
+
         from apps.knowledge.models import Notification
         Notification.objects.create(
             user=self.request.user,
