@@ -34,14 +34,17 @@ class RegisterUserView(APIView):
 
         user = serializer.save()
 
-        # assign default role = Pentester
-        pentester_role = get_object_or_404(Role, name="Pentester")
-        UserProfile.objects.create(user=user, role=pentester_role)
+        # Assign default role = User
+        default_role = get_object_or_404(Role, name="User")
+        profile, created = UserProfile.objects.get_or_create(user=user, defaults={'role': default_role})
+        if not created and not profile.role:
+            profile.role = default_role
+            profile.save()
 
         return Response({
             "message": "User created successfully",
             "username": user.username,
-            "role": "Pentester"
+            "role": default_role.name
         }, status=201)
 
 class MeView(APIView):
@@ -52,11 +55,11 @@ class MeView(APIView):
         description="Get current user's profile",
     )
     def get(self, request):
-        profile = UserProfile.objects.get(user=request.user)
+        profile = UserProfile.objects.filter(user=request.user).first()
 
         return Response({
             "id": request.user.id,
             "username": request.user.username,
             "email": request.user.email,
-            "role": profile.role.name if profile.role else None
+            "role": profile.role.name if profile and profile.role else None
         })

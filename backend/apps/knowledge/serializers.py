@@ -119,7 +119,7 @@ class ReportSerializer(serializers.ModelSerializer):
             "updated_by",
             "updated_by_name"
         ]
-        read_only_fields = ["id", "created_by", "created_at", "updated_at", "updated_by_name"]
+        read_only_fields = ["id", "created_by", "created_at", "updated_at", "updated_by_name", "prepared_by", "reviewed_by", "approved_by"]
 
     def validate(self, data):
         start = data.get("start_date")

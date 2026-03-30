@@ -70,9 +70,44 @@ class ReportViewSet(ModelViewSet):
 
     def perform_update(self, serializer):
         from apps.knowledge.utils.audit_logger import log_audit
-        old_status = self.get_object().status
-        instance = serializer.save(updated_by=self.request.user)
+        from apps.accounts.utils.role_utils import get_role
+        from rest_framework.exceptions import ValidationError
+        
+        instance = self.get_object()
+        user = self.request.user
+        role = get_role(user)
+        old_status = instance.status
+
+        # Defensive layer: intercept malicious status changes before save
+        proposed_status = serializer.validated_data.get('status', old_status)
+        if old_status != "verified" and proposed_status == "verified":
+            if role != "Reviewer":
+                raise ValidationError("Only Reviewers can verify reports")
+        if old_status != "completed" and proposed_status == "completed":
+            if role != "Approver":
+                raise ValidationError("Only Approvers can complete reports")
+            # Prevent same reviewer & approver
+            if instance.reviewed_by == user.username:
+                raise ValidationError("Reviewer and Approver must be different users")
+
+        # Save first
+        instance = serializer.save(updated_by=user)
         new_status = instance.status
+
+        # 🔹 Always track last modifier
+        instance.prepared_by = user.username
+
+        # 🔹 If status changed → verified
+        if old_status != "verified" and new_status == "verified":
+            if not instance.reviewed_by:  # Lock once set
+                instance.reviewed_by = user.username
+
+        # 🔹 If status changed → completed
+        if old_status != "completed" and new_status == "completed":
+            if not instance.approved_by:  # Lock once set
+                instance.approved_by = user.username
+
+        instance.save()
 
         if old_status != new_status:
             log_audit(
