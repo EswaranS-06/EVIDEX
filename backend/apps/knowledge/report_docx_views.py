@@ -2,6 +2,7 @@ from django.http import HttpResponse, Http404
 from apps.knowledge.models import Report
 from .reports.docx_builder.build_docx import build_docx
 import tempfile
+import io
 
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -56,7 +57,6 @@ class ReportDOCXView(APIView):
         password = request.data.get("password", "").strip()
 
         if password:
-            import io
             from msoffcrypto.format.ooxml import OOXMLFile
             
             with open(tmp.name, "rb") as f:

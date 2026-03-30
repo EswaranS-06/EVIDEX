@@ -41,7 +41,7 @@ def draw_executive_summary(doc, data, page_no=1, total_pages=1):
     run.bold = True
     run.font.size = Pt(14)
 
-    doc.add_paragraph("")
+    # doc.add_paragraph("")
 
     # -------------------------
     # 1.1 OVERVIEW
@@ -73,7 +73,7 @@ def draw_executive_summary(doc, data, page_no=1, total_pages=1):
     run = body.add_run(text)
     run.font.size = Pt(10)
 
-    doc.add_paragraph("")
+    # doc.add_paragraph("")
 
     # -------------------------
     # 1.2 RISK MODEL

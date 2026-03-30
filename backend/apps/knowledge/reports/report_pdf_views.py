@@ -67,7 +67,6 @@ class ReportPDFView(APIView):
 
         # Step B & C: Check password and encrypt if necessary
         if password:
-            import io
             from PyPDF2 import PdfReader, PdfWriter
             
             # Read the raw PDF
@@ -201,7 +200,6 @@ class SendReportEmailView(APIView):
                 build_docx(tmp_docx.name, docx_data, report.id)
 
                 if password:
-                    import io
                     from msoffcrypto.format.ooxml import OOXMLFile
                     
                     with open(tmp_docx.name, "rb") as f:
