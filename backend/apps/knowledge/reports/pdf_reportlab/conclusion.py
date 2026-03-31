@@ -7,63 +7,72 @@ from apps.knowledge.models import ReportFinding
 
 
 def draw_conclusion(c, data, report_id, page_no, total_pages):
+
     W, H = A4
     margin = 55
 
     # =========================
-    # CHECK CONDITION (CRITICAL FIX)
+    # FETCH + NORMALIZE STATUSES
     # =========================
-    findings = ReportFinding.objects.filter(report_id=report_id)
+# =========================
+# FORCE DB FETCH (FIX)
+# =========================
+    findings = list(
+        ReportFinding.objects
+        .filter(report_id=report_id)
+        .values_list("status", flat=True)
+    )
 
     statuses = [
-        (f.status or "").strip().lower()
-        for f in findings
+        (status or "").strip().lower()
+        for status in findings
     ]
 
-    any_not_pending = any(status != "pending" for status in statuses)
+    
+    # =========================
+    # FINAL LOGIC (YOUR REQUIREMENT)
+    # =========================
+    
+    # 👉 If ANY is patched → use patched block
+    any_patched = any(status == "patched" for status in statuses)
 
-    if any_not_pending:
-        # =============================
-        # PATCHED (ELSE BLOCK)
-        # =============================
+    # =========================
+    # CONCLUSION TEXT
+    # =========================
+    if any_patched:
+        # ✅ PATCHED (IF BLOCK — YOUR REQUIREMENT)
         conclusion_text = (
             f"As part of the security assessment conducted for {data['application_name']}, multiple vulnerabilities were "
             "identified and subsequently addressed through remediation efforts. The corrective actions undertaken demonstrate "
             "a positive commitment towards improving the security posture of the application. Based on the current assessment, "
             "the remediated controls have reduced the overall risk exposure associated with the identified vulnerabilities.\n\n"
-
             "While the implemented fixes significantly enhance the security baseline, it is important to recognize that the "
             "threat landscape is continuously evolving. Therefore, reliance on point-in-time remediation alone is insufficient. "
             "We recommend conducting periodic security assessments, including vulnerability scanning and penetration testing, "
             "to ensure sustained protection against emerging threats.\n\n"
-
             "In addition, integrating security best practices into the development lifecycle, such as secure coding standards, "
             "regular code reviews, and automated security testing, will further strengthen resilience. A follow-up validation "
             "exercise is also recommended to confirm the effectiveness of the applied remediations and to ensure that no "
             "residual risks remain within the application environment."
         )
     else:
-        # =============================
-        # ALL PENDING (IF BLOCK)
-        # =============================
+        # ✅ ALL PENDING
         conclusion_text = (
             f"As part of the security assessment conducted for {data['application_name']}, multiple vulnerabilities "
             "were identified that may impact the confidentiality, integrity, and availability of the application. "
             "These findings indicate gaps in the current security controls and highlight areas requiring immediate attention. "
             "At the time of this report, the identified vulnerabilities remain unremediated and may expose the application "
             "to potential exploitation if left unaddressed.\n\n"
-            
             "It is strongly recommended that the organization prioritize the remediation of these findings based on their "
             "severity and potential business impact. Implementing appropriate security controls, secure coding practices, "
             "and configuration hardening measures will significantly reduce the attack surface. Additionally, a formal "
             "validation or retesting exercise should be conducted post-remediation to ensure that the identified risks "
             "have been effectively mitigated.\n\n"
-
             "Furthermore, adopting a continuous security approach, including regular vulnerability assessments, penetration "
             "testing, and secure development lifecycle (SDLC) practices, will help in proactively identifying and addressing "
             "emerging threats, thereby strengthening the overall security posture of the application."
         )
-                
+
     # =========================
     # OUTER BORDER
     # =========================
@@ -91,20 +100,20 @@ def draw_conclusion(c, data, report_id, page_no, total_pages):
     y -= 25
 
     # =========================
-    # PROFESSIONAL PARAGRAPH STYLE (🔥 FIX)
+    # PARAGRAPH STYLE
     # =========================
     style = ParagraphStyle(
         name="ConclusionStyle",
         fontName="Helvetica",
         fontSize=10,
-        leading=15,              # 🔥 better readability
-        alignment=TA_JUSTIFY,    # 🔥 justified text like your screenshot
+        leading=15,
+        alignment=TA_JUSTIFY,
         textColor=black,
         spaceAfter=10
     )
 
     # =========================
-    # PARAGRAPH RENDER
+    # RENDER PARAGRAPH
     # =========================
     p = Paragraph(conclusion_text, style)
 
@@ -114,7 +123,7 @@ def draw_conclusion(c, data, report_id, page_no, total_pages):
     p.drawOn(c, margin + 10, y - text_height)
 
     # =========================
-    # END LINE (PROPER SPACING)
+    # END LINE
     # =========================
     c.setFont("Helvetica-Bold", 10)
     c.drawCentredString(
