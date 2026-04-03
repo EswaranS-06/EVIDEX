@@ -3,6 +3,7 @@ from reportlab.lib.colors import HexColor, white
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import ParagraphStyle
 from apps.knowledge.models import ReportFinding
+from .watermark import draw_watermark
 
 # =============================
 # Severity Order & Colors
@@ -66,6 +67,7 @@ def draw_detailed_findings(c, data, report_id, start_page_no, total_pages):
     W, H = A4
     margin = 55
     page_no = start_page_no
+    draw_watermark(c, data)
 
     findings = list(
         ReportFinding.objects.filter(report_id=report_id)
@@ -258,6 +260,7 @@ def draw_detailed_findings(c, data, report_id, start_page_no, total_pages):
 
             # Check space for "Evidence" heading
             if y_cursor < margin + 80:
+                draw_watermark(c, data)
                 c.showPage()
                 page_no += 1
                 draw_layout_header_footer(c, data, page_no, total_pages, margin)
@@ -277,6 +280,7 @@ def draw_detailed_findings(c, data, report_id, start_page_no, total_pages):
 
                 # 🔴 Check if image fits
                 if y_cursor - required_space < margin + 60:
+                    draw_watermark(c, data)
                     c.showPage()
                     page_no += 1
                     draw_layout_header_footer(c, data, page_no, total_pages, margin)
@@ -313,6 +317,7 @@ def draw_detailed_findings(c, data, report_id, start_page_no, total_pages):
                     # If image missing or broken
                     y_cursor -= 20
 
+        draw_watermark(c, data)
         c.showPage()
         page_no += 1
 
