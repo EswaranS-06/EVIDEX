@@ -68,9 +68,11 @@ class ReportViewSet(ModelViewSet):
         elif role == "Reviewer":
             return base_qs.filter(status__in=["completed", "approved"])
         elif role == "Approver":
-            return base_qs.filter(status__in=["approved"])
+            # Approver can move move status from Completed -> Approved, so they must see Completed reports.
+            return base_qs.filter(status__in=["completed", "approved"])
         elif role == "User":
-            return base_qs.filter(assigned_to=user, status__in=["completed", "approved"])
+            # Matrix says: Approved -> Tester + Reviewer + Approver + User (assigned only)
+            return base_qs.filter(assigned_to=user, status="approved")
         return base_qs.none()
 
     permission_classes = [
@@ -81,7 +83,8 @@ class ReportViewSet(ModelViewSet):
     ]
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        # Initial prepared_by is the creator
+        serializer.save(created_by=self.request.user, prepared_by=self.request.user.username)
 
     def perform_update(self, serializer):
         from apps.knowledge.utils.audit_logger import log_audit
@@ -93,38 +96,47 @@ class ReportViewSet(ModelViewSet):
         role = get_role(user)
         old_status = instance.status
 
-        # Defensive layer: intercept malicious status changes before save
+        # 1. Block manual metadata tampering (any data coming into these fields is ignored)
+        # These are already read_only in serializer, but let's be double sure.
+        serializer.validated_data.pop('prepared_by', None)
+        serializer.validated_data.pop('reviewed_by', None)
+        serializer.validated_data.pop('approved_by', None)
+
+        # 2. Defensive layer: intercept malicious status changes before save
         proposed_status = serializer.validated_data.get('status', old_status)
         if old_status != "approved" and proposed_status == "approved":
             if role not in ["Reviewer", "Approver"]:
                 raise ValidationError("Only Reviewers and Approvers can approve reports")
-            if role == "Reviewer" and instance.approved_by and instance.approved_by == user.username:
-                raise ValidationError("Reviewer and Approver must be different users")
-            if role == "Approver" and instance.reviewed_by and instance.reviewed_by == user.username:
-                raise ValidationError("Reviewer and Approver must be different users")
+            
+            # Reset metadata for fresh approval check
+            reviewed_by = instance.reviewed_by
+            approved_by = instance.approved_by
+
+            if role == "Reviewer":
+                if approved_by and approved_by == user.username:
+                    raise ValidationError("Reviewer and Approver must be different users")
+                reviewed_by = user.username
+            elif role == "Approver":
+                if reviewed_by and reviewed_by == user.username:
+                    raise ValidationError("Reviewer and Approver must be different users")
+                approved_by = user.username
+
+            # Apply updates
+            serializer.validated_data['reviewed_by'] = reviewed_by
+            serializer.validated_data['approved_by'] = approved_by
 
         if old_status != "completed" and proposed_status == "completed":
             if role not in ["Tester", "Reviewer", "Approver"]:
                 raise ValidationError("Insufficient privileges to complete report")
 
-        # Save first
+        # 3. Always track last modifier in 'prepared_by'
+        serializer.validated_data['prepared_by'] = user.username
+
+        # 4. Save
         instance = serializer.save(updated_by=user)
         new_status = instance.status
 
-        # 🔹 Always track last modifier
-        instance.prepared_by = user.username
-
-        # 🔹 If status changed → approved
-        if old_status != "approved" and new_status == "approved":
-            if role == "Reviewer":
-                if not instance.reviewed_by:
-                    instance.reviewed_by = user.username
-            elif role == "Approver":
-                if not instance.approved_by:
-                    instance.approved_by = user.username
-
-        instance.save()
-
+        # 5. Audit logs for status change
         if old_status != new_status:
             log_audit(
                 user=self.request.user,
@@ -147,8 +159,10 @@ class ReportViewSet(ModelViewSet):
 # -------------------------
 # REPORT FINDINGS
 # -------------------------
+from .permissions.report_permissions import FindingPermission
+
 class ReportFindingListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, FindingPermission]
     @extend_schema(
         responses=ReportFindingSerializer(many=True),
         description="List findings for a report",
@@ -192,7 +206,7 @@ class ReportFindingListCreateView(APIView):
 
 
 class BulkReportFindingsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, FindingPermission]
     @extend_schema(
         request=ReportFindingSerializer(many=True),
         responses={201: OpenApiTypes.OBJECT, 207: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
@@ -278,7 +292,7 @@ class BulkReportFindingsView(APIView):
 
 
 class ReportFindingDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, FindingPermission]
 
     def _get_finding(self, pk, report_id=None):
         """Get finding with proper relationships loaded"""

@@ -12,6 +12,7 @@ from drf_spectacular.types import OpenApiTypes
 from apps.knowledge.permissions.export_permissions import CanExportReport
 from apps.knowledge.throttles import ReportExportThrottle
 from django.shortcuts import get_object_or_404
+from apps.knowledge.utils.watermark import get_watermark_data
 
 class ReportDOCXView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -46,8 +47,9 @@ class ReportDOCXView(APIView):
             "target": report.target or "",
             "tools_used": report.tools_used or "",
             "test_location": report.test_location or "",
+            "watermark_data": get_watermark_data(request)
             }
-
+        
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
 
         build_docx(tmp.name, data, report.id)

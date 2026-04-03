@@ -18,6 +18,13 @@ from .views import (
     NotificationClearView,
 )
 
+from .rbac_views import (
+    RBACMatrixView,
+    RBACStatusTransitionsView,
+    RBACSecurityRulesView,
+    AuditLogListView,
+)
+
 from .report_views import (
     ReportViewSet,
     ReportFindingListCreateView,
@@ -119,7 +126,13 @@ urlpatterns = [
     path("reports/<int:report_id>/docx/", ReportDOCXView.as_view(), name="report-docx"),
     path("send-report-email/", SendReportEmailView.as_view(), name="send-report-email"),
 
-    
+    # -----------------------
+    # ✅ ADMIN RBAC APIs
+    # -----------------------
+    path("rbac/matrix/", RBACMatrixView.as_view(), name="rbac-matrix"),
+    path("rbac/status-transitions/", RBACStatusTransitionsView.as_view(), name="rbac-status-transitions"),
+    path("rbac/security-rules/", RBACSecurityRulesView.as_view(), name="rbac-security-rules"),
+    path("audit/logs/", AuditLogListView.as_view(), name="audit-logs"),
 ]
 
 from django.conf import settings

@@ -7,6 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         roles = [
+            ("Admin", "System administrator with full RBAC control"),
             ("Tester", "Security tester"),
             ("Reviewer", "Report reviewer"),
             ("Approver", "Report approver"),

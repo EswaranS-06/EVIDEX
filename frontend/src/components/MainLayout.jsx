@@ -1,11 +1,13 @@
 import React, { useState, useEffect, Suspense, memo } from 'react';
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
-import { LayoutDashboard, FileText, FilePlus, Settings, Database, Activity } from 'lucide-react';
+import { LayoutDashboard, FileText, FilePlus, Settings, Database, Activity, Shield, UserCog } from 'lucide-react';
 import LoadingSkeleton from './LoadingSkeleton';
 import Navbar from './Navbar';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSidebar }) => {
     const location = useLocation();
+    const { user } = useAuth();
     const iconSize = 24;
 
     const sidebarClass = `app-sidebar ${isCollapsed ? 'collapsed' : ''} ${showMobileSidebar ? 'mobile-open' : ''}`;
@@ -102,6 +104,48 @@ const Sidebar = memo(({ isCollapsed, isMobile, showMobileSidebar, closeMobileSid
                         display: isCollapsed ? 'none' : 'block'
                     }}>Settings</span>
                 </NavLink>
+
+                {user?.role === 'Admin' && (
+                    <>
+                        <NavLink
+                            to="/admin/users"
+                            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                            onClick={isMobile ? closeMobileSidebar : undefined}
+                            style={{ 
+                                justifyContent: isCollapsed ? 'center' : 'flex-start',
+                                marginTop: 'auto',
+                                borderTop: '1px solid var(--color-border)',
+                                paddingTop: '16px'
+                            }}
+                            title={isCollapsed ? "Manage Users" : ""}
+                        >
+                            <UserCog size={iconSize} style={{ minWidth: `${iconSize}px`, color: 'var(--color-primary)' }} />
+                            <span style={{
+                                display: isCollapsed ? 'none' : 'block',
+                                color: 'var(--color-primary)',
+                                fontWeight: 'bold'
+                            }}>Users</span>
+                        </NavLink>
+
+                        <NavLink
+                            to="/admin/rbac"
+                            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                            onClick={isMobile ? closeMobileSidebar : undefined}
+                            style={{ 
+                                justifyContent: isCollapsed ? 'center' : 'flex-start',
+                                marginTop: '8px'
+                            }}
+                            title={isCollapsed ? "RBAC Settings" : ""}
+                        >
+                            <Shield size={iconSize} style={{ minWidth: `${iconSize}px`, color: 'var(--color-primary)' }} />
+                            <span style={{
+                                display: isCollapsed ? 'none' : 'block',
+                                color: 'var(--color-primary)',
+                                fontWeight: 'bold'
+                            }}>RBAC Policy</span>
+                        </NavLink>
+                    </>
+                )}
             </nav>
 
             {/* Footer / Version info could go here */}

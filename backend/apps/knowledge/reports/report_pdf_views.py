@@ -17,6 +17,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from apps.knowledge.permissions.export_permissions import CanExportReport, CanEmailReport
 from apps.knowledge.throttles import ReportExportThrottle
 from django.shortcuts import get_object_or_404
+from apps.knowledge.utils.watermark import get_watermark_data
 
 class ReportPDFView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -66,8 +67,9 @@ class ReportPDFView(APIView):
             "target": report.target or "",
             "tools_used": report.tools_used or "",
             "test_location": report.test_location or "",
+            "watermark_data": get_watermark_data(request)
         }
-
+        print(data)
         # Step A: Generate raw PDF to a temp file
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         build_report(tmp.name, data, report.id)
@@ -158,6 +160,7 @@ class SendReportEmailView(APIView):
             "target": report.target or "",
             "tools_used": report.tools_used or "",
             "test_location": report.test_location or "",
+            "watermark_data": get_watermark_data(request)
         }
 
         attach_pdf = request.data.get("attach_pdf", True)

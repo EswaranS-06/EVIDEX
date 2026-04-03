@@ -17,6 +17,8 @@ const Vulnerabilities = lazy(() => import('./pages/Vulnerabilities'));
 const Settings = lazy(() => import('./pages/Settings'));
 const ReportPreview = lazy(() => import('./pages/ReportPreview'));
 const VulnDetail = lazy(() => import('./pages/VulnDetail'));
+const RBACPage = lazy(() => import('./pages/admin/RBACPage'));
+const UserManagementPage = lazy(() => import('./pages/admin/UserManagementPage'));
 
 
 import { AuthProvider } from './context/AuthContext';
@@ -65,6 +67,13 @@ function App() {
                       <Route path="/report-status" element={<ReportStatus />} />
                       <Route path="/create" element={<CreateReport />} />
                       <Route path="/settings" element={<Settings />} />
+
+                      {/* Admin Only Routes */}
+                      <Route element={<ProtectedRoute roles={['Admin']} />}>
+                          <Route path="/admin/rbac" element={<RBACPage />} />
+                          <Route path="/admin/users" element={<UserManagementPage />} />
+                      </Route>
+
                       <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     </Route>
                   </Route>

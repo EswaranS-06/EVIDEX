@@ -14,9 +14,11 @@ from django.urls import reverse
 from apps.knowledge.models import Report, ReportFinding
 
 
+from apps.knowledge.permissions.report_permissions import ReportObjectPermission
+
 class ReportPreviewView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReportObjectPermission]
 
     @extend_schema(
         operation_id="preview_report",
@@ -30,10 +32,9 @@ class ReportPreviewView(APIView):
         },
     )
     def get(self, request, report_id):
-        try:
-            report = Report.objects.get(id=report_id)
-        except Report.DoesNotExist:
-            raise Http404("Report not found")
+        from django.shortcuts import get_object_or_404
+        report = get_object_or_404(Report, id=report_id)
+        self.check_object_permissions(request, report)
 
         # Load findings with all needed relations
         findings_qs = (

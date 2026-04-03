@@ -20,6 +20,21 @@ const ReportPreview = () => {
     const [error, setError] = useState(null);
     const [pdfData, setPdfData] = useState(null);
     const [scale, setScale] = useState(1.2);
+    const [userIp, setUserIp] = useState('Unknown');
+
+    // Fetch User IP for watermarking
+    useEffect(() => {
+        const fetchIp = async () => {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                setUserIp(data.ip);
+            } catch (err) {
+                console.warn('Could not fetch client IP for watermarking:', err);
+            }
+        };
+        fetchIp();
+    }, []);
 
     const { fetchNotifications } = useNotification();
 
@@ -67,7 +82,8 @@ const ReportPreview = () => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        ...(token ? { Authorization: `Bearer ${token}` } : {})
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        'X-Forwarded-For': userIp
                     },
                     body: JSON.stringify({ password: '' }) // Empty password for preview
                 });
@@ -123,7 +139,8 @@ const ReportPreview = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    'X-Forwarded-For': userIp
                 },
                 body: JSON.stringify({ password: exportPassword })
             });
@@ -204,7 +221,8 @@ const ReportPreview = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    'X-Forwarded-For': userIp
                 },
                 body: JSON.stringify(payload)
             });

@@ -370,10 +370,13 @@ class AuditLog(models.Model):
         ("EXPORT_PDF", "Export PDF"),
         ("EXPORT_DOCX", "Export DOCX"),
         ("EMAIL_SENT", "Email Sent"),
+        ("ROLE_CHANGE", "Role Change"),
+        ("USER_MANAGEMENT", "User Management"),
+        ("SECURITY_EVENT", "Security Event"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    report_id = models.IntegerField()
+    report_id = models.IntegerField(null=True, blank=True)
 
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)
 
