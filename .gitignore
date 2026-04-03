@@ -83,3 +83,5 @@ desktop.ini
 
 
 frontend_security_report.csv
+!backend\apps\knowledge\reports\assets\evidex.png
+!backend\apps\knowledge\reports\assets\evidex_client.png
