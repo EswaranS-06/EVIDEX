@@ -1,0 +1,2341 @@
+openapi: 3.0.3
+info:
+  title: My API
+  version: 1.0.0
+  description: API documentation
+paths:
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      description: Get current user's profile
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Register a new user
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/evidences/{id}/:
+    delete:
+      operationId: evidences_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - evidences
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/findings/{finding_id}/evidences/:
+    get:
+      operationId: findings_evidences_list
+      description: List evidences for a finding
+      parameters:
+      - in: path
+        name: finding_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FindingEvidence'
+          description: ''
+    post:
+      operationId: findings_evidences_create
+      description: Create evidence for a finding
+      parameters:
+      - in: path
+        name: finding_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindingEvidence'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FindingEvidence'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FindingEvidence'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindingEvidence'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/findings/{finding_id}/evidences/reorder/:
+    put:
+      operationId: findings_evidences_reorder_update
+      description: Reorder evidence items for a finding
+      parameters:
+      - in: path
+        name: finding_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/findings/{id}/:
+    get:
+      operationId: findings_retrieve
+      description: Retrieve a finding
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportFinding'
+          description: ''
+    patch:
+      operationId: findings_partial_update
+      description: Partially update a finding
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReportFinding'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReportFinding'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReportFinding'
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportFinding'
+          description: ''
+    delete:
+      operationId: findings_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - findings
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+          description: ''
+    post:
+      operationId: notifications_create
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/{id}/read/:
+    patch:
+      operationId: notifications_read_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/notifications/clear/:
+    delete:
+      operationId: notifications_clear_destroy
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/owasp/categories/:
+    get:
+      operationId: owasp_categories_list
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OWASPCategory'
+          description: ''
+    post:
+      operationId: owasp_categories_create
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OWASPCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OWASPCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OWASPCategory'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OWASPCategory'
+          description: ''
+  /api/owasp/categories/{id}/:
+    get:
+      operationId: owasp_categories_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OWASPCategory'
+          description: ''
+    put:
+      operationId: owasp_categories_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OWASPCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OWASPCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OWASPCategory'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OWASPCategory'
+          description: ''
+    patch:
+      operationId: owasp_categories_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOWASPCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOWASPCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOWASPCategory'
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OWASPCategory'
+          description: ''
+    delete:
+      operationId: owasp_categories_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/owasp/variants/:
+    get:
+      operationId: owasp_variants_list
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VulnerabilityVariant'
+          description: ''
+    post:
+      operationId: owasp_variants_create
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityVariant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityVariant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityVariant'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityVariant'
+          description: ''
+  /api/owasp/variants/{id}/:
+    get:
+      operationId: owasp_variants_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityVariant'
+          description: ''
+    put:
+      operationId: owasp_variants_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityVariant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityVariant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityVariant'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityVariant'
+          description: ''
+    patch:
+      operationId: owasp_variants_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVulnerabilityVariant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVulnerabilityVariant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVulnerabilityVariant'
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityVariant'
+          description: ''
+    delete:
+      operationId: owasp_variants_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/owasp/vulnerabilities/:
+    get:
+      operationId: owasp_vulnerabilities_list
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OWASPVulnerability'
+          description: ''
+    post:
+      operationId: owasp_vulnerabilities_create
+      tags:
+      - owasp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OWASPVulnerability'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OWASPVulnerability'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OWASPVulnerability'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OWASPVulnerability'
+          description: ''
+  /api/owasp/vulnerabilities/{id}/:
+    get:
+      operationId: owasp_vulnerabilities_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OWASPVulnerability'
+          description: ''
+  /api/owasp/vulnerabilities/{vuln_id}/variants/:
+    get:
+      operationId: owasp_vulnerabilities_variants_list
+      parameters:
+      - in: path
+        name: vuln_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - owasp
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VulnerabilityVariant'
+          description: ''
+  /api/reports/:
+    get:
+      operationId: reports_list
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+          description: ''
+    post:
+      operationId: reports_create
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Report'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Report'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+  /api/reports/{id}/:
+    get:
+      operationId: reports_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+    patch:
+      operationId: reports_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReport'
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+    delete:
+      operationId: reports_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reports/{report_id}/bulk-findings/:
+    post:
+      operationId: reports_bulk_findings_create
+      description: Bulk create findings for a report
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ReportFinding'
+          application/x-www-form-urlencoded:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ReportFinding'
+          multipart/form-data:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ReportFinding'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '207':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/reports/{report_id}/docx/:
+    post:
+      operationId: download_report_docx
+      description: Generates and exports the security assessment report as a DOCX
+        file, optionally encrypted with a password.
+      summary: Export Report as DOCX
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/reports/{report_id}/findings/:
+    get:
+      operationId: reports_findings_list
+      description: List findings for a report
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportFinding'
+          description: ''
+    post:
+      operationId: reports_findings_create
+      description: Create a finding for a report
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportFinding'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportFinding'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportFinding'
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportFinding'
+          description: ''
+  /api/reports/{report_id}/findings/{id}/:
+    get:
+      operationId: reports_findings_retrieve
+      description: Retrieve a finding
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportFinding'
+          description: ''
+    patch:
+      operationId: reports_findings_partial_update
+      description: Partially update a finding
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReportFinding'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReportFinding'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReportFinding'
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportFinding'
+          description: ''
+    delete:
+      operationId: reports_findings_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reports/{report_id}/pdf/:
+    post:
+      operationId: download_report_pdf
+      description: Generates and exports a complete security assessment report as
+        a PDF file. Accepts optional password in request body.
+      summary: Export Report as PDF
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Unauthorized - No valid JWT token
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Report not found
+          description: ''
+  /api/reports/{report_id}/preview/:
+    get:
+      operationId: preview_report
+      description: Generates an HTML preview of a specific report with all findings,
+        evidences, and severity aggregation.
+      summary: Generate HTML Preview of Report
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Reports
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Unauthorized - No valid JWT token
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Report not found
+          description: ''
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - ht
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/send-report-email/:
+    post:
+      operationId: send_report_email
+      description: Generates, optionally encrypts, and emails the report as a PDF
+        attachment.
+      summary: Email Report as PDF
+      tags:
+      - Reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Email sent successfully
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad Request
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Report not found
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                description: Server Error
+          description: ''
+  /api/vulnerabilities/:
+    get:
+      operationId: vulnerabilities_list
+      tags:
+      - vulnerabilities
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+    post:
+      operationId: vulnerabilities_create
+      tags:
+      - vulnerabilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+  /api/vulnerabilities/{id}/:
+    get:
+      operationId: vulnerabilities_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - vulnerabilities
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+    put:
+      operationId: vulnerabilities_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - vulnerabilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VulnerabilityDefinition'
+        required: true
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+    patch:
+      operationId: vulnerabilities_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - vulnerabilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVulnerabilityDefinition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVulnerabilityDefinition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVulnerabilityDefinition'
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityDefinition'
+          description: ''
+    delete:
+      operationId: vulnerabilities_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - vulnerabilities
+      security:
+      - jwtAuth: []
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    DefaultSeverityEnum:
+      enum:
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+      - LOW
+      type: string
+      description: |-
+        * `CRITICAL` - Critical
+        * `HIGH` - High
+        * `MEDIUM` - Medium
+        * `LOW` - Low
+    FindingEvidence:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        finding:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        file:
+          type: string
+          format: uri
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_by:
+          type: integer
+          nullable: true
+        updated_by_name:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+      required:
+      - created_at
+      - file
+      - finding
+      - id
+      - updated_at
+      - updated_by_name
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        message:
+          type: string
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        is_read:
+          type: boolean
+        link:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - message
+      - title
+      - updated_at
+      - user
+    OWASPCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        vulnerabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/VulnerabilityDefinition'
+          readOnly: true
+      required:
+      - id
+      - name
+      - vulnerabilities
+    OWASPVulnerability:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          type: integer
+        category_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        default_severity:
+          type: string
+          maxLength: 20
+        default_impact:
+          type: string
+        default_remediation:
+          type: string
+        variants:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - category_name
+      - created_at
+      - default_impact
+      - default_remediation
+      - default_severity
+      - description
+      - id
+      - name
+      - updated_at
+      - variants
+    PatchedOWASPCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        vulnerabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/VulnerabilityDefinition'
+          readOnly: true
+    PatchedReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        client_name:
+          type: string
+          maxLength: 200
+        application_name:
+          type: string
+          maxLength: 200
+        report_type:
+          type: string
+          maxLength: 100
+        target:
+          type: string
+        tools_used:
+          type: string
+        test_location:
+          type: string
+          maxLength: 50
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        prepared_by:
+          type: string
+          readOnly: true
+        reviewed_by:
+          type: string
+          readOnly: true
+        approved_by:
+          type: string
+          readOnly: true
+        findings_count:
+          type: integer
+          readOnly: true
+        severity_counts:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/ReportStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+        updated_by:
+          type: integer
+          nullable: true
+        updated_by_name:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+    PatchedReportFinding:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        report:
+          type: integer
+          nullable: true
+        vulnerability:
+          type: integer
+          nullable: true
+        tester_title:
+          type: string
+          maxLength: 200
+        tester_severity:
+          type: string
+          maxLength: 20
+        tester_description:
+          type: string
+        tester_impact:
+          type: string
+        tester_remediation:
+          type: string
+        final_title:
+          type: string
+          readOnly: true
+        final_severity:
+          type: string
+          readOnly: true
+        final_description:
+          type: string
+          readOnly: true
+        final_impact:
+          type: string
+          readOnly: true
+        final_remediation:
+          type: string
+          readOnly: true
+        vulnerability_name:
+          type: string
+          readOnly: true
+        category_name:
+          type: string
+          readOnly: true
+        source_type:
+          allOf:
+          - $ref: '#/components/schemas/SourceTypeEnum'
+          readOnly: true
+        cve_id:
+          type: string
+          nullable: true
+          readOnly: true
+        cvss_score:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        cvss_vector:
+          type: string
+          nullable: true
+          readOnly: true
+        evidences:
+          type: array
+          items:
+            $ref: '#/components/schemas/FindingEvidence'
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/ReportFindingStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_by:
+          type: integer
+          nullable: true
+        updated_by_name:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+    PatchedVulnerabilityDefinition:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        default_severity:
+          allOf:
+          - $ref: '#/components/schemas/DefaultSeverityEnum'
+          readOnly: true
+        default_impact:
+          type: string
+          readOnly: true
+        default_remediation:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        source_type:
+          $ref: '#/components/schemas/SourceTypeEnum'
+        cve_id:
+          type: string
+          nullable: true
+          maxLength: 50
+        cvss_score:
+          type: number
+          format: double
+          nullable: true
+        cvss_vector:
+          type: string
+          nullable: true
+          maxLength: 200
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        description:
+          type: string
+        impact:
+          type: string
+        remediation:
+          type: string
+        references:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        owasp_category:
+          type: integer
+          nullable: true
+        owasp_vulnerability:
+          type: integer
+          nullable: true
+        variant:
+          type: integer
+          nullable: true
+        created_by:
+          type: integer
+          nullable: true
+    PatchedVulnerabilityVariant:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        owasp_vulnerability_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        owasp_vulnerability:
+          type: integer
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    Report:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        client_name:
+          type: string
+          maxLength: 200
+        application_name:
+          type: string
+          maxLength: 200
+        report_type:
+          type: string
+          maxLength: 100
+        target:
+          type: string
+        tools_used:
+          type: string
+        test_location:
+          type: string
+          maxLength: 50
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        prepared_by:
+          type: string
+          readOnly: true
+        reviewed_by:
+          type: string
+          readOnly: true
+        approved_by:
+          type: string
+          readOnly: true
+        findings_count:
+          type: integer
+          readOnly: true
+        severity_counts:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/ReportStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+        updated_by:
+          type: integer
+          nullable: true
+        updated_by_name:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+      required:
+      - application_name
+      - approved_by
+      - client_name
+      - created_at
+      - created_by
+      - findings_count
+      - id
+      - prepared_by
+      - report_type
+      - reviewed_by
+      - severity_counts
+      - target
+      - updated_at
+      - updated_by_name
+    ReportFinding:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        report:
+          type: integer
+          nullable: true
+        vulnerability:
+          type: integer
+          nullable: true
+        tester_title:
+          type: string
+          maxLength: 200
+        tester_severity:
+          type: string
+          maxLength: 20
+        tester_description:
+          type: string
+        tester_impact:
+          type: string
+        tester_remediation:
+          type: string
+        final_title:
+          type: string
+          readOnly: true
+        final_severity:
+          type: string
+          readOnly: true
+        final_description:
+          type: string
+          readOnly: true
+        final_impact:
+          type: string
+          readOnly: true
+        final_remediation:
+          type: string
+          readOnly: true
+        vulnerability_name:
+          type: string
+          readOnly: true
+        category_name:
+          type: string
+          readOnly: true
+        source_type:
+          allOf:
+          - $ref: '#/components/schemas/SourceTypeEnum'
+          readOnly: true
+        cve_id:
+          type: string
+          nullable: true
+          readOnly: true
+        cvss_score:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        cvss_vector:
+          type: string
+          nullable: true
+          readOnly: true
+        evidences:
+          type: array
+          items:
+            $ref: '#/components/schemas/FindingEvidence'
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/ReportFindingStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_by:
+          type: integer
+          nullable: true
+        updated_by_name:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+      required:
+      - category_name
+      - created_at
+      - cve_id
+      - cvss_score
+      - cvss_vector
+      - evidences
+      - final_description
+      - final_impact
+      - final_remediation
+      - final_severity
+      - final_title
+      - id
+      - source_type
+      - updated_at
+      - updated_by_name
+      - vulnerability_name
+    ReportFindingStatusEnum:
+      enum:
+      - Pending
+      - Patched
+      - False Positive
+      type: string
+      description: |-
+        * `Pending` - Pending
+        * `Patched` - Patched
+        * `False Positive` - False Positive
+    ReportStatusEnum:
+      enum:
+      - draft
+      - in_progress
+      - completed
+      - approved
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `in_progress` - In Progress
+        * `completed` - Completed
+        * `approved` - Approved
+    SeverityEnum:
+      enum:
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+      - LOW
+      type: string
+      description: |-
+        * `CRITICAL` - Critical
+        * `HIGH` - High
+        * `MEDIUM` - Medium
+        * `LOW` - Low
+    SourceTypeEnum:
+      enum:
+      - OWASP
+      - CVE
+      - CUSTOM
+      type: string
+      description: |-
+        * `OWASP` - OWASP
+        * `CVE` - CVE
+        * `CUSTOM` - Custom
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    TypeEnum:
+      enum:
+      - success
+      - error
+      - info
+      type: string
+      description: |-
+        * `success` - Success
+        * `error` - Error
+        * `info` - Info
+    VulnerabilityDefinition:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        default_severity:
+          allOf:
+          - $ref: '#/components/schemas/DefaultSeverityEnum'
+          readOnly: true
+        default_impact:
+          type: string
+          readOnly: true
+        default_remediation:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        source_type:
+          $ref: '#/components/schemas/SourceTypeEnum'
+        cve_id:
+          type: string
+          nullable: true
+          maxLength: 50
+        cvss_score:
+          type: number
+          format: double
+          nullable: true
+        cvss_vector:
+          type: string
+          nullable: true
+          maxLength: 200
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        description:
+          type: string
+        impact:
+          type: string
+        remediation:
+          type: string
+        references:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        owasp_category:
+          type: integer
+          nullable: true
+        owasp_vulnerability:
+          type: integer
+          nullable: true
+        variant:
+          type: integer
+          nullable: true
+        created_by:
+          type: integer
+          nullable: true
+      required:
+      - created_at
+      - default_impact
+      - default_remediation
+      - default_severity
+      - description
+      - id
+      - impact
+      - remediation
+      - severity
+      - source_type
+      - title
+      - updated_at
+    VulnerabilityVariant:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        owasp_vulnerability_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        owasp_vulnerability:
+          type: integer
+      required:
+      - id
+      - name
+      - owasp_vulnerability
+      - owasp_vulnerability_name
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

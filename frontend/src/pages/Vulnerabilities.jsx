@@ -110,11 +110,28 @@ const Vulnerabilities = () => {
     const filteredVulnerabilities = useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
         return vulnerabilities.filter(v =>
-            v.title.toLowerCase().includes(lowerSearch) ||
-            v.description.toLowerCase().includes(lowerSearch) ||
-            v.source_type.toLowerCase().includes(lowerSearch)
+            (v.title || '').toLowerCase().includes(lowerSearch) ||
+            (v.description || '').toLowerCase().includes(lowerSearch) ||
+            (v.source_type || '').toLowerCase().includes(lowerSearch)
         );
     }, [vulnerabilities, searchTerm]);
+
+    const filteredCategories = useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return categories.map(cat => {
+            const matchingDefs = (cat.custom_definitions || []).filter(v => 
+                (v.name || v.title || '').toLowerCase().includes(lowerSearch)
+            );
+            const matchingStds = (cat.standard_vulnerabilities || []).filter(v => 
+                (v.name || v.title || '').toLowerCase().includes(lowerSearch)
+            );
+
+            if (cat.name.toLowerCase().includes(lowerSearch) || matchingDefs.length > 0 || matchingStds.length > 0) {
+                return { ...cat, custom_definitions: matchingDefs, standard_vulnerabilities: matchingStds };
+            }
+            return null;
+        }).filter(Boolean);
+    }, [categories, searchTerm]);
 
     const toggleCategory = (catId) => {
         const newExpanded = new Set(expandedCategories);
@@ -286,9 +303,9 @@ const Vulnerabilities = () => {
                     )}
                 </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}>
-                    {categories.map(cat => (
-                        <div key={cat.id} className="glass-panel" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '20px' }}>
+                    {filteredCategories.map(cat => (
+                        <div key={cat.id} className="glass-panel" style={{ overflow: 'hidden', height: 'fit-content', border: expandedCategories.has(cat.id) ? '1px solid var(--color-primary)' : '1px solid var(--glass-border)' }}>
                             <div
                                 onClick={() => toggleCategory(cat.id)}
                                 style={{
@@ -319,26 +336,60 @@ const Vulnerabilities = () => {
 
                             {expandedCategories.has(cat.id) && (
                                 <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    {cat.vulnerabilities && cat.vulnerabilities.length > 0 ? (
-                                        cat.vulnerabilities.map(v => (
-                                            <div key={v.id} style={{
-                                                padding: '12px',
-                                                borderRadius: '10px',
-                                                background: 'rgba(255,255,255,0.02)',
-                                                border: '1px solid var(--glass-border)',
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center'
-                                            }}>
-                                                <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>{v.name}</span>
-                                                <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', background: 'rgba(0,0,0,0.2)', padding: '2px 6px', borderRadius: '4px' }}>
-                                                    {v.default_severity}
-                                                </span>
+                                    {cat.custom_definitions && cat.custom_definitions.length > 0 && (
+                                        <div style={{ marginBottom: '15px' }}>
+                                            <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--color-primary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Library Entries</div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {cat.custom_definitions.map(v => (
+                                                    <div key={v.id} onClick={() => navigate(`/finding/${v.id}`)} style={{
+                                                        padding: '12px',
+                                                        borderRadius: '10px',
+                                                        background: 'rgba(0, 240, 255, 0.05)',
+                                                        border: '1px solid var(--color-primary-glow)',
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        cursor: 'pointer'
+                                                    }}>
+                                                        <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>{v.name}</span>
+                                                        <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', background: 'rgba(0,0,0,0.2)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                            {v.default_severity}
+                                                        </span>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))
-                                    ) : (
+                                        </div>
+                                    )}
+
+                                    {cat.standard_vulnerabilities && cat.standard_vulnerabilities.length > 0 ? (
+                                        <div>
+                                            <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Standard Templates</div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {cat.standard_vulnerabilities.map(v => (
+                                                    <div key={v.id} onClick={() => navigate(`/finding/new?owasp_vuln=${v.id}&cat=${cat.id}`)} style={{
+                                                        padding: '12px',
+                                                        borderRadius: '10px',
+                                                        background: 'rgba(255,255,255,0.02)',
+                                                        border: '1px solid var(--glass-border)',
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        cursor: 'pointer'
+                                                    }}>
+                                                        <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>{v.name}</span>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            <span style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Template</span>
+                                                            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', background: 'rgba(0,0,0,0.2)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                                {v.default_severity}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : !cat.custom_definitions?.length && (
                                         <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center', padding: '10px' }}>
-                                            No standard vulnerabilities in this category.
+                                            No vulnerabilities in this category.
                                         </div>
                                     )}
                                 </div>

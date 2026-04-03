@@ -125,11 +125,15 @@ const CreateReport = () => {
     };
 
     const filteredCategories = owaspCategories.map(cat => {
-        const matchingVulns = cat.vulnerabilities.filter(v =>
-            v.name.toLowerCase().includes(vulnSearchTerm.toLowerCase())
+        const matchingDefs = (cat.custom_definitions || []).filter(v =>
+            (v.name || v.title || '').toLowerCase().includes(vulnSearchTerm.toLowerCase())
         );
-        if (cat.name.toLowerCase().includes(vulnSearchTerm.toLowerCase()) || matchingVulns.length > 0) {
-            return { ...cat, vulnerabilities: matchingVulns };
+        const matchingStds = (cat.standard_vulnerabilities || []).filter(v =>
+            (v.name || v.title || '').toLowerCase().includes(vulnSearchTerm.toLowerCase())
+        );
+        
+        if (cat.name.toLowerCase().includes(vulnSearchTerm.toLowerCase()) || matchingDefs.length > 0 || matchingStds.length > 0) {
+            return { ...cat, custom_definitions: matchingDefs, standard_vulnerabilities: matchingStds };
         }
         return null;
     }).filter(Boolean);
@@ -692,85 +696,91 @@ const CreateReport = () => {
                                     background: expandedCategories.has(cat.id) ? 'rgba(0, 240, 255, 0.05)' : 'transparent'
                                 }}
                             >
-                                <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>{cat.code} - {cat.name}</span>
+                                <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>{cat.name}</span>
                                 <ChevronLeft size={16} style={{ transform: expandedCategories.has(cat.id) ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'all 0.3s' }} />
                             </div>
 
                             {expandedCategories.has(cat.id) && (
-                                <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    {cat.vulnerabilities.map(vuln => {
-                                        const isSelected = formData.selectedVulnerabilityIds.includes(vuln.id);
-                                        return (
-                                            <div
-                                                key={vuln.id}
-                                                onClick={() => toggleVuln(vuln.id)}
-                                                className="vuln-selection-item"
-                                                style={{
-                                                    padding: '12px',
-                                                    borderRadius: '10px',
-                                                    cursor: 'pointer',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '8px',
-                                                    background: isSelected ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255,255,255,0.02)',
-                                                    borderLeft: `3px solid ${getSeverityColor(vuln.default_severity)}`,
-                                                    borderBottom: `1px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}`,
-                                                    borderTop: `1px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}`,
-                                                    borderRight: `1px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}`,
-                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                    position: 'relative',
-                                                    overflow: 'hidden'
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                    <div style={{
-                                                        width: '18px',
-                                                        height: '18px',
-                                                        borderRadius: '4px',
-                                                        border: '1px solid var(--color-primary)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        background: isSelected ? 'var(--color-primary)' : 'transparent',
-                                                        flexShrink: 0
-                                                    }}>
-                                                        {isSelected && <Check size={14} color="black" strokeWidth={3} />}
-                                                    </div>
-                                                    <span className="vuln-name" style={{
-                                                        fontSize: '0.9rem',
-                                                        fontWeight: '500',
-                                                        color: isSelected ? '#fff' : 'rgba(255,255,255,0.8)',
-                                                        flex: 1
-                                                    }}>{vuln.name}</span>
-                                                    <span style={{
-                                                        fontSize: '0.7rem',
-                                                        fontWeight: '700',
-                                                        padding: '2px 8px',
-                                                        borderRadius: '4px',
-                                                        background: getSeverityBg(vuln.default_severity),
-                                                        color: getSeverityColor(vuln.default_severity),
-                                                        border: `1px solid ${getSeverityColor(vuln.default_severity)}`,
-                                                        textTransform: 'uppercase'
-                                                    }}>
-                                                        {vuln.default_severity}
-                                                    </span>
-                                                </div>
-
-                                                <div className="vuln-description" style={{
-                                                    fontSize: '0.8rem',
-                                                    color: 'var(--color-text-muted)',
-                                                    lineHeight: '1.4',
-                                                    maxHeight: '0',
-                                                    opacity: '0',
-                                                    overflow: 'hidden',
-                                                    transition: 'all 0.3s ease-out',
-                                                    paddingLeft: '30px'
-                                                }}>
-                                                    {vuln.description}
-                                                </div>
+                                <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {/* 1. Library Entries */}
+                                    {cat.custom_definitions && cat.custom_definitions.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize: '0.65rem', fontWeight: '800', color: 'var(--color-primary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Library Entries</div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                {cat.custom_definitions.map(vuln => {
+                                                    const isSelected = formData.selectedVulnerabilityIds.includes(vuln.id);
+                                                    return (
+                                                        <div
+                                                            key={`def-${vuln.id}`}
+                                                            onClick={() => toggleVuln(vuln.id)}
+                                                            className="vuln-selection-item"
+                                                            style={{
+                                                                padding: '10px 12px',
+                                                                borderRadius: '8px',
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '12px',
+                                                                background: isSelected ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255,255,255,0.02)',
+                                                                border: `1px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}`,
+                                                                transition: 'all 0.2s ease'
+                                                            }}
+                                                        >
+                                                            <div style={{
+                                                                width: '16px',
+                                                                height: '16px',
+                                                                borderRadius: '4px',
+                                                                border: '1px solid var(--color-primary)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                background: isSelected ? 'var(--color-primary)' : 'transparent',
+                                                                flexShrink: 0
+                                                            }}>
+                                                                {isSelected && <Check size={12} color="black" strokeWidth={3} />}
+                                                            </div>
+                                                            <span style={{ fontSize: '0.85rem', fontWeight: '500', flex: 1 }}>{vuln.name}</span>
+                                                            <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: getSeverityBg(vuln.default_severity), color: getSeverityColor(vuln.default_severity) }}>{vuln.default_severity}</span>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
-                                        );
-                                    })}
+                                        </div>
+                                    )}
+
+                                    {/* 2. Standard Templates */}
+                                    {cat.standard_vulnerabilities && cat.standard_vulnerabilities.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize: '0.65rem', fontWeight: '800', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Standard Templates</div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                {cat.standard_vulnerabilities.map(vuln => (
+                                                    <div
+                                                        key={`std-${vuln.id}`}
+                                                        onClick={() => navigate(`/finding/new?owasp_vuln=${vuln.id}&cat=${cat.id}`)}
+                                                        className="vuln-selection-item"
+                                                        style={{
+                                                            padding: '10px 12px',
+                                                            borderRadius: '8px',
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '12px',
+                                                            background: 'rgba(255,255,255,0.01)',
+                                                            border: '1px solid rgba(255,255,255,0.03)',
+                                                            opacity: 0.7
+                                                        }}
+                                                    >
+                                                        <Plus size={16} color="var(--color-text-muted)" />
+                                                        <span style={{ fontSize: '0.85rem', flex: 1, color: 'var(--color-text-muted)' }}>{vuln.name}</span>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.2)' }}>Template</span>
+                                                            <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-muted)' }}>{vuln.default_severity}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

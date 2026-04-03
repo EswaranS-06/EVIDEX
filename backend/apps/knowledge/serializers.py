@@ -68,11 +68,12 @@ class VulnerabilityDefinitionSerializer(serializers.ModelSerializer):
 
 
 class OWASPCategorySerializer(serializers.ModelSerializer):
-    vulnerabilities = VulnerabilityDefinitionSerializer(source="vulnerabilitydefinition_set", many=True, read_only=True)
+    standard_vulnerabilities = OWASPVulnerabilitySerializer(source="vulnerabilities", many=True, read_only=True)
+    custom_definitions = VulnerabilityDefinitionSerializer(source="vulnerabilitydefinition_set", many=True, read_only=True)
 
     class Meta:
         model = OWASPCategory
-        fields = ["id", "name", "description", "vulnerabilities"]
+        fields = ["id", "name", "description", "standard_vulnerabilities", "custom_definitions"]
 
 
 # VulnerabilityVariant moved down to keep it near its usage if needed or just alphabetical

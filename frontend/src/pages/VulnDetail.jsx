@@ -86,6 +86,10 @@ const VulnDetail = () => {
 
     // Fetch Initial Data
     useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const prefillVulnId = queryParams.get('owasp_vuln');
+        const prefillCatId = queryParams.get('cat');
+
         if (!isNew) {
             const fetchData = async () => {
                 setLoading(true);
@@ -141,6 +145,28 @@ const VulnDetail = () => {
             };
             fetchData();
         } else {
+            // Handle pre-fill for new vulnerability definitions
+            if (prefillVulnId) {
+                const fetchTemplate = async () => {
+                    try {
+                        setSourceType('OWASP');
+                        if (prefillCatId) setOwaspCategory(prefillCatId);
+                        
+                        const response = await api.get(`/api/owasp/vulnerabilities/${prefillVulnId}/`);
+                        const v = response.data;
+                        setOwaspVulnerability(prefillVulnId);
+                        setTitle(v.name || '');
+                        setSeverity(v.default_severity || 'Medium');
+                        setDescription(v.description || '');
+                        setImpact(v.default_impact || '');
+                        setRemediation(v.default_remediation || '');
+                        setHasUnsavedChanges(true); // Mark as modified so it can be saved
+                    } catch (err) {
+                        console.error("Failed to fetch template data", err);
+                    }
+                };
+                fetchTemplate();
+            }
             setTimeout(() => { isInitialMount.current = false; }, 0);
         }
     }, [id, reportId, isNew]);

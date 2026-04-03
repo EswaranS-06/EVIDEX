@@ -29,7 +29,7 @@ class OWASPVulnerabilityListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, KnowledgePermission]
 
 
-class OWASPVulnerabilityDetailView(generics.RetrieveAPIView):
+class OWASPVulnerabilityDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OWASPVulnerability.objects.all()
     serializer_class = OWASPVulnerabilitySerializer
     permission_classes = [IsAuthenticated, KnowledgePermission]

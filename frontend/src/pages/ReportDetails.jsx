@@ -205,12 +205,19 @@ const ReportDetails = () => {
     // Filter Logic
     const filteredCategories = useMemo(() => {
         return owaspCategories.map(cat => {
-            const matchingVulns = cat.vulnerabilities.filter(v =>
-                v.name.toLowerCase().includes(searchTerm.toLowerCase())
+            const standard_vulnerabilities = cat.standard_vulnerabilities || [];
+            const custom_definitions = cat.custom_definitions || [];
+            
+            const matchingStds = standard_vulnerabilities.filter(v =>
+                (v.name || '').toLowerCase().includes(searchTerm.toLowerCase())
             );
+            const matchingDefs = custom_definitions.filter(v =>
+                (v.name || v.title || '').toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
             // Include category if it matches name OR has matching vulns
-            if (cat.name.toLowerCase().includes(searchTerm.toLowerCase()) || matchingVulns.length > 0) {
-                return { ...cat, vulnerabilities: matchingVulns }; // Return filtered vulns if searching
+            if (cat.name.toLowerCase().includes(searchTerm.toLowerCase()) || matchingStds.length > 0 || matchingDefs.length > 0) {
+                return { ...cat, standard_vulnerabilities: matchingStds, custom_definitions: matchingDefs };
             }
             return null;
         }).filter(Boolean);
@@ -675,70 +682,110 @@ const ReportDetails = () => {
 
                                     {expandedCategories.has(cat.id) && (
                                         <div style={{ padding: '10px', background: 'rgba(0,0,0,0.2)' }}>
-                                            {cat.vulnerabilities.length === 0 ? (
-                                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', padding: '8px' }}>No vulnerabilities found.</div>
-                                            ) : (
-                                                cat.vulnerabilities.map(vuln => {
-                                                    const sevColor = getSeverityColor(vuln.default_severity || vuln.severity);
-                                                    const sevBg = getSeverityBg(vuln.default_severity || vuln.severity);
+                                            {/* 1. Custom definitions (Add directly) */}
+                                            {cat.custom_definitions && cat.custom_definitions.length > 0 && (
+                                                <div style={{ marginBottom: '15px' }}>
+                                                    <div style={{ fontSize: '0.65rem', fontWeight: '800', color: 'var(--color-primary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Library Entries</div>
+                                                    {cat.custom_definitions.map(vuln => {
+                                                        const sevColor = getSeverityColor(vuln.severity || vuln.default_severity);
+                                                        const sevBg = getSeverityBg(vuln.severity || vuln.default_severity);
 
-                                                    return (
-                                                        <div key={vuln.id}
-                                                            className="vuln-selection-item"
-                                                            onClick={() => addFinding(vuln.id)}
-                                                            style={{
-                                                                display: 'flex',
-                                                                flexDirection: 'column',
-                                                                padding: '12px',
-                                                                gap: '8px',
-                                                                borderRadius: '8px',
-                                                                background: selectedVulns.has(vuln.id) ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255,255,255,0.02)',
-                                                                marginBottom: '8px',
-                                                                cursor: 'pointer',
-                                                                border: `1px solid ${selectedVulns.has(vuln.id) ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'}`,
-                                                                borderLeft: `4px solid ${sevColor}`,
-                                                                transition: 'all 0.2s ease'
-                                                            }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                                <div style={{
-                                                                    width: '24px',
-                                                                    height: '24px',
-                                                                    borderRadius: '6px',
-                                                                    background: sevBg,
+                                                        return (
+                                                            <div key={`def-${vuln.id}`}
+                                                                className="vuln-selection-item"
+                                                                onClick={() => addFinding(vuln.id)}
+                                                                style={{
                                                                     display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    flexShrink: 0
+                                                                    flexDirection: 'column',
+                                                                    padding: '12px',
+                                                                    gap: '8px',
+                                                                    borderRadius: '8px',
+                                                                    background: 'rgba(255,255,255,0.02)',
+                                                                    marginBottom: '8px',
+                                                                    cursor: 'pointer',
+                                                                    border: '1px solid rgba(255,255,255,0.05)',
+                                                                    borderLeft: `4px solid ${sevColor}`,
+                                                                    transition: 'all 0.2s ease'
                                                                 }}>
-                                                                    <Plus size={14} style={{ color: sevColor }} />
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                    <div style={{
+                                                                        width: '24px',
+                                                                        height: '24px',
+                                                                        borderRadius: '6px',
+                                                                        background: sevBg,
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        flexShrink: 0
+                                                                    }}>
+                                                                        <Plus size={14} style={{ color: sevColor }} />
+                                                                    </div>
+                                                                    <span className="vuln-name" style={{ fontSize: '0.85rem', flex: 1, color: '#fff', fontWeight: '500' }}>
+                                                                        {vuln.name}
+                                                                    </span>
+                                                                    <span style={{
+                                                                        fontSize: '0.65rem',
+                                                                        fontWeight: '800',
+                                                                        color: sevColor,
+                                                                        opacity: 0.8
+                                                                    }}>
+                                                                        {(vuln.severity || vuln.default_severity || 'LOW').toUpperCase()}
+                                                                    </span>
                                                                 </div>
-                                                                <span className="vuln-name" style={{ fontSize: '0.85rem', flex: 1, color: '#fff', fontWeight: '500' }}>
-                                                                    {vuln.name}
-                                                                </span>
-                                                                <span style={{
-                                                                    fontSize: '0.65rem',
-                                                                    fontWeight: '800',
-                                                                    color: sevColor,
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {/* 2. Standard Templates (Redirect to add) */}
+                                            {cat.standard_vulnerabilities && cat.standard_vulnerabilities.length > 0 && (
+                                                <div>
+                                                    <div style={{ fontSize: '0.65rem', fontWeight: '800', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Standard Templates</div>
+                                                    {cat.standard_vulnerabilities.map(vuln => {
+                                                        const sevColor = getSeverityColor(vuln.default_severity || vuln.severity);
+                                                        const sevBg = getSeverityBg(vuln.default_severity || vuln.severity);
+
+                                                        return (
+                                                            <div key={`std-${vuln.id}`}
+                                                                className="vuln-selection-item"
+                                                                onClick={() => navigate(`/report/${id}/finding/new/edit?owasp_vuln=${vuln.id}&cat=${cat.id}`)}
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    padding: '12px',
+                                                                    gap: '8px',
+                                                                    borderRadius: '8px',
+                                                                    background: 'rgba(255,255,255,0.01)',
+                                                                    marginBottom: '8px',
+                                                                    cursor: 'pointer',
+                                                                    border: '1px solid rgba(255,255,255,0.03)',
+                                                                    borderLeft: `4px solid rgba(255,255,255,0.1)`,
+                                                                    transition: 'all 0.2s ease',
                                                                     opacity: 0.8
                                                                 }}>
-                                                                    {(vuln.default_severity || vuln.severity || 'LOW').toUpperCase()}
-                                                                </span>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                    <ArrowRight size={14} color="var(--color-text-muted)" />
+                                                                    <span className="vuln-name" style={{ fontSize: '0.85rem', flex: 1, color: 'var(--color-text-muted)', fontWeight: '500' }}>
+                                                                        {vuln.name}
+                                                                    </span>
+                                                                    <span style={{
+                                                                        fontSize: '0.65rem',
+                                                                        fontWeight: '500',
+                                                                        color: 'var(--color-text-muted)',
+                                                                        opacity: 0.5
+                                                                    }}>
+                                                                        {(vuln.default_severity || vuln.severity || 'LOW').toUpperCase()}
+                                                                    </span>
+                                                                </div>
                                                             </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
 
-                                                            <div className="vuln-description" style={{
-                                                                fontSize: '0.75rem',
-                                                                color: 'var(--color-text-muted)',
-                                                                lineHeight: '1.4',
-                                                                display: '-webkit-box',
-                                                                WebkitLineClamp: '2',
-                                                                WebkitBoxOrient: 'vertical',
-                                                                overflow: 'hidden'
-                                                            }}>
-                                                                {vuln.description}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })
+                                            {(!cat.custom_definitions?.length && !cat.standard_vulnerabilities?.length) && (
+                                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', padding: '8px' }}>No vulnerabilities found.</div>
                                             )}
                                         </div>
                                     )}

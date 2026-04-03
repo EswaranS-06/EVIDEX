@@ -3,18 +3,26 @@ from apps.accounts.utils.role_utils import get_role
 
 class KnowledgePermission(BasePermission):
     """
-    Controls access to knowledge module
+    Controls access to the Knowledge Module.
+    Tester: Full CRUD access
+    Reviewer/Approver/User: Read-only access
     """
 
     def has_permission(self, request, view):
+        # 1. Ensure user is authenticated (redundant if using IsAuthenticated)
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # 2. Get role from utility
         role = get_role(request.user)
 
-        # Tester → full access
+        # 3. Handle Tester role (FULL ACCESS)
         if role == "Tester":
             return True
 
-        # Others → read-only
+        # 4. Handle Read-Only roles (GET, HEAD, OPTIONS)
         if role in ["Reviewer", "Approver", "User"]:
             return request.method in SAFE_METHODS
 
+        # Deny all other access
         return False
