@@ -9,20 +9,23 @@ class KnowledgePermission(BasePermission):
     """
 
     def has_permission(self, request, view):
-        # 1. Ensure user is authenticated (redundant if using IsAuthenticated)
+        # 1. Ensure user is authenticated
         if not request.user or not request.user.is_authenticated:
             return False
 
         # 2. Get role from utility
         role = get_role(request.user)
 
-        # 3. Handle Tester role (FULL ACCESS)
+        # 3. Handle Admin role (UNRESTRICTED)
+        if role == "Admin":
+            return True
+
+        # 4. Handle Tester role (FULL ACCESS)
         if role == "Tester":
             return True
 
-        # 4. Handle Read-Only roles (GET, HEAD, OPTIONS)
+        # 5. Handle Read-Only roles (GET, HEAD, OPTIONS)
         if role in ["Reviewer", "Approver", "User"]:
             return request.method in SAFE_METHODS
 
-        # Deny all other access
         return False

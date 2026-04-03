@@ -10,7 +10,7 @@ class RolePermission(BasePermission):
 
     def has_permission(self, request, view):
         role = get_role(request.user)
-        return role in self.allowed_roles
+        return role == "Admin" or role in self.allowed_roles
 
 
 class MethodRolePermission(BasePermission):
@@ -27,6 +27,8 @@ class MethodRolePermission(BasePermission):
 
     def has_permission(self, request, view):
         role = get_role(request.user)
+        if role == "Admin":
+            return True
         allowed = self.role_map.get(request.method, [])
         return role in allowed
 

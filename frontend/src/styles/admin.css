@@ -263,10 +263,21 @@
 .action-cell {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
 }
 
-/* Detail Panel Styling */
+.row-updated-flash {
+    animation: pulseSuccess 1.5s ease-out;
+}
+
+@keyframes pulseSuccess {
+    0% { background: rgba(0, 245, 212, 0.2); }
+    100% { background: transparent; }
+}
+
+.select-spinner {
+    color: var(--color-primary);
+}
 .admin-detail-panel {
     position: fixed;
     top: calc(var(--navbar-height) + var(--spacing-xl));
@@ -364,8 +375,8 @@
 .hint { font-size: 10px; opacity: 0.7; margin-top: 4px; }
 .admin-select.full-width { width: 100%; margin-top: 8px; }
 
-.select-wrapper { position: relative; }
-.select-spinner { position: absolute; right: 28px; top: 16px; }
+.select-wrapper { position: relative; display: flex; align-items: center; }
+.select-spinner { margin-left: 8px; }
 
 .clickable-rows tbody tr { cursor: pointer; transition: background 0.2s ease; }
 .clickable-rows tbody tr:hover { background: rgba(0, 245, 212, 0.05); }

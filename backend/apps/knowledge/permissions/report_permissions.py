@@ -8,6 +8,10 @@ class ReportPermission(BasePermission):
     def has_permission(self, request, view):
         role = get_role(request.user)
 
+        # Admin → full access
+        if role == "Admin":
+            return True
+
         # Tester → full access
         if role == "Tester":
             return True
@@ -28,6 +32,10 @@ class ReportObjectPermission(BasePermission):
     """
     def has_object_permission(self, request, view, obj):
         role = get_role(request.user)
+
+        # Admin → full oversight
+        if role == "Admin":
+            return True
 
         # Tester → Draft, In Progress, Completed, Approved
         if role == "Tester":
@@ -97,6 +105,10 @@ class ReportStatusPermission(BasePermission):
         # Approver: In Progress, Completed, Approved
         if role == "Approver":
             return new_status in ["in_progress", "completed", "approved"]
+
+        # Admin: Full state control
+        if role == "Admin":
+            return True
 
         # User → cannot change status
         return False

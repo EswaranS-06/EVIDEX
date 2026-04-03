@@ -1,22 +1,27 @@
 import React, { useState } from 'react';
 import { useUsers, useRoles, useUpdateUserRole, useAuditLogs } from '../../hooks/useRBAC';
 import { useAuth } from '../../context/AuthContext';
-import { Users, UserCog, UserCheck, ShieldAlert, Search, RefreshCw, X, History, Info, Mail, User as UserIcon } from 'lucide-react';
+import { useNotifications } from '../../context/NotificationContext';
+import { Users, UserCog, UserCheck, ShieldAlert, Search, RefreshCw, X, History, Info, Mail, User as UserIcon, CheckCircle } from 'lucide-react';
 import '../../styles/admin.css';
 
-const UserDetailsPanel = ({ user, onClose }) => {
+const UserDetailsPanel = ({ user, onClose, setLastUpdatedUserId }) => {
     const { data: auditLogs, isLoading: logsLoading } = useAuditLogs(user?.id);
+    const { notify } = useNotifications();
     const { data: roles } = useRoles();
     const updateRoleMutation = useUpdateUserRole();
 
     if (!user) return null;
 
     const handleRoleChange = async (newRoleId) => {
+        const newRoleName = roles?.find(r => String(r.id) === String(newRoleId))?.name || 'User';
         try {
             await updateRoleMutation.mutateAsync({ userId: user.id, roleId: newRoleId });
-            // The mutation onSuccess will invalidate the users query, potentially updating the parent
+            notify(`Role for ${user.username} updated to ${newRoleName}`, 'success');
+            setLastUpdatedUserId(user.id);
+            setTimeout(() => setLastUpdatedUserId(null), 1500);
         } catch (err) {
-            alert("Failed to update role: " + err.message);
+            notify(`Failed to update ${user.username}: ${err.message}`, 'error');
         }
     };
 
@@ -86,17 +91,24 @@ const UserManagementPage = () => {
     const { data: users, isLoading: usersLoading, error: usersError } = useUsers();
     const { data: roles } = useRoles();
     const { user: authUser } = useAuth();
+    const { notify } = useNotifications();
     const updateRoleMutation = useUpdateUserRole();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
+    const [lastUpdatedUserId, setLastUpdatedUserId] = useState(null);
 
-    const handleQuickRoleChange = async (e, userId) => {
-        e.stopPropagation(); // Don't trigger the row click to select user
+    const handleQuickRoleChange = async (e, userId, username) => {
+        e.stopPropagation();
         const roleId = e.target.value;
+        const newRoleName = roles?.find(r => String(r.id) === String(roleId))?.name || 'User';
+        
         try {
             await updateRoleMutation.mutateAsync({ userId, roleId });
+            notify(`Successfully updated ${username} to ${newRoleName}`, 'success');
+            setLastUpdatedUserId(userId);
+            setTimeout(() => setLastUpdatedUserId(null), 1500);
         } catch (err) {
-            alert("Failed to update role: " + err.message);
+            notify(`Failed to update ${username}: ${err.message}`, 'error');
         }
     };
 
@@ -106,6 +118,16 @@ const UserManagementPage = () => {
             u.email.toLowerCase().includes(searchQuery.toLowerCase())
         )
     );
+
+    // Sync selected user details when the underlying data changes
+    React.useEffect(() => {
+        if (selectedUser) {
+            const updated = users?.find(u => u.id === selectedUser.id);
+            if (updated && (updated.role !== selectedUser.role)) {
+                setSelectedUser(updated);
+            }
+        }
+    }, [users, selectedUser]);
 
     if (usersLoading) return <div className="admin-page-container">Loading Users...</div>;
 
@@ -152,7 +174,7 @@ const UserManagementPage = () => {
                                 {filteredUsers?.map(user => (
                                     <tr 
                                         key={user.id} 
-                                        className={selectedUser?.id === user.id ? 'selected' : ''}
+                                        className={`${selectedUser?.id === user.id ? 'selected' : ''} ${lastUpdatedUserId === user.id ? 'row-updated-flash' : ''}`}
                                         onClick={() => setSelectedUser(user)}
                                     >
                                         <td className="role-cell">
@@ -174,9 +196,9 @@ const UserManagementPage = () => {
                                                 <select 
                                                     className="admin-select"
                                                     value={roles?.find(r => r.name === user.role)?.id || ""}
-                                                    onChange={(e) => handleQuickRoleChange(e, user.id)}
+                                                    onChange={(e) => handleQuickRoleChange(e, user.id, user.username)}
                                                     onClick={(e) => e.stopPropagation()}
-                                                    disabled={updateRoleMutation.isPending}
+                                                    disabled={updateRoleMutation.isPending && updateRoleMutation.variables?.userId === user.id}
                                                 >
                                                     {roles?.map(role => (
                                                         <option key={role.id} value={role.id}>{role.name}</option>
@@ -197,6 +219,7 @@ const UserManagementPage = () => {
                 <UserDetailsPanel 
                     user={selectedUser} 
                     onClose={() => setSelectedUser(null)} 
+                    setLastUpdatedUserId={setLastUpdatedUserId}
                 />
             )}
         </div>

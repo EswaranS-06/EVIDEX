@@ -1,5 +1,6 @@
 from reportlab.lib.colors import Color
 from reportlab.lib.pagesizes import A4
+from apps.knowledge.utils.watermark import get_watermark_data
 
 def draw_watermark(c, data):
     W, H = A4

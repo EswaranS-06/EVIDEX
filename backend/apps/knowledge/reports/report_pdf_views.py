@@ -69,7 +69,7 @@ class ReportPDFView(APIView):
             "test_location": report.test_location or "",
             "watermark_data": get_watermark_data(request)
         }
-        print(data)
+        print(data.get("watermark_data"))
         # Step A: Generate raw PDF to a temp file
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         build_report(tmp.name, data, report.id)

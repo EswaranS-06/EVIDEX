@@ -83,7 +83,7 @@ const ReportPreview = () => {
                     headers: {
                         'Content-Type': 'application/json',
                         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                        'X-Forwarded-For': userIp
+                        ...(userIp !== 'Unknown' ? { 'X-Forwarded-For': userIp } : {})
                     },
                     body: JSON.stringify({ password: '' }) // Empty password for preview
                 });
@@ -140,7 +140,7 @@ const ReportPreview = () => {
                 headers: {
                     'Content-Type': 'application/json',
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                    'X-Forwarded-For': userIp
+                    ...(userIp !== 'Unknown' ? { 'X-Forwarded-For': userIp } : {})
                 },
                 body: JSON.stringify({ password: exportPassword })
             });
@@ -222,7 +222,7 @@ const ReportPreview = () => {
                 headers: {
                     'Content-Type': 'application/json',
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                    'X-Forwarded-For': userIp
+                    ...(userIp !== 'Unknown' ? { 'X-Forwarded-For': userIp } : {})
                 },
                 body: JSON.stringify(payload)
             });

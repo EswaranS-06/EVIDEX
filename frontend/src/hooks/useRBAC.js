@@ -7,7 +7,33 @@ export const useUpdateUserRole = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ userId, roleId }) => rbacService.updateUserRole(userId, roleId),
-        onSuccess: () => {
+        // OPTIMISTIC UPDATE: Update UI immediately before server response
+        onMutate: async ({ userId, roleId }) => {
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries({ queryKey: ['admin', 'users'] });
+
+            // Snapshot the previous value
+            const previousUsers = queryClient.getQueryData(['admin', 'users']);
+
+            // Optimistically update to the new value
+            queryClient.setQueryData(['admin', 'users'], (old) => {
+                const roles = queryClient.getQueryData(['admin', 'roles']);
+                const newRoleName = roles?.find(r => String(r.id) === String(roleId))?.name || 'User';
+                
+                return old?.map(user => 
+                    user.id === userId ? { ...user, role: newRoleName } : user
+                );
+            });
+
+            // Return a context object with the snapshotted value
+            return { previousUsers };
+        },
+        onError: (err, variables, context) => {
+            // Roll back to the previous value if mutation fails
+            queryClient.setQueryData(['admin', 'users'], context.previousUsers);
+        },
+        onSettled: () => {
+            // Refetch after error or success:
             queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
             queryClient.invalidateQueries({ queryKey: ['audit', 'logs'] });
         },

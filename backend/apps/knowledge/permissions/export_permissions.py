@@ -14,7 +14,7 @@ class CanExportReport(BasePermission):
         role = get_role(request.user)
 
         # Tester, Reviewer & Approver → full access
-        if role in ["Tester", "Reviewer", "Approver"]:
+        if role in ["Admin", "Tester", "Reviewer", "Approver"]:
             return True
 
         # User → only assigned + approved
@@ -37,4 +37,4 @@ class CanEmailReport(BasePermission):
 
     def has_permission(self, request, view):
         role = get_role(request.user)
-        return role in ["Tester", "Reviewer", "Approver"]
+        return role in ["Admin", "Tester", "Reviewer", "Approver"]

@@ -63,6 +63,10 @@ class ReportViewSet(ModelViewSet):
         user = self.request.user
         role = get_role(user)
         base_qs = Report.objects.all().order_by("-created_at").prefetch_related("findings__vulnerability")
+        
+        if role == "Admin":
+            return base_qs
+
         if role == "Tester":
             return base_qs.filter(status__in=["draft", "in_progress", "completed", "approved"])
         elif role == "Reviewer":
@@ -73,6 +77,7 @@ class ReportViewSet(ModelViewSet):
         elif role == "User":
             # Matrix says: Approved -> Tester + Reviewer + Approver + User (assigned only)
             return base_qs.filter(assigned_to=user, status="approved")
+        
         return base_qs.none()
 
     permission_classes = [

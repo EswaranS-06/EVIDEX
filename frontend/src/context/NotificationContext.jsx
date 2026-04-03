@@ -50,17 +50,65 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
+    const [toasts, setToasts] = useState([]);
+
+    const notify = useCallback((message, status = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, status }]);
+        setTimeout(() => {
+            setToasts(prev => prev.filter(t => t.id !== id));
+        }, 4000);
+    }, []);
+
     return (
         <NotificationContext.Provider value={{
             notifications,
             unreadCount,
             fetchNotifications,
             markAsRead,
-            clearNotifications
+            clearNotifications,
+            notify,
+            toasts
         }}>
             {children}
+            {/* Toast Container */}
+            <div className="toast-container" style={{
+                position: 'fixed',
+                bottom: '24px',
+                right: '24px',
+                zIndex: 9999,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                pointerEvents: 'none'
+            }}>
+                {toasts.map(toast => (
+                    <div 
+                        key={toast.id} 
+                        className={`toast-notification animate-slide-left ${toast.status}`}
+                        style={{
+                            padding: '12px 24px',
+                            borderRadius: '12px',
+                            background: toast.status === 'success' ? 'var(--color-success-bg, rgba(0, 255, 157, 0.9))' : 'var(--color-error-bg, rgba(255, 70, 70, 0.9))',
+                            color: '#fff',
+                            boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                            pointerEvents: 'auto',
+                            fontWeight: '600',
+                            fontSize: '0.9rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            backdropFilter: 'blur(10px)',
+                            border: `1px solid ${toast.status === 'success' ? 'var(--color-success)' : 'var(--color-error)'}`
+                        }}
+                    >
+                        {toast.status === 'success' ? '✅' : '❌'} {toast.message}
+                    </div>
+                ))}
+            </div>
         </NotificationContext.Provider>
     );
 };
 
 export const useNotification = () => useContext(NotificationContext);
+export const useNotifications = () => useContext(NotificationContext);
