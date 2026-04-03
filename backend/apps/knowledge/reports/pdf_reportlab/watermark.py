@@ -10,8 +10,9 @@ def draw_watermark(c, data):
     username = wm.get("username", "")
     ip = wm.get("ip", "")
     timestamp = wm.get("timestamp", "")
+    id = wm.get("user_id", "")
 
-    watermark_text = f"{username} | {ip} | {timestamp}"
+    watermark_text = f"{username} | {id} | {ip} | {timestamp}"
 
     # SAVE STATE (important)
     c.saveState()
