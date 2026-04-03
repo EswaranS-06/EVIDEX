@@ -33,15 +33,19 @@ class ReportObjectPermission(BasePermission):
         if role == "Tester":
             return True
 
-        # Reviewer & Approver → can see all reports
-        if role in ["Reviewer", "Approver"]:
-            return True
+        # Reviewer → only completed and approved
+        if role == "Reviewer":
+            return obj.status in ["completed", "approved"]
 
-        # User → only assigned + completed
+        # Approver → only approved
+        if role == "Approver":
+            return obj.status == "approved"
+
+        # User → only assigned + approved
         if role == "User":
             return (
                 obj.assigned_to == request.user and
-                obj.status == "completed"
+                obj.status in ["completed", "approved"]
             )
 
         return False
@@ -58,20 +62,17 @@ class ReportStatusPermission(BasePermission):
         if request.method != "PATCH":
             return True
 
-        # Tester → full control
+        # Tester
         if role == "Tester":
-            return True
+            return new_status in ["draft", "in_progress", "completed"]
 
-        if not new_status:
-            return False  # must send status
-
-        # Reviewer rules
+        # Reviewer
         if role == "Reviewer":
-            return new_status in ["verified", "in_progress"]
+            return new_status in ["in_progress", "completed", "approved"]
 
-        # Approver rules
+        # Approver
         if role == "Approver":
-            return new_status in ["verified", "completed"]
+            return new_status in ["in_progress", "completed", "approved"]
 
         # User → cannot change status
         return False

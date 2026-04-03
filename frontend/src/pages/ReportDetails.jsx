@@ -26,7 +26,7 @@ const ReportDetails = () => {
         reviewed_by: '',
         approved_by: '',
         scope: '', // Note: Backend has report_type, frontend has scope. Might map scope to report_type or ignore for now.
-        status: 'Draft'
+        status: 'in_progress'
     });
 
     // Findings State
@@ -60,7 +60,7 @@ const ReportDetails = () => {
                 report_type: 'Web Application',
                 test_location: 'Off-site',
                 tools_used: '',
-                status: 'Draft'
+                status: 'in_progress'
             });
             setFindings([]);
         }
@@ -104,7 +104,7 @@ const ReportDetails = () => {
                 prepared_by: report.prepared_by || 'Pentester',
                 reviewed_by: report.reviewed_by,
                 approved_by: report.approved_by,
-                status: report.status || 'Draft'
+                status: report.status || 'in_progress'
             };
 
             let response;
@@ -329,7 +329,7 @@ const ReportDetails = () => {
                                     fontWeight: '700',
                                     border: `1px solid ${getSeverityColor(report.status)}`
                                 }}>
-                                    {report.status?.toUpperCase()}
+                                    {report.status?.replace('_', ' ').toUpperCase()}
                                 </span>
                             </div>
                         </div>
@@ -435,13 +435,13 @@ const ReportDetails = () => {
                                     <label className="input-label">Status</label>
                                     <select
                                         className="input-field"
-                                        value={report.status || 'Draft'}
+                                        value={report.status || 'in_progress'}
                                         onChange={(e) => setReport({ ...report, status: e.target.value })}
                                     >
-                                        <option value="Draft">Draft</option>
-                                        <option value="In Progress">In Progress</option>
-                                        <option value="Completed">Completed</option>
-                                        <option value="Verified">Verified</option>
+                                        <option value="draft">Draft</option>
+                                        <option value="in_progress">In Progress</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="approved">Approved</option>
                                     </select>
                                 </div>
 

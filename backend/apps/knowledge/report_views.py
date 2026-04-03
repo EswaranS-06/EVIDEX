@@ -56,8 +56,23 @@ from .permissions.report_permissions import (
 )
 
 class ReportViewSet(ModelViewSet):
-    queryset = Report.objects.all().order_by("-created_at").prefetch_related("findings__vulnerability")
     serializer_class = ReportSerializer
+    
+    def get_queryset(self):
+        from apps.accounts.utils.role_utils import get_role
+        user = self.request.user
+        role = get_role(user)
+        base_qs = Report.objects.all().order_by("-created_at").prefetch_related("findings__vulnerability")
+        if role == "Tester":
+            return base_qs.filter(status__in=["draft", "in_progress", "completed", "approved"])
+        elif role == "Reviewer":
+            return base_qs.filter(status__in=["completed", "approved"])
+        elif role == "Approver":
+            return base_qs.filter(status__in=["approved"])
+        elif role == "User":
+            return base_qs.filter(assigned_to=user, status__in=["completed", "approved"])
+        return base_qs.none()
+
     permission_classes = [
         IsAuthenticated,
         ReportPermission,
@@ -80,15 +95,17 @@ class ReportViewSet(ModelViewSet):
 
         # Defensive layer: intercept malicious status changes before save
         proposed_status = serializer.validated_data.get('status', old_status)
-        if old_status != "verified" and proposed_status == "verified":
-            if role != "Reviewer":
-                raise ValidationError("Only Reviewers can verify reports")
-        if old_status != "completed" and proposed_status == "completed":
-            if role != "Approver":
-                raise ValidationError("Only Approvers can complete reports")
-            # Prevent same reviewer & approver
-            if instance.reviewed_by == user.username:
+        if old_status != "approved" and proposed_status == "approved":
+            if role not in ["Reviewer", "Approver"]:
+                raise ValidationError("Only Reviewers and Approvers can approve reports")
+            if role == "Reviewer" and instance.approved_by and instance.approved_by == user.username:
                 raise ValidationError("Reviewer and Approver must be different users")
+            if role == "Approver" and instance.reviewed_by and instance.reviewed_by == user.username:
+                raise ValidationError("Reviewer and Approver must be different users")
+
+        if old_status != "completed" and proposed_status == "completed":
+            if role not in ["Tester", "Reviewer", "Approver"]:
+                raise ValidationError("Insufficient privileges to complete report")
 
         # Save first
         instance = serializer.save(updated_by=user)
@@ -97,15 +114,14 @@ class ReportViewSet(ModelViewSet):
         # 🔹 Always track last modifier
         instance.prepared_by = user.username
 
-        # 🔹 If status changed → verified
-        if old_status != "verified" and new_status == "verified":
-            if not instance.reviewed_by:  # Lock once set
-                instance.reviewed_by = user.username
-
-        # 🔹 If status changed → completed
-        if old_status != "completed" and new_status == "completed":
-            if not instance.approved_by:  # Lock once set
-                instance.approved_by = user.username
+        # 🔹 If status changed → approved
+        if old_status != "approved" and new_status == "approved":
+            if role == "Reviewer":
+                if not instance.reviewed_by:
+                    instance.reviewed_by = user.username
+            elif role == "Approver":
+                if not instance.approved_by:
+                    instance.approved_by = user.username
 
         instance.save()
 

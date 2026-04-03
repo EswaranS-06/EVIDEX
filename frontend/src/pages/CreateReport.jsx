@@ -816,7 +816,7 @@ const CreateReport = () => {
             prepared_by: formData.preparedBy,
             reviewed_by: formData.reviewedBy,
             approved_by: formData.approvedBy,
-            status: 'Draft'
+            status: 'in_progress'
         };
 
         try {

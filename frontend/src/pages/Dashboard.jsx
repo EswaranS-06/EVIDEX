@@ -12,10 +12,10 @@ const Dashboard = () => {
     const [reports, setReports] = useState([]);
 
     const [stats, setStats] = useState({
-        'Draft': 0,
-        'In Progress': 0,
-        'Completed': 0,
-        'Verified': 0,
+        'draft': 0,
+        'in_progress': 0,
+        'completed': 0,
+        'approved': 0,
         'Total': 0
     });
 
@@ -25,11 +25,12 @@ const Dashboard = () => {
             setReports(response.data);
 
             // Compute Stats
-            const newStats = { 'Draft': 0, 'In Progress': 0, 'Completed': 0 };
+            const newStats = { 'draft': 0, 'in_progress': 0, 'completed': 0, 'approved': 0, 'Total': 0 };
             response.data.forEach(r => {
                 if (newStats[r.status] !== undefined) {
                     newStats[r.status]++;
                 }
+                newStats['Total']++;
             });
             setStats(newStats);
         } catch (err) {
@@ -80,74 +81,74 @@ const Dashboard = () => {
             <div className="stats-row">
                 <div
                     className="glass-panel"
-                    onClick={() => setStatusFilter(statusFilter === 'Draft' ? 'All' : 'Draft')}
+                    onClick={() => setStatusFilter(statusFilter === 'draft' ? 'All' : 'draft')}
                     style={{
                         padding: '16px 20px',
                         flex: '1 1 150px',
                         borderLeft: '4px solid var(--color-text-muted)',
                         cursor: 'pointer',
-                        transform: statusFilter === 'Draft' ? 'translateY(-4px)' : 'none',
-                        borderColor: statusFilter === 'Draft' ? 'var(--color-primary)' : 'var(--color-border)',
-                        boxShadow: statusFilter === 'Draft' ? 'var(--shadow-glow)' : 'var(--shadow-card)',
+                        transform: statusFilter === 'draft' ? 'translateY(-4px)' : 'none',
+                        borderColor: statusFilter === 'draft' ? 'var(--color-primary)' : 'var(--color-border)',
+                        boxShadow: statusFilter === 'draft' ? 'var(--shadow-glow)' : 'var(--shadow-card)',
                         transition: 'all 0.3s ease'
                     }}
                 >
                     <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>Draft</h3>
-                    <div style={{ fontSize: '1.75rem', fontWeight: '800' }}>{stats.Draft}</div>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '800' }}>{stats.draft}</div>
                 </div>
 
                 <div
                     className="glass-panel"
-                    onClick={() => setStatusFilter(statusFilter === 'In Progress' ? 'All' : 'In Progress')}
+                    onClick={() => setStatusFilter(statusFilter === 'in_progress' ? 'All' : 'in_progress')}
                     style={{
                         padding: '16px 20px',
                         flex: '1 1 150px',
                         borderLeft: '4px solid var(--color-primary)',
                         cursor: 'pointer',
-                        transform: statusFilter === 'In Progress' ? 'translateY(-4px)' : 'none',
-                        borderColor: statusFilter === 'In Progress' ? 'var(--color-primary)' : 'var(--color-border)',
-                        boxShadow: statusFilter === 'In Progress' ? 'var(--shadow-glow)' : 'var(--shadow-card)',
+                        transform: statusFilter === 'in_progress' ? 'translateY(-4px)' : 'none',
+                        borderColor: statusFilter === 'in_progress' ? 'var(--color-primary)' : 'var(--color-border)',
+                        boxShadow: statusFilter === 'in_progress' ? 'var(--shadow-glow)' : 'var(--shadow-card)',
                         transition: 'all 0.3s ease'
                     }}
                 >
                     <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>In Progress</h3>
-                    <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--color-primary)' }}>{stats['In Progress']}</div>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--color-primary)' }}>{stats.in_progress}</div>
                 </div>
 
                 <div
                     className="glass-panel"
-                    onClick={() => setStatusFilter(statusFilter === 'Completed' ? 'All' : 'Completed')}
+                    onClick={() => setStatusFilter(statusFilter === 'completed' ? 'All' : 'completed')}
                     style={{
                         padding: '16px 20px',
                         flex: '1 1 150px',
                         borderLeft: '4px solid var(--color-success)',
                         cursor: 'pointer',
-                        transform: statusFilter === 'Completed' ? 'translateY(-4px)' : 'none',
-                        borderColor: statusFilter === 'Completed' ? 'var(--color-success)' : 'var(--color-border)',
-                        boxShadow: statusFilter === 'Completed' ? '0 0 15px var(--color-primary-glow)' : 'var(--shadow-card)',
+                        transform: statusFilter === 'completed' ? 'translateY(-4px)' : 'none',
+                        borderColor: statusFilter === 'completed' ? 'var(--color-success)' : 'var(--color-border)',
+                        boxShadow: statusFilter === 'completed' ? '0 0 15px var(--color-primary-glow)' : 'var(--shadow-card)',
                         transition: 'all 0.3s ease'
                     }}
                 >
                     <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>Completed</h3>
-                    <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--color-success)' }}>{stats.Completed}</div>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--color-success)' }}>{stats.completed}</div>
                 </div>
 
                 <div
                     className="glass-panel"
-                    onClick={() => setStatusFilter(statusFilter === 'Verified' ? 'All' : 'Verified')}
+                    onClick={() => setStatusFilter(statusFilter === 'approved' ? 'All' : 'approved')}
                     style={{
                         padding: '16px 20px',
                         flex: '1 1 150px',
                         borderLeft: '4px solid #00d2ff',
                         cursor: 'pointer',
-                        transform: statusFilter === 'Verified' ? 'translateY(-4px)' : 'none',
-                        borderColor: statusFilter === 'Verified' ? '#00d2ff' : 'var(--color-border)',
-                        boxShadow: statusFilter === 'Verified' ? '0 0 15px rgba(0, 210, 255, 0.2)' : 'var(--shadow-card)',
+                        transform: statusFilter === 'approved' ? 'translateY(-4px)' : 'none',
+                        borderColor: statusFilter === 'approved' ? '#00d2ff' : 'var(--color-border)',
+                        boxShadow: statusFilter === 'approved' ? '0 0 15px rgba(0, 210, 255, 0.2)' : 'var(--shadow-card)',
                         transition: 'all 0.3s ease'
                     }}
                 >
-                    <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>Verified</h3>
-                    <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#00d2ff' }}>{stats.Verified}</div>
+                    <h3 style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '4px', fontWeight: '600' }}>Approved</h3>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#00d2ff' }}>{stats.approved}</div>
                 </div>
 
                 <div
@@ -176,7 +177,7 @@ const Dashboard = () => {
                 <div className="reports-list" style={{ flex: '1.8' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                         <h2 style={{ fontSize: '1.25rem' }}>
-                            {statusFilter === 'All' ? 'Recent Reports' : `${statusFilter} Reports`}
+                            {statusFilter === 'All' ? 'Recent Reports' : `${statusFilter.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())} Reports`}
                         </h2>
                         {statusFilter !== 'All' && (
                             <button className="btn btn-ghost" onClick={() => setStatusFilter('All')} style={{ fontSize: '0.75rem' }}>
@@ -236,13 +237,13 @@ const Dashboard = () => {
                                                 )}
                                             </span>
                                             <span style={{
-                                                color: report.status === 'Completed' ? 'var(--color-success)' : 'var(--color-primary)',
-                                                background: report.status === 'Completed' ? 'rgba(0, 255, 157, 0.1)' : 'rgba(0, 240, 255, 0.1)',
+                                                color: report.status === 'completed' ? 'var(--color-success)' : 'var(--color-primary)',
+                                                background: report.status === 'completed' ? 'rgba(0, 255, 157, 0.1)' : 'rgba(0, 240, 255, 0.1)',
                                                 padding: '2px 8px',
                                                 borderRadius: '4px',
                                                 fontSize: '0.75rem'
                                             }}>
-                                                {report.status}
+                                                {report.status?.replace('_', ' ').toUpperCase()}
                                             </span>
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 📝 {report.findings_count || 0} Findings

@@ -134,13 +134,13 @@ const Reports = () => {
                                             )}
                                         </span>
                                         <span style={{
-                                            color: report.status === 'Completed' ? 'var(--color-success)' : 'var(--color-primary)',
-                                            background: report.status === 'Completed' ? 'rgba(0, 255, 157, 0.1)' : 'rgba(0, 240, 255, 0.1)',
+                                            color: report.status === 'completed' ? 'var(--color-success)' : 'var(--color-primary)',
+                                            background: report.status === 'completed' ? 'rgba(0, 255, 157, 0.1)' : 'rgba(0, 240, 255, 0.1)',
                                             padding: '2px 8px',
                                             borderRadius: '4px',
                                             fontSize: '0.75rem'
                                         }}>
-                                            {report.status}
+                                            {report.status?.replace('_', ' ').toUpperCase()}
                                         </span>
                                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             📝 {report.findings_count || 0} Findings

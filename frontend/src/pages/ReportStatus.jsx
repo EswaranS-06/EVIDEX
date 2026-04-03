@@ -204,7 +204,7 @@ const ReportStatus = () => {
                                                 background: 'var(--tag-bg)',
                                                 color: 'var(--color-text-muted)'
                                             }}>
-                                                {report.status}
+                                                {report.status?.replace('_', ' ').toUpperCase()}
                                             </span>
                                         </div>
                                     </div>
@@ -259,7 +259,7 @@ const ReportStatus = () => {
                                             fontWeight: '600',
                                             display: 'inline-block'
                                         }}>
-                                            {selectedReport.status?.toUpperCase()}
+                                            {selectedReport.status?.replace('_', ' ').toUpperCase()}
                                         </div>
                                         <button
                                             className="btn btn-ghost"

@@ -132,8 +132,8 @@ class Report(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('in_progress', 'In Progress'),
-        ('verified', 'Verified'),
         ('completed', 'Completed'),
+        ('approved', 'Approved'),
     ]
 
     client_name = models.CharField(max_length=200)
@@ -153,7 +153,7 @@ class Report(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='draft'
+        default='in_progress'
     )
 
     created_by = models.ForeignKey(
