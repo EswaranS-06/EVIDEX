@@ -9,6 +9,7 @@ from .methodology import draw_methodology
 from .results import draw_results
 from .detailed_findings import draw_detailed_findings
 from .conclusion import draw_conclusion
+from .watermark import draw_watermark_docx
 
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -20,6 +21,12 @@ from docx.oxml.ns import qn
 def build_docx(path, data, report_id):
 
     doc = Document()
+    
+    # -------------------------
+    # 0. WATERMARK
+    # -------------------------
+    
+    draw_watermark_docx(doc, data)
 
     # -------------------------
     # 1. COVER
@@ -66,6 +73,8 @@ def build_docx(path, data, report_id):
     # 9. CONCLUSION (THIS MUST HAVE BOOKMARK)
     # -------------------------
     draw_conclusion(doc, data, report_id)
+    
+    
 
     # -------------------------
     # AUTO UPDATE FIELDS (CRITICAL)
