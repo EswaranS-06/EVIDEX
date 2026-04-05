@@ -12,10 +12,6 @@ def get_watermark_data(request):
     else:
         ip = request.META.get('REMOTE_ADDR', 'Unknown')
     
-    # Last defense: if IP was sent as string 'Unknown' from frontend
-    if ip == 'Unknown':
-        ip = request.META.get('REMOTE_ADDR', 'Unknown')
-    
     return {
         "username": request.user.username if request.user.is_authenticated else "Anonymous",
         "user_id": request.user.id if request.user.is_authenticated else 0,
