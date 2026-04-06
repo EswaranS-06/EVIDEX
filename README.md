@@ -1,7 +1,58 @@
-# Tutorial: EVIDEX
+# EVIDEX
 
 EVIDEX is a comprehensive platform for managing **security assessment projects**. It allows security professionals to create *reports* with detailed *findings* and attached evidence, drawing from a central *vulnerability knowledge base*. The system then dynamically generates professional PDF/DOCX documents, all while controlling *user access* with roles and tracking *key activities*.
 
+## BACKEND
+
+👉 **Backend documentation is here:**  
+➡️ [Go to backend/README.md](backend/README.md)
+
+### Required Techs
+
+- Docker Desktop
+- Python 3.12
+- UV ➡️ [Offical Link](https://docs.astral.sh/uv/getting-started/installation/)
+
+### Setup the Backend
+
+#### install the UV [**Installation Steps**](#quick-uv-installation-methode)
+
+#### install the Docker
+
+#### Step 1: Clone the repo or dowmload the repo as zip
+
+ > `https://github.com/EswaranS-06/EVIDEX.git`
+
+#### step 2: Start the Docker Compose for DataBase `docker-compose up -d`
+
+> 1. Check the `.env` file and give required creds and info's
+> 2. Run the command `docker-compose up -d` to start the DB
+> 3. That shows error check both `.env` and `docker-compose.yml` in same directory if not edit the path in `Line 9` in docker file
+> 4. Then run this `docker-compose -f <docker-compose_path> up -d`
+
+#### Step 3: Setup the Python Environment
+
+1. Go to `cd backend/` folder
+2. Run `uv sync` this will automatically install and setup the python Environment for Backend
+
+> this to download the package and set-up the python and packages
+
+#### step 4: Start the backend
+
+```powershell
+uv run python manage.py makemigrations
+uv run python manage.py migrate
+uv run python manage.py seed_roles
+uv run python manage.py seed_owasp_category
+uv run python manage.py seed_owasp_sub
+uv run python manage.py seed_owasp_variants
+uv run python manage.py seed_testcases
+uv run python manage.py runserver
+```
+
+#### Step 5: Then Visit the `http://localhost:8000`
+
+#### RUN THE STARTUP SCRIPT TO START THE PROJECT
 
 ## Visual Overview
 
@@ -35,22 +86,16 @@ flowchart TD
 
 ## Chapters
 
-1. [User & Role-Based Access Control (RBAC)
-](01_user___role_based_access_control__rbac__.md)
-2. [Report & Finding Management
-](02_report___finding_management_.md)
-3. [Vulnerability Knowledge Base
-](03_vulnerability_knowledge_base_.md)
-4. [Dynamic Report Generation
-](04_dynamic_report_generation_.md)
-5. [Activity Tracking & User Notifications
-](05_activity_tracking___user_notifications_.md)
-6. [Frontend Data Integration & State
-](06_frontend_data_integration___state_.md)
+1. [User & Role-Based Access Control (RBAC)](#chapter-1-user--role-based-access-control-rbac)
+2. [Report & Finding Management](#chapter-2-report--finding-management)
+3. [Vulnerability Knowledge Base](#chapter-3-vulnerability-knowledge-base)
+4. [Dynamic Report Generation](#chapter-4-dynamic-report-generation)
+5. [Activity Tracking & User Notifications](#chapter-5-activity-tracking--user-notifications)
+6. [Frontend Data Integration & State](#chapter-6-frontend-data-integration--state)
 
 ---
 
-# Chapter 1: User & Role-Based Access Control (RBAC)
+## Chapter 1: User & Role-Based Access Control (RBAC)
 
 Welcome to the EVIDEX project! In this first chapter, we're going to explore a fundamental concept that keeps our system secure and organized: **User & Role-Based Access Control (RBAC)**.
 
@@ -377,7 +422,7 @@ In the next chapter, we will delve into how these permissions come into play as 
 
 ---
 
-# Chapter 2: Report & Finding Management
+## Chapter 2: Report & Finding Management
 
 Welcome back to EVIDEX! In our last chapter, [User & Role-Based Access Control (RBAC)](01_user___role_based_access_control__rbac__.md), we learned how EVIDEX keeps things secure by making sure everyone has the right "keys" to do their job. Now, let's open the main vault and explore the heart of EVIDEX: **Report & Finding Management**. This is where all the actual security assessment work happens.
 
@@ -783,7 +828,7 @@ This structure is crucial for accurate, professional security assessments. In th
 
 ---
 
-# Chapter 3: Vulnerability Knowledge Base
+## Chapter 3: Vulnerability Knowledge Base
 
 Welcome back to EVIDEX! In our last chapter, [Report & Finding Management](02_report___finding_management_.md), we explored how EVIDEX helps you organize your security assessment projects into `Reports` and pinpoint specific issues as `Findings`. Now, let's talk about the secret weapon that makes adding those `Findings` incredibly efficient and consistent: the **Vulnerability Knowledge Base**.
 
@@ -1128,7 +1173,7 @@ This structured approach to vulnerability definitions is a foundational element 
 
 ---
 
-# Chapter 4: Dynamic Report Generation
+## Chapter 4: Dynamic Report Generation
 
 Welcome back to EVIDEX! In our last chapter, [Vulnerability Knowledge Base](03_vulnerability_knowledge_base_.md), we saw how EVIDEX helps you standardize and efficiently manage information about security vulnerabilities. Now, imagine you've spent days carefully conducting an assessment, documenting every finding, and collecting crucial evidence. What's next? You need to present all this hard work in a clear, professional report to your client or stakeholders.
 
@@ -1512,7 +1557,7 @@ This automation vastly improves efficiency and consistency, allowing your team t
 
 ---
 
-# Chapter 5: Activity Tracking & User Notifications
+## Chapter 5: Activity Tracking & User Notifications
 
 Welcome back to EVIDEX! In our last chapter, [Dynamic Report Generation](04_dynamic_report_generation_.md), you learned how EVIDEX automatically creates professional PDF and DOCX reports from your assessment data. Now, imagine a different kind of need: What if you want to know *who* approved that report? Or if someone changed a critical report status? And how do you keep everyone updated on these important events without constant emails?
 
@@ -1958,7 +2003,7 @@ Next up, we'll shift our focus to the frontend. In the final chapter, we will de
 
 ---
 
-# Chapter 6: Frontend Data Integration & State
+## Chapter 6: Frontend Data Integration & State
 
 Welcome to the final chapter of our EVIDEX journey! In our last chapter, [Activity Tracking & User Notifications](05_activity_tracking___user_notifications_.md), we learned how EVIDEX keeps a detailed record of all actions and notifies users about important events. Now, let's bring it all together and see how EVIDEX's user interface (the "frontend" you see and interact with) connects to all this powerful backend logic and data.
 
